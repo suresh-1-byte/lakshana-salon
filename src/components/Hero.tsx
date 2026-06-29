@@ -27,26 +27,59 @@ export function Hero() {
     const vid = videoRef.current;
     if (!vid) return;
     
+    // Set video properties
+    vid.muted = true;
+    vid.playsInline = true;
+    
     // Aggressively try to play
-    const playVideo = () => {
-      vid.play().catch((err) => {
-        console.log('Autoplay blocked:', err);
-        // Try again on any user interaction
-        const events = ['click', 'touchstart', 'keydown'];
-        const tryPlay = () => {
-          vid.play();
-          events.forEach(e => document.removeEventListener(e, tryPlay));
+    const playVideo = async () => {
+      try {
+        await vid.play();
+        console.log('Video playing successfully');
+      } catch (err) {
+        console.log('Autoplay blocked, waiting for user interaction:', err);
+        // Try again on ANY user interaction
+        const events = ['click', 'touchstart', 'keydown', 'scroll'];
+        const tryPlay = async () => {
+          try {
+            await vid.play();
+            console.log('Video playing after interaction');
+            events.forEach(e => {
+              document.removeEventListener(e, tryPlay);
+              window.removeEventListener(e, tryPlay);
+            });
+          } catch (e) {
+            console.error('Still cannot play:', e);
+          }
         };
-        events.forEach(e => document.addEventListener(e, tryPlay, { once: true }));
-      });
+        events.forEach(e => {
+          document.addEventListener(e, tryPlay, { once: true, passive: true });
+          window.addEventListener(e, tryPlay, { once: true, passive: true });
+        });
+      }
     };
     
-    // Try immediately
+    // Try immediately when component mounts
     playVideo();
     
-    // Also try when video can play
-    vid.addEventListener('loadeddata', playVideo, { once: true });
-    vid.addEventListener('canplay', playVideo, { once: true });
+    // Also try when video metadata is loaded
+    const handleLoadedData = () => {
+      console.log('Video loaded data');
+      playVideo();
+    };
+    
+    const handleCanPlay = () => {
+      console.log('Video can play');
+      playVideo();
+    };
+    
+    vid.addEventListener('loadeddata', handleLoadedData);
+    vid.addEventListener('canplay', handleCanPlay);
+    
+    return () => {
+      vid.removeEventListener('loadeddata', handleLoadedData);
+      vid.removeEventListener('canplay', handleCanPlay);
+    };
   }, []);
 
   // ── Run the intro→cinematic animation ─────────────────
@@ -220,8 +253,16 @@ export function Hero() {
             loop
             playsInline
             preload="auto"
+            controls={false}
+            disablePictureInPicture
+            webkit-playsinline="true"
+            x5-playsinline="true"
+            onError={(e) => console.error('Video error:', e)}
+            onCanPlay={() => console.log('Video can play')}
+            onPlay={() => console.log('Video playing')}
           >
             <source src="/web.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'rgba(255,192,203,0.18)', mixBlendMode: 'multiply', zIndex: 1 }} />
