@@ -42,17 +42,17 @@ export function PageLoader() {
       <div
         style={{
           position: 'relative',
-          width: 'min(340px, 72vw)',
-          height: 'min(340px, 72vw)',
+          width: 'min(280px, 60vw)',
+          height: 'min(280px, 60vw)',
           flexShrink: 0,
           animation: 'loader-logo-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
         }}
       >
         <Image
-          src="/logo-full.png?v=2"
+          src="/logo.png?v=3"
           alt="Lakshana Beauty Salon"
           fill
-          sizes="340px"
+          sizes="280px"
           className="object-contain"
           priority
         />
