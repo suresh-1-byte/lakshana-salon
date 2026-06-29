@@ -38,7 +38,7 @@ export function PageLoader() {
         pointerEvents: fading ? 'none' : 'all',
       }}
     >
-      {/* ── Full brand logo (gold on black — screen blend) ── */}
+      {/* ── Full brand logo (pink LP Beauty Salon) ── */}
       <div
         style={{
           position: 'relative',
@@ -49,25 +49,24 @@ export function PageLoader() {
         }}
       >
         <Image
-          src="/logo-full.png"
+          src="/logo-full.png?v=2"
           alt="Lakshana Beauty Salon"
           fill
           sizes="340px"
           className="object-contain"
-          style={{ mixBlendMode: 'screen' }}
           priority
         />
       </div>
 
-      {/* ── Gold loading animation ───────────────────────── */}
+      {/* ── Pink loading animation ───────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
         animation: 'loader-logo-in 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards' }}>
 
-        {/* Animated gold bar */}
+        {/* Animated pink bar */}
         <div style={{
           width: '160px',
           height: '1px',
-          background: 'rgba(201,168,76,0.15)',
+          background: 'rgba(212,68,122,0.15)',
           position: 'relative',
           overflow: 'hidden',
           borderRadius: '1px',
@@ -77,7 +76,7 @@ export function PageLoader() {
             top: 0,
             left: 0,
             height: '100%',
-            background: 'linear-gradient(90deg, transparent, #C9A84C, #F0D882, #C9A84C, transparent)',
+            background: 'linear-gradient(90deg, transparent, #D4447A, #E8A0B4, #D4447A, transparent)',
             animation: 'loader-bar-sweep 1.6s ease-in-out infinite',
             width: '60%',
           }} />
@@ -92,7 +91,7 @@ export function PageLoader() {
                 width: '5px',
                 height: '5px',
                 borderRadius: '50%',
-                background: '#C9A84C',
+                background: '#D4447A',
                 animation: `loader-dot-pulse 1.4s ease-in-out ${i * 0.2}s infinite`,
               }}
             />
@@ -112,7 +111,7 @@ export function PageLoader() {
         }
         @keyframes loader-dot-pulse {
           0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
-          40%            { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px rgba(201,168,76,0.7); }
+          40%            { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px rgba(212,68,122,0.7); }
         }
       `}</style>
     </div>
