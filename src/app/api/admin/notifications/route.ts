@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Email notification
-      if (types.includes('email') && email) {
+      if (types.includes('email')) {
         try {
           const settingsDoc = await adminDb.collection(Collections.SETTINGS).doc('salon').get();
           const apiKey = settingsDoc.data()?.resendApiKey || process.env.RESEND_API_KEY;
@@ -80,25 +80,42 @@ export async function POST(req: NextRequest) {
             const resend = new Resend(apiKey);
             const salonName = settingsDoc.data()?.salonName || 'Lakshana Beauty Salon';
 
-            await resend.emails.send({
-              from: `${salonName} <notifications@lakshanabeautysalon.in>`,
-              to: Array.isArray(email) ? email : [email],
-              subject: title,
-              html: `
-                <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #FDF8F5; padding: 40px;">
-                  <div style="text-align: center; margin-bottom: 30px;">
-                    <h1 style="color: #D4447A; font-size: 28px; margin: 0;">${salonName}</h1>
-                    <div style="height: 2px; background: linear-gradient(90deg, transparent, #D4447A, transparent); margin: 15px 0;"></div>
+            // Get all subscribed emails from fcm_tokens collection
+            const tokensSnap = await adminDb.collection('fcm_tokens').get();
+            const subscribedEmails = tokensSnap.docs
+              .map(d => d.data().email as string)
+              .filter(Boolean); // Remove null/undefined values
+
+            // If email parameter is provided, add it to the list
+            let emailList = [...subscribedEmails];
+            if (email) {
+              const additionalEmails = Array.isArray(email) ? email : [email];
+              emailList = [...new Set([...emailList, ...additionalEmails])]; // Remove duplicates
+            }
+
+            if (emailList.length > 0) {
+              await resend.emails.send({
+                from: `${salonName} <notifications@lakshanabeautysalon.in>`,
+                to: emailList,
+                subject: title,
+                html: `
+                  <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #FDF8F5; padding: 40px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                      <h1 style="color: #D4447A; font-size: 28px; margin: 0;">${salonName}</h1>
+                      <div style="height: 2px; background: linear-gradient(90deg, transparent, #D4447A, transparent); margin: 15px 0;"></div>
+                    </div>
+                    <h2 style="color: #2D1B25; font-size: 22px;">${title}</h2>
+                    <p style="color: #7B4F62; line-height: 1.8; font-size: 16px;">${msgBody}</p>
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(212,68,122,0.06); border-left: 3px solid #D4447A; border-radius: 4px;">
+                      <p style="margin: 0; color: #D4447A; font-size: 14px;">Lakshana Premier Beauty Salon, Nolambur, Chennai</p>
+                    </div>
                   </div>
-                  <h2 style="color: #2D1B25; font-size: 22px;">${title}</h2>
-                  <p style="color: #7B4F62; line-height: 1.8; font-size: 16px;">${msgBody}</p>
-                  <div style="margin-top: 30px; padding: 20px; background: rgba(212,68,122,0.06); border-left: 3px solid #D4447A; border-radius: 4px;">
-                    <p style="margin: 0; color: #D4447A; font-size: 14px;">Lakshana Premier Beauty Salon, Nolambur, Chennai</p>
-                  </div>
-                </div>
-              `,
-            });
-            results.email = { success: true };
+                `,
+              });
+              results.email = { success: true, sent: emailList.length };
+            } else {
+              results.email = { success: false, error: 'No subscribed emails found' };
+            }
           }
         } catch (emailErr) {
           results.email = { error: String(emailErr) };

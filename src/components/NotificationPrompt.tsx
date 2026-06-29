@@ -53,6 +53,8 @@ export function NotificationPrompt() {
   const [show,    setShow]    = useState(false);
   const [granted, setGranted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined')      return;
@@ -71,45 +73,58 @@ export function NotificationPrompt() {
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        // Get token and save it
-        console.log('[NotificationPrompt] Permission granted, getting FCM token...');
-        const token = await registerAndGetToken();
-        
-        if (token) {
-          console.log('[NotificationPrompt] Token obtained, saving to server...');
-          const response = await fetch('/api/fcm-token', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ token }),
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            console.log('[NotificationPrompt] Token saved successfully:', data);
-          } else {
-            console.error('[NotificationPrompt] Failed to save token:', data);
-          }
-        } else {
-          console.warn('[NotificationPrompt] Failed to obtain FCM token');
-        }
-        
-        setGranted(true);
-        setTimeout(() => setShow(false), 2500);
+        // Show email input after permission granted
+        setShowEmailInput(true);
+        setLoading(false);
       } else {
-        // Blocked or dismissed
         console.log('[NotificationPrompt] Permission denied or dismissed');
         setShow(false);
+        setLoading(false);
       }
     } catch (err) {
       console.error('[NotificationPrompt] Error:', err);
-      // Still show success if permission was granted
-      if (Notification.permission === 'granted') {
-        setGranted(true);
-        setTimeout(() => setShow(false), 2500);
+      setShow(false);
+      setLoading(false);
+    }
+  };
+
+  const handleEmailSubmit = async () => {
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Get token and save it with email
+      console.log('[NotificationPrompt] Getting FCM token...');
+      const token = await registerAndGetToken();
+      
+      if (token) {
+        console.log('[NotificationPrompt] Token obtained, saving with email...');
+        const response = await fetch('/api/fcm-token', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ token, email }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          console.log('[NotificationPrompt] Token and email saved successfully:', data);
+          setGranted(true);
+          setTimeout(() => setShow(false), 2500);
+        } else {
+          console.error('[NotificationPrompt] Failed to save:', data);
+          alert('Failed to subscribe. Please try again.');
+        }
       } else {
-        setShow(false);
+        console.warn('[NotificationPrompt] Failed to obtain FCM token');
+        alert('Failed to subscribe. Please try again.');
       }
+    } catch (err) {
+      console.error('[NotificationPrompt] Error:', err);
+      alert('An error occurred. Please try again.');
     }
     setLoading(false);
   };
@@ -155,6 +170,72 @@ export function NotificationPrompt() {
                   </p>
                 </div>
               </motion.div>
+            ) : showEmailInput ? (
+              /* ── Email input state ── */
+              <div className="p-5">
+                <button
+                  onClick={() => { setShowEmailInput(false); setShow(false); }}
+                  className="absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center text-white/30 hover:text-white/70 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.06)' }}
+                  aria-label="Close"
+                >
+                  <X size={12} />
+                </button>
+
+                <div className="flex items-start gap-4 mb-4 pr-6">
+                  <div
+                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                    style={{
+                      background: 'rgba(212,68,122,0.2)',
+                      border:     '1px solid rgba(212,68,122,0.35)',
+                    }}
+                  >
+                    <Sparkles size={20} className="text-[#D4447A]" />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium text-sm leading-snug">
+                      Enter your email
+                    </p>
+                    <p className="text-white/45 text-xs mt-1 leading-relaxed">
+                      Get exclusive offers and updates directly to your inbox
+                    </p>
+                  </div>
+                </div>
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full h-10 px-4 rounded-xl text-white text-sm bg-white/5 border border-white/10 focus:border-[#D4447A] focus:outline-none mb-3"
+                  style={{ background: 'rgba(255,255,255,0.03)' }}
+                  autoFocus
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowEmailInput(false); setShow(false); }}
+                    className="flex-1 h-9 rounded-xl text-white/40 text-xs font-medium border border-white/10 hover:bg-white/5 transition-all"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={handleEmailSubmit}
+                    disabled={loading}
+                    className="flex-1 h-9 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                    style={{
+                      background: 'linear-gradient(135deg, #D4447A, #B03060)',
+                      boxShadow:  '0 0 20px rgba(212,68,122,0.35)',
+                    }}
+                  >
+                    {loading ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    ) : (
+                      <>Subscribe</>
+                    )}
+                  </button>
+                </div>
+              </div>
             ) : (
               /* ── Permission request ── */
               <div className="p-5">

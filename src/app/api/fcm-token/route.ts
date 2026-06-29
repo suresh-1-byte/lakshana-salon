@@ -4,7 +4,7 @@ import { adminDb, getAdminDb } from '@/lib/firebase-admin';
 // Save FCM token from browser
 export async function POST(req: NextRequest) {
   try {
-    const { token } = await req.json();
+    const { token, email } = await req.json();
     
     if (!token) {
       console.error('[FCM Token] No token provided in request');
@@ -26,11 +26,12 @@ export async function POST(req: NextRequest) {
     // Use token as doc ID to avoid duplicates
     await adminDb.collection('fcm_tokens').doc(token).set({
       token,
+      email: email || null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
 
-    console.log('[FCM Token] Successfully saved token');
+    console.log('[FCM Token] Successfully saved token' + (email ? ' with email' : ''));
     return NextResponse.json({ 
       success: true,
       message: 'Token saved successfully'

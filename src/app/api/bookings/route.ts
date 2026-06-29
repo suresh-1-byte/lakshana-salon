@@ -203,6 +203,48 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── 4. Admin notification email ────────────────────────────
+    if (notif.emailOnBooking !== false) {
+      try {
+        const resendKey = settings.resendApiKey || process.env.RESEND_API_KEY;
+        const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'admin@lakshanabeautysalon.in';
+        if (resendKey && !resendKey.includes('your_')) {
+          const { Resend } = await import('resend');
+          const resend = new Resend(resendKey);
+          const serviceList = services.map((s: any) => `<li style="margin: 8px 0;">${s.name}</li>`).join('');
+          await resend.emails.send({
+            from: `${salonName} <bookings@lakshanabeautysalon.in>`,
+            to: [adminEmail],
+            subject: `🔔 New Booking: ${name} - ${services.length} Service(s)`,
+            html: `
+              <div style="font-family: Georgia, serif; max-width: 600px; margin: 0 auto; background: #FDF8F5; padding: 40px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h1 style="color: #D4447A; font-size: 28px; margin: 0;">${salonName}</h1>
+                  <div style="height: 2px; background: linear-gradient(90deg, transparent, #D4447A, transparent); margin: 15px 0;"></div>
+                </div>
+                <h2 style="color: #2D1B25; font-size: 22px;">📅 New Booking Received</h2>
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Customer:</strong> ${name}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Phone:</strong> ${phone}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Booking ID:</strong> ${docRef.id.slice(-6).toUpperCase()}</p>
+                </div>
+                <div style="background: rgba(212,68,122,0.06); padding: 20px; border-radius: 8px; border-left: 3px solid #D4447A;">
+                  <p style="margin: 0 0 10px 0; color: #2D1B25; font-weight: bold;">Services Requested:</p>
+                  <ul style="margin: 0; padding-left: 20px; color: #7B4F62;">${serviceList}</ul>
+                </div>
+                <div style="text-align: center; margin-top: 30px;">
+                  <a href="https://lakshanabeautysalon.in/admin/bookings" style="display: inline-block; background: linear-gradient(135deg, #D4447A, #B03060); color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">View in Admin Panel</a>
+                </div>
+              </div>
+            `,
+          });
+        }
+      } catch (adminEmailErr) {
+        console.error('Admin notification email error:', adminEmailErr);
+      }
+    }
+
     return NextResponse.json({ success: true, bookingId: docRef.id });
   } catch (err) {
     console.error('Booking error:', err);
