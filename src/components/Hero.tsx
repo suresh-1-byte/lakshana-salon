@@ -221,7 +221,7 @@ export function Hero() {
             playsInline
             preload="auto"
           >
-            <source src="https://files.catbox.moe/nsb3ni.mp4" type="video/mp4" />
+            <source src="/web.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'rgba(255,192,203,0.18)', mixBlendMode: 'multiply', zIndex: 1 }} />
