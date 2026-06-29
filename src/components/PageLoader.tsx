@@ -46,14 +46,19 @@ export function PageLoader() {
           height: 'min(280px, 60vw)',
           flexShrink: 0,
           animation: 'loader-logo-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+          filter: 'drop-shadow(0 0 30px rgba(212,68,122,0.3))',
         }}
       >
         <Image
-          src="/logo.png?v=3"
+          src="/logoentrance.jpeg"
           alt="Lakshana Beauty Salon"
           fill
           sizes="280px"
           className="object-contain"
+          style={{
+            mixBlendMode: 'lighten',
+            filter: 'brightness(1.1) contrast(1.2)',
+          }}
           priority
         />
       </div>
