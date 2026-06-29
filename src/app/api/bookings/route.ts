@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
           const { Resend } = await import('resend');
           const resend = new Resend(resendKey);
           await resend.emails.send({
-            from: `${salonName} <bookings@lakshanabeauty.com>`,
+            from: `${salonName} <bookings@lakshanabeautysalon.in>`,
             to: [email],
             subject: `✅ Booking Confirmed — ${salonName}`,
             html: buildConfirmationEmail({

@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
             const salonName = settingsDoc.data()?.salonName || 'Lakshana Beauty Salon';
 
             await resend.emails.send({
-              from: `${salonName} <notifications@lakshanabeauty.com>`,
+              from: `${salonName} <notifications@lakshanabeautysalon.in>`,
               to: Array.isArray(email) ? email : [email],
               subject: title,
               html: `

@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
             const resend = new Resend(resendApiKey);
             const salonName = settings.salonName || 'Lakshana Premier Beauty Salon';
             await resend.emails.send({
-              from: `${salonName} <billing@lakshanabeauty.com>`,
+              from: `${salonName} <billing@lakshanabeautysalon.in>`,
               to: [customerEmail],
               subject: `Invoice #${invoiceNumber} — ${salonName}`,
               html: invoiceEmail({
