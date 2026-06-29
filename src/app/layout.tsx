@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   title: "Lakshana Beauty Salon | Premium Women's Salon in Nolambur, Chennai",
   description:
     'Experience luxury beauty treatments at Lakshana Beauty Salon, Nolambur. Expert hair care, skin rituals, and personalized grooming for the modern woman.',
+  icons: {
+    icon: [
+      { url: '/logo.png?v=2', sizes: 'any' },
+      { url: '/icon.png?v=2', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: '/apple-icon.png?v=2',
+    shortcut: '/logo.png?v=2',
+  },
 };
 
 export default function RootLayout({
