@@ -207,8 +207,9 @@ export async function POST(req: NextRequest) {
     if (notif.emailOnBooking !== false) {
       try {
         const resendKey = settings.resendApiKey || process.env.RESEND_API_KEY;
-        const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'admin@lakshanabeautysalon.in';
-        if (resendKey && !resendKey.includes('your_')) {
+        // Use admin notification email from settings, fallback to env variable
+        const adminEmail = settings.adminNotificationEmail || process.env.ADMIN_NOTIFICATION_EMAIL || 'admin@lakshanabeautysalon.in';
+        if (resendKey && !resendKey.includes('your_') && adminEmail) {
           const { Resend } = await import('resend');
           const resend = new Resend(resendKey);
           const serviceList = services.map((s: any) => `<li style="margin: 8px 0;">${s.name}</li>`).join('');

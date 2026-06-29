@@ -357,6 +357,24 @@ export default function SettingsPage() {
                 hint="Get your chat ID from @userinfobot or @getidsbot" />
             </div>
 
+            {/* Admin Notification Email */}
+            <div className="space-y-4">
+              <div>
+                <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">
+                  <Bell size={11} className="inline mr-1.5" />Admin Notification Email
+                </p>
+                <p className="text-white/30 text-xs mt-0.5">Email address to receive booking notifications</p>
+              </div>
+              <AdminInput 
+                label="Email Address" 
+                type="email"
+                value={settings?.adminNotificationEmail || ''}
+                onChange={e => set('adminNotificationEmail', e.target.value)}
+                placeholder="admin@lakshanabeautysalon.in"
+                hint="This email will receive notifications when customers make bookings"
+              />
+            </div>
+
             {/* Instructions */}
             <div className="rounded-xl p-4 text-xs space-y-2"
               style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.12)' }}>
