@@ -28,15 +28,14 @@ export function Footer() {
               <div style={{ isolation: 'isolate', width: '60px', height: '60px', flexShrink: 0 }}>
                 <div
                   className="relative w-full h-full rounded-full transition-transform duration-500 group-hover:scale-105"
-                  style={{ background: '#1A0D15' }}
+                  style={{ background: 'transparent' }}
                 >
                   <Image
-                    src="/logo.png"
+                    src="/logo.png?v=2"
                     alt="LP Beauty Salon Logo"
                     fill
                     sizes="60px"
-                    className="object-contain rounded-full"
-                    style={{ mixBlendMode: 'screen', filter: 'brightness(1.9) saturate(2.2) contrast(1.1)' }}
+                    className="object-contain rounded-full p-1"
                   />
                 </div>
               </div>
