@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 
-const COLORS = ['#D4447A', '#E8A0B4', '#B03060', '#7B4F62', '#AD1457'];
+const COLORS = ['#d4af37', '#e5c158', '#b8941f', '#4a5f7f', '#AD1457'];
 
 const EXPORT_TYPES = [
   { id: 'customers',    label: 'Customers',    icon: Users,      desc: 'All customer profiles with history' },
@@ -77,7 +77,7 @@ export default function ReportsPage() {
 
   const tooltipStyle = {
     background: '#1A1025',
-    border: '1px solid rgba(212,68,122,0.3)',
+    border: '1px solid rgba(212,175,55,0.3)',
     borderRadius: '12px',
     color: 'white',
     fontSize: '12px',
@@ -88,18 +88,18 @@ export default function ReportsPage() {
 
       {/* Date range + refresh */}
       <div className="flex flex-wrap items-end gap-4 p-5 rounded-2xl"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
-        <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold w-full mb-1">Date Range</p>
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold w-full mb-1">Date Range</p>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="space-y-1">
             <p className="text-white/30 text-[9px] uppercase tracking-[0.3em]">From</p>
             <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
+              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.4)]" />
           </div>
           <div className="space-y-1">
             <p className="text-white/30 text-[9px] uppercase tracking-[0.3em]">To</p>
             <input type="date" value={to} onChange={e => setTo(e.target.value)}
-              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
+              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.4)]" />
           </div>
           <button onClick={fetchChartData}
             className="h-9 w-9 rounded-xl flex items-center justify-center border border-white/10 bg-white/[0.05] text-white/40 hover:text-white hover:bg-white/10 transition-all self-end">
@@ -111,9 +111,9 @@ export default function ReportsPage() {
         {revenueData && (
           <div className="flex gap-6 ml-auto flex-wrap">
             {[
-              { label: 'Total Revenue',  value: `₹${(revenueData.totalRevenue || 0).toLocaleString('en-IN')}`,  color: '#D4447A' },
-              { label: 'Avg / Day',      value: `₹${(revenueData.avgPerDay || 0).toLocaleString('en-IN')}`,      color: '#E8A0B4' },
-              { label: 'Transactions',   value: revenueData.billCount || 0,                                       color: '#B03060' },
+              { label: 'Total Revenue',  value: `₹${(revenueData.totalRevenue || 0).toLocaleString('en-IN')}`,  color: '#d4af37' },
+              { label: 'Avg / Day',      value: `₹${(revenueData.avgPerDay || 0).toLocaleString('en-IN')}`,      color: '#e5c158' },
+              { label: 'Transactions',   value: revenueData.billCount || 0,                                       color: '#b8941f' },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className="font-light text-xl" style={{ fontFamily: "'Cormorant Garamond', serif", color: s.color }}>{s.value}</p>
@@ -126,7 +126,7 @@ export default function ReportsPage() {
 
       {/* Chart tabs */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.12)' }}>
         <div className="flex items-center gap-2 p-4 border-b border-white/[0.05]">
           {[
             { id: 'revenue',   label: 'Revenue',          icon: TrendingUp },
@@ -136,7 +136,7 @@ export default function ReportsPage() {
             <button key={tab.id} onClick={() => setActiveChart(tab.id as any)}
               className="flex items-center gap-2 px-4 h-8 rounded-lg text-xs font-medium transition-all"
               style={activeChart === tab.id
-                ? { background: 'rgba(212,68,122,0.2)', color: '#D4447A' }
+                ? { background: 'rgba(212,175,55,0.2)', color: '#d4af37' }
                 : { color: 'rgba(255,255,255,0.4)' }
               }>
               <tab.icon size={13} /> {tab.label}
@@ -147,7 +147,7 @@ export default function ReportsPage() {
         <div className="p-5">
           {chartLoading ? (
             <div className="h-64 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin" />
+              <div className="w-8 h-8 rounded-full border-2 border-[#d4af37] border-t-transparent animate-spin" />
             </div>
           ) : (
             <>
@@ -158,8 +158,8 @@ export default function ReportsPage() {
                     <AreaChart data={revenueData?.chart || []}>
                       <defs>
                         <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor="#D4447A" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="#D4447A" stopOpacity={0} />
+                          <stop offset="5%"  stopColor="#d4af37" stopOpacity={0.35} />
+                          <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -171,7 +171,7 @@ export default function ReportsPage() {
                         tickFormatter={v => `₹${v}`} />
                       <Tooltip contentStyle={tooltipStyle}
                         formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, 'Revenue']} />
-                      <Area type="monotone" dataKey="revenue" stroke="#D4447A" strokeWidth={2} fill="url(#revGrad)" />
+                      <Area type="monotone" dataKey="revenue" stroke="#d4af37" strokeWidth={2} fill="url(#revGrad)" />
                     </AreaChart>
                   </ResponsiveContainer>
                   {/* Payment breakdown */}
@@ -180,8 +180,8 @@ export default function ReportsPage() {
                       <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] w-full">Payment Methods</p>
                       {Object.entries(revenueData.paymentBreakdown).map(([method, amount]: any) => (
                         <div key={method} className="px-3 py-2 rounded-xl"
-                          style={{ background: 'rgba(212,68,122,0.08)', border: '1px solid rgba(212,68,122,0.15)' }}>
-                          <p className="text-[#D4447A] text-sm font-medium">₹{amount.toLocaleString('en-IN')}</p>
+                          style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                          <p className="text-[#d4af37] text-sm font-medium">₹{amount.toLocaleString('en-IN')}</p>
                           <p className="text-white/30 text-[10px] capitalize">{method}</p>
                         </div>
                       ))}
@@ -201,7 +201,7 @@ export default function ReportsPage() {
                       <YAxis stroke="rgba(255,255,255,0.2)"
                         tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
                       <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="count" fill="#D4447A" radius={[4, 4, 0, 0]} name="New Customers" />
+                      <Bar dataKey="count" fill="#d4af37" radius={[4, 4, 0, 0]} name="New Customers" />
                     </BarChart>
                   </ResponsiveContainer>
                   {/* Loyalty breakdown */}
@@ -230,7 +230,7 @@ export default function ReportsPage() {
                         <div className="flex items-center justify-between mb-1">
                           <p className="text-white/70 text-sm">{s.name}</p>
                           <div className="flex items-center gap-3">
-                            <span className="text-[#D4447A] text-sm font-medium">₹{(s.revenue || 0).toLocaleString('en-IN')}</span>
+                            <span className="text-[#d4af37] text-sm font-medium">₹{(s.revenue || 0).toLocaleString('en-IN')}</span>
                             <span className="text-white/30 text-xs">{s.count} times</span>
                           </div>
                         </div>
@@ -258,7 +258,7 @@ export default function ReportsPage() {
 
       {/* Export section */}
       <div>
-        <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">
+        <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">
           <FileDown size={11} className="inline mr-1.5" /> Export Reports
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -268,16 +268,16 @@ export default function ReportsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
               className="rounded-2xl p-5"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.1)' }}>
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                style={{ background: 'rgba(212,68,122,0.12)' }}>
-                <r.icon size={18} className="text-[#D4447A]" />
+                style={{ background: 'rgba(212,175,55,0.12)' }}>
+                <r.icon size={18} className="text-[#d4af37]" />
               </div>
               <p className="text-white text-sm font-medium mb-1">{r.label}</p>
               <p className="text-white/30 text-xs mb-4 leading-relaxed">{r.desc}</p>
               <button onClick={() => handleExport(r.id)} disabled={exporting === r.id}
                 className="w-full h-9 rounded-xl text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: 'rgba(212,68,122,0.15)', border: '1px solid rgba(212,68,122,0.25)', color: '#D4447A' }}>
+                style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.25)', color: '#d4af37' }}>
                 <FileDown size={12} />
                 {exporting === r.id ? 'Generating...' : 'Export Excel'}
               </button>

@@ -100,13 +100,13 @@ export function Testimonials() {
   }, [emblaApi, onSelect]);
 
   return (
-    <section id="testimonials" className="py-36 bg-[#FFF0F5] relative overflow-hidden">
+    <section id="testimonials" className="py-36 bg-[#f7f7f5] relative overflow-hidden">
       {/* Decorative rules */}
       <div className="absolute top-0 inset-x-0 premium-divider" />
 
       {/* Ambient quote watermark */}
       <div className="absolute top-16 right-12 opacity-[0.05] pointer-events-none select-none">
-        <Quote size={220} className="text-[#D4447A]" />
+        <Quote size={220} className="text-[#d4af37]" />
       </div>
 
       {/* Ambient blob */}
@@ -121,10 +121,10 @@ export function Testimonials() {
 
           <motion.h2 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: 0.1 }}
-            className="font-headline font-light text-[#2D1B25]"
+            className="font-headline font-light text-[#1f355e]"
             style={{ fontSize: 'clamp(2.8rem,6vw,5rem)' }}>
             What Our Clients{' '}
-            <span className="luxury-cursive text-[#D4447A]"
+            <span className="luxury-cursive text-[#d4af37]"
               style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3.2rem,7vw,5.5rem)' }}>
               Say
             </span>
@@ -146,20 +146,20 @@ export function Testimonials() {
                     className="max-w-3xl w-full relative"
                     style={{
                       background: 'linear-gradient(145deg, rgba(255,255,255,0.97) 0%, rgba(255,240,245,0.95) 100%)',
-                      border: '1px solid rgba(212,68,122,0.22)',
-                      boxShadow: '0 12px 50px rgba(45,27,37,0.08), 0 0 0 1px rgba(212,68,122,0.05)',
+                      border: '1px solid rgba(212,175,55,0.22)',
+                      boxShadow: '0 12px 50px rgba(31,53,94,0.08), 0 0 0 1px rgba(212,175,55,0.05)',
                       backdropFilter: 'blur(20px)',
                     }}
                   >
                     {/* Inner top shimmer */}
-                    <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4447A]/30 to-transparent" />
+                    <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
 
                     <div className="p-14 text-center space-y-8">
                       {/* Avatar */}
                       <div className="flex justify-center">
                         <div className="relative">
-                          <div className="absolute inset-0 rounded-full border-2 border-[#D4447A]/20 scale-[1.12]" />
-                          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[#D4447A]/35 shadow-[0_0_24px_rgba(212,68,122,0.18)]">
+                          <div className="absolute inset-0 rounded-full border-2 border-[#d4af37]/20 scale-[1.12]" />
+                          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[#d4af37]/35 shadow-[0_0_24px_rgba(212,175,55,0.18)]">
                             <Image src={avatar?.imageUrl || ''} alt={review.name} fill className="object-cover" />
                           </div>
                         </div>
@@ -168,19 +168,19 @@ export function Testimonials() {
                       {/* Stars */}
                       <div className="flex justify-center gap-1.5">
                         {[...Array(review.rating)].map((_, i) => (
-                          <Star key={i} size={15} fill="#D4447A" className="text-[#D4447A]" />
+                          <Star key={i} size={15} fill="#d4af37" className="text-[#d4af37]" />
                         ))}
                       </div>
 
                       {/* Quote */}
-                      <blockquote className="font-headline italic text-2xl leading-relaxed text-[#2D1B25]/90"
+                      <blockquote className="font-headline italic text-2xl leading-relaxed text-[#1f355e]/90"
                         style={{ fontSize: 'clamp(1.15rem,2.5vw,1.5rem)' }}>
                         &ldquo;{review.comment}&rdquo;
                       </blockquote>
 
                       {/* Author */}
                       <div>
-                        <h4 className="font-bold tracking-[0.3em] uppercase text-sm text-[#D4447A] mb-1">
+                        <h4 className="font-bold tracking-[0.3em] uppercase text-sm text-[#d4af37] mb-1">
                           {review.customerName}
                         </h4>
                         <p className="text-[10px] text-[#B89BAA] uppercase tracking-[0.3em]">{review.service}</p>
@@ -188,7 +188,7 @@ export function Testimonials() {
                     </div>
 
                     {/* Bottom rule */}
-                    <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4447A]/20 to-transparent" />
+                    <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/20 to-transparent" />
                   </motion.div>
                 </div>
               );
@@ -204,8 +204,8 @@ export function Testimonials() {
               onClick={() => emblaApi?.scrollTo(idx)}
               className={`transition-all duration-[400ms] rounded-full ${
                 idx === selectedIndex
-                  ? 'w-10 h-[2px] bg-[#D4447A] shadow-[0_0_8px_rgba(212,68,122,0.5)]'
-                  : 'w-4 h-[2px] bg-[#D4447A]/22 hover:bg-[#D4447A]/45'
+                  ? 'w-10 h-[2px] bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.5)]'
+                  : 'w-4 h-[2px] bg-[#d4af37]/22 hover:bg-[#d4af37]/45'
               }`}
               aria-label={`Go to review ${idx + 1}`}
             />

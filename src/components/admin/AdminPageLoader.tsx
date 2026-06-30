@@ -30,7 +30,7 @@ export function AdminPageLoader() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="fixed top-0 left-0 right-0 z-[999] h-[2px] origin-left"
-            style={{ background: 'linear-gradient(90deg, #D4447A, #E8A0B4, #D4447A)' }}
+            style={{ background: 'linear-gradient(90deg, #d4af37, #e5c158, #d4af37)' }}
           />
           {/* Subtle page overlay */}
           <motion.div

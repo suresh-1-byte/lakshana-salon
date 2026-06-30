@@ -159,7 +159,7 @@ export default function CustomersPage() {
       render: (c: Customer) => (
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0"
-            style={{ background: `linear-gradient(135deg, ${LOYALTY_COLORS[c.loyaltyStatus] || '#D4447A'}, #B03060)` }}>
+            style={{ background: `linear-gradient(135deg, ${LOYALTY_COLORS[c.loyaltyStatus] || '#d4af37'}, #b8941f)` }}>
             {c.name?.[0]?.toUpperCase()}
           </div>
           <div>
@@ -177,7 +177,7 @@ export default function CustomersPage() {
       render: (c: Customer) => (
         <span className="text-white/50 text-sm">
           {c.email
-            ? <span className="flex items-center gap-1.5"><Mail size={11} className="text-[#D4447A] shrink-0" />{c.email}</span>
+            ? <span className="flex items-center gap-1.5"><Mail size={11} className="text-[#d4af37] shrink-0" />{c.email}</span>
             : <span className="text-white/20">—</span>}
         </span>
       ),
@@ -193,7 +193,7 @@ export default function CustomersPage() {
       key: 'totalSpent' as keyof Customer,
       label: 'Total Spent',
       render: (c: Customer) => (
-        <span className="text-[#D4447A] text-sm font-medium">
+        <span className="text-[#d4af37] text-sm font-medium">
           ₹{(c.totalSpent ?? 0).toLocaleString('en-IN')}
         </span>
       ),
@@ -241,19 +241,19 @@ export default function CustomersPage() {
           <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search by name, phone or email..."
-            className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl pl-9 pr-4 text-white/70 text-sm outline-none placeholder:text-white/25 focus:border-[rgba(212,68,122,0.4)]" />
+            className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl pl-9 pr-4 text-white/70 text-sm outline-none placeholder:text-white/25 focus:border-[rgba(212,175,55,0.4)]" />
         </div>
         <button onClick={fetchCustomers}
           className="h-10 w-10 rounded-xl flex items-center justify-center text-white/40 hover:text-white border border-white/10 bg-white/[0.05] transition-all">
           <RefreshCw size={14} />
         </button>
         <button onClick={handleExport} disabled={exporting}
-          className="h-10 px-4 rounded-xl flex items-center gap-2 text-[#D4447A] text-sm border border-[rgba(212,68,122,0.3)] hover:bg-[rgba(212,68,122,0.1)] transition-all disabled:opacity-50">
+          className="h-10 px-4 rounded-xl flex items-center gap-2 text-[#d4af37] text-sm border border-[rgba(212,175,55,0.3)] hover:bg-[rgba(212,175,55,0.1)] transition-all disabled:opacity-50">
           <FileDown size={14} /> {exporting ? 'Exporting...' : 'Export'}
         </button>
         <button onClick={() => { setForm(emptyForm); setExistingWarning(''); setCreateOpen(true); }}
           className="h-10 px-5 rounded-xl flex items-center gap-2 text-white text-sm font-medium"
-          style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
           <Plus size={14} /> Add Customer
         </button>
         <span className="text-white/30 text-sm">{customers.length} total</span>
@@ -294,7 +294,7 @@ export default function CustomersPage() {
             </button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
               {submitting ? 'Creating...' : 'Create Customer'}
             </button>
           </div>
@@ -308,9 +308,9 @@ export default function CustomersPage() {
           <div className="space-y-5">
             {/* Profile header */}
             <div className="flex items-center gap-4 p-5 rounded-2xl"
-              style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.15)' }}>
+              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
               <div className="w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0"
-                style={{ background: `linear-gradient(135deg, ${LOYALTY_COLORS[selectedCustomer.loyaltyStatus] || '#D4447A'}, #B03060)`, boxShadow: '0 0 20px rgba(212,68,122,0.4)' }}>
+                style={{ background: `linear-gradient(135deg, ${LOYALTY_COLORS[selectedCustomer.loyaltyStatus] || '#d4af37'}, #b8941f)`, boxShadow: '0 0 20px rgba(212,175,55,0.4)' }}>
                 {selectedCustomer.name?.[0]?.toUpperCase()}
               </div>
               <div className="flex-1">
@@ -324,7 +324,7 @@ export default function CustomersPage() {
                 {selectedCustomer.email && <p className="text-white/40 text-sm">{selectedCustomer.email}</p>}
               </div>
               <div className="text-right">
-                <p className="text-[#D4447A] text-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                <p className="text-[#d4af37] text-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                   ₹{(selectedCustomer.totalSpent || 0).toLocaleString('en-IN')}
                 </p>
                 <p className="text-white/30 text-xs">{selectedCustomer.totalVisits || 0} visits</p>
@@ -373,7 +373,7 @@ export default function CustomersPage() {
             {/* Booking history */}
             {selectedCustomer.bookings?.length > 0 && (
               <div>
-                <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-3">Recent Bookings</p>
+                <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-3">Recent Bookings</p>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {selectedCustomer.bookings.slice(0, 5).map((b: any) => (
                     <div key={b.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl"
@@ -392,7 +392,7 @@ export default function CustomersPage() {
             {/* Bill history */}
             {selectedCustomer.bills?.length > 0 && (
               <div>
-                <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-3">Billing History</p>
+                <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-3">Billing History</p>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {selectedCustomer.bills.slice(0, 5).map((b: any) => (
                     <div key={b.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl"
@@ -401,7 +401,7 @@ export default function CustomersPage() {
                         <p className="text-white/60 text-sm font-mono">#{b.invoiceNumber}</p>
                         <p className="text-white/25 text-[11px]">{b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : ''}</p>
                       </div>
-                      <span className="text-[#D4447A] text-sm font-medium">₹{(b.total || 0).toLocaleString('en-IN')}</span>
+                      <span className="text-[#d4af37] text-sm font-medium">₹{(b.total || 0).toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
@@ -412,7 +412,7 @@ export default function CustomersPage() {
             <div className="flex gap-3 pt-1">
               <button onClick={startEdit}
                 className="flex-1 h-10 rounded-xl text-white text-sm font-medium flex items-center justify-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+                style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
                 <Edit2 size={13} /> Edit Profile
               </button>
               <button onClick={() => handleDelete(selectedCustomer.id)}
@@ -444,7 +444,7 @@ export default function CustomersPage() {
               </button>
               <button type="submit" disabled={submitting}
                 className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+                style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
                 {submitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>

@@ -13,7 +13,7 @@ interface StatCardProps {
   index?: number;
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, color = '#D4447A', trend, index = 0 }: StatCardProps) {
+export function StatCard({ title, value, subtitle, icon: Icon, color = '#d4af37', trend, index = 0 }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

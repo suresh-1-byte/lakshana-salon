@@ -155,7 +155,7 @@ export default function NotificationsPage() {
         <div className="flex gap-1 flex-wrap">
           {n.type?.map(t => (
             <span key={t} className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide"
-              style={{ background: 'rgba(212,68,122,0.15)', color: '#D4447A' }}>
+              style={{ background: 'rgba(212,175,55,0.15)', color: '#d4af37' }}>
               {t}
             </span>
           ))}
@@ -212,7 +212,7 @@ export default function NotificationsPage() {
         {[
           { label: 'Total Sent',  value: sentCount,             color: '#22C55E', icon: CheckCircle2 },
           { label: 'Scheduled',   value: scheduledCount,        color: '#EAB308', icon: Clock },
-          { label: 'Total',       value: notifications.length,  color: '#D4447A', icon: Bell },
+          { label: 'Total',       value: notifications.length,  color: '#d4af37', icon: Bell },
         ].map(s => (
           <div key={s.label} className="rounded-2xl p-5 flex items-center gap-4"
             style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${s.color}20` }}>
@@ -244,7 +244,7 @@ export default function NotificationsPage() {
         </div>
         <button onClick={() => setSendOpen(true)}
           className="h-10 px-5 rounded-xl flex items-center gap-2 text-white text-sm font-medium"
-          style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
           <Bell size={14} /> New Notification
         </button>
       </div>
@@ -257,21 +257,21 @@ export default function NotificationsPage() {
 
           {/* Templates */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A] mb-3">
+            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#d4af37] mb-3">
               <Sparkles size={10} className="inline mr-1.5" />Quick Templates
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {TEMPLATES.map(tpl => (
                 <button type="button" key={tpl.label} onClick={() => applyTemplate(tpl)}
-                  className="px-3 py-2.5 rounded-xl text-left transition-all hover:scale-[1.02] hover:bg-[rgba(212,68,122,0.12)]"
-                  style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.12)' }}>
+                  className="px-3 py-2.5 rounded-xl text-left transition-all hover:scale-[1.02] hover:bg-[rgba(212,175,55,0.12)]"
+                  style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
                   <p className="text-white/70 text-xs font-medium">{tpl.label}</p>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="h-px" style={{ background: 'rgba(212,68,122,0.1)' }} />
+          <div className="h-px" style={{ background: 'rgba(212,175,55,0.1)' }} />
 
           {/* Title + Body */}
           <AdminInput label="Title *" value={form.title}
@@ -283,17 +283,17 @@ export default function NotificationsPage() {
 
           {/* Channels */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A] mb-3">Channels</p>
+            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#d4af37] mb-3">Channels</p>
             <div className="grid grid-cols-3 gap-3">
               {CHANNEL_INFO.map(ch => (
                 <button type="button" key={ch.id} onClick={() => toggleChannel(ch.id)}
                   className="flex flex-col items-center gap-2 p-4 rounded-xl transition-all"
                   style={form.types.includes(ch.id)
-                    ? { background: 'rgba(212,68,122,0.18)', border: '1px solid rgba(212,68,122,0.45)' }
+                    ? { background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.45)' }
                     : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
                   }>
-                  <ch.icon size={20} style={{ color: form.types.includes(ch.id) ? '#D4447A' : 'rgba(255,255,255,0.3)' }} />
-                  <p className="text-xs font-medium" style={{ color: form.types.includes(ch.id) ? '#D4447A' : 'rgba(255,255,255,0.5)' }}>
+                  <ch.icon size={20} style={{ color: form.types.includes(ch.id) ? '#d4af37' : 'rgba(255,255,255,0.3)' }} />
+                  <p className="text-xs font-medium" style={{ color: form.types.includes(ch.id) ? '#d4af37' : 'rgba(255,255,255,0.5)' }}>
                     {ch.label}
                   </p>
                   <p className="text-[10px] text-white/25 text-center leading-tight">{ch.desc}</p>
@@ -325,8 +325,8 @@ export default function NotificationsPage() {
 
           {/* Preview */}
           {(form.title || form.body) && (
-            <div className="rounded-xl p-4" style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.15)' }}>
-              <p className="text-[9px] uppercase tracking-[0.3em] text-[#D4447A] font-bold mb-2">Preview</p>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              <p className="text-[9px] uppercase tracking-[0.3em] text-[#d4af37] font-bold mb-2">Preview</p>
               <p className="text-white/80 text-sm font-medium">{form.title || 'Title...'}</p>
               <p className="text-white/40 text-xs mt-1 leading-relaxed">{form.body || 'Body...'}</p>
             </div>
@@ -339,7 +339,7 @@ export default function NotificationsPage() {
             </button>
             <button type="submit" disabled={sending}
               className="flex-1 h-11 rounded-xl text-white text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
               {sending
                 ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Sending...</>
                 : form.scheduledAt
