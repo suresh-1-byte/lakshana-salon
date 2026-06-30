@@ -46,7 +46,7 @@ export function PageLoader() {
           height: 'min(280px, 60vw)',
           flexShrink: 0,
           animation: 'loader-logo-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
-          filter: 'drop-shadow(0 0 30px rgba(212,175,55,0.3))',
+          filter: 'drop-shadow(0 0 30px rgba(212,68,122,0.3))',
         }}
       >
         <Image
@@ -71,7 +71,7 @@ export function PageLoader() {
         <div style={{
           width: '160px',
           height: '1px',
-          background: 'rgba(212,175,55,0.15)',
+          background: 'rgba(212,68,122,0.15)',
           position: 'relative',
           overflow: 'hidden',
           borderRadius: '1px',
@@ -81,7 +81,7 @@ export function PageLoader() {
             top: 0,
             left: 0,
             height: '100%',
-            background: 'linear-gradient(90deg, transparent, #d4af37, #e5c158, #d4af37, transparent)',
+            background: 'linear-gradient(90deg, transparent, #D4447A, #E8A0B4, #D4447A, transparent)',
             animation: 'loader-bar-sweep 1.6s ease-in-out infinite',
             width: '60%',
           }} />
@@ -96,7 +96,7 @@ export function PageLoader() {
                 width: '5px',
                 height: '5px',
                 borderRadius: '50%',
-                background: '#d4af37',
+                background: '#D4447A',
                 animation: `loader-dot-pulse 1.4s ease-in-out ${i * 0.2}s infinite`,
               }}
             />
@@ -116,7 +116,7 @@ export function PageLoader() {
         }
         @keyframes loader-dot-pulse {
           0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
-          40%            { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px rgba(212,175,55,0.7); }
+          40%            { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px rgba(212,68,122,0.7); }
         }
       `}</style>
     </div>

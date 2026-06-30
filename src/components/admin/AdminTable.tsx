@@ -26,9 +26,9 @@ export function AdminTable<T extends { id: string }>({
 }: AdminTableProps<T>) {
   if (loading) {
     return (
-      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(212,68,122,0.12)' }}>
         <div className="p-8 text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-[#d4af37] border-t-transparent animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin mx-auto mb-3" />
           <p className="text-white/30 text-sm">Loading...</p>
         </div>
       </div>
@@ -39,18 +39,18 @@ export function AdminTable<T extends { id: string }>({
     <div className="rounded-2xl overflow-hidden"
       style={{
         background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(212,175,55,0.12)',
+        border: '1px solid rgba(212,68,122,0.12)',
         boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
       }}
     >
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr style={{ borderBottom: '1px solid rgba(212,175,55,0.1)', background: 'rgba(212,175,55,0.05)' }}>
+            <tr style={{ borderBottom: '1px solid rgba(212,68,122,0.1)', background: 'rgba(212,68,122,0.05)' }}>
               {columns.map(col => (
                 <th
                   key={String(col.key)}
-                  className={`px-4 py-3 text-left text-[9px] uppercase tracking-[0.35em] font-bold text-[#d4af37] ${col.className || ''}`}
+                  className={`px-4 py-3 text-left text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A] ${col.className || ''}`}
                 >
                   {col.label}
                 </th>
@@ -73,7 +73,7 @@ export function AdminTable<T extends { id: string }>({
                   transition={{ duration: 0.3, delay: i * 0.03 }}
                   onClick={() => onRowClick?.(row)}
                   className={`group transition-colors duration-150 ${
-                    onRowClick ? 'cursor-pointer hover:bg-[rgba(212,175,55,0.05)]' : 'hover:bg-white/[0.02]'
+                    onRowClick ? 'cursor-pointer hover:bg-[rgba(212,68,122,0.05)]' : 'hover:bg-white/[0.02]'
                   }`}
                   style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                 >

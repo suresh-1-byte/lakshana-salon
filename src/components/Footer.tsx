@@ -7,16 +7,16 @@ export function Footer() {
     <footer
       className="relative overflow-hidden pt-28 pb-12"
       style={{
-        background: 'linear-gradient(180deg, #1f355e 0%, #1A0D15 100%)',
-        borderTop: '1px solid rgba(212,175,55,0.18)',
+        background: 'linear-gradient(180deg, #2D1B25 0%, #1A0D15 100%)',
+        borderTop: '1px solid rgba(212,68,122,0.18)',
       }}
     >
       {/* Ambient blobs */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-[rgba(212,175,55,0.06)] blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-[rgba(229,193,88,0.05)] blur-[80px] pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-[rgba(212,68,122,0.06)] blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full bg-[rgba(232,160,180,0.05)] blur-[80px] pointer-events-none" />
 
       {/* Top shimmer rule */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent" />
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#D4447A]/30 to-transparent" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
@@ -99,13 +99,13 @@ export function Footer() {
 
           {/* ── Discover ──────────────────────────────── */}
           <div className="space-y-8">
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#d4af37]">Discover</h4>
+            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#D4447A]">Discover</h4>
             <ul className="space-y-4">
               {['Home', 'About', 'Services', 'Gallery', 'Contact'].map((item) => (
                 <li key={item}>
                   <Link
                     href={`#${item.toLowerCase()}`}
-                    className="nav-link text-white/55 hover:text-[#e5c158] text-[11px]"
+                    className="nav-link text-white/55 hover:text-[#E8A0B4] text-[11px]"
                   >
                     {item}
                   </Link>
@@ -116,13 +116,13 @@ export function Footer() {
 
           {/* ── Our Menu ──────────────────────────────── */}
           <div className="space-y-8">
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#d4af37]">Our Menu</h4>
+            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#D4447A]">Our Menu</h4>
             <ul className="space-y-4">
               {['Hair Styling', 'Skin Rituals', 'Nail Artistry', 'Wellness'].map((item) => (
                 <li key={item}>
                   <Link
                     href="#services"
-                    className="nav-link text-white/55 hover:text-[#e5c158] text-[11px]"
+                    className="nav-link text-white/55 hover:text-[#E8A0B4] text-[11px]"
                   >
                     {item}
                   </Link>
@@ -133,7 +133,7 @@ export function Footer() {
 
           {/* ── Location ──────────────────────────────── */}
           <div className="space-y-8">
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#d4af37]">Location</h4>
+            <h4 className="text-[9px] font-bold uppercase tracking-[0.45em] text-[#D4447A]">Location</h4>
             <ul className="space-y-6">
               {[
                 { icon: MapPin, text: 'Nolambur, Chennai, Tamil Nadu' },
@@ -141,7 +141,7 @@ export function Footer() {
                 { icon: Mail,   text: 'hello@lakshanasalon.com' },
               ].map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-3.5 text-white/55 group">
-                  <Icon size={15} strokeWidth={1.4} className="text-[#d4af37]/70 mt-0.5 shrink-0 group-hover:text-[#d4af37] transition-colors duration-300" />
+                  <Icon size={15} strokeWidth={1.4} className="text-[#D4447A]/70 mt-0.5 shrink-0 group-hover:text-[#D4447A] transition-colors duration-300" />
                   <span className="text-sm font-light leading-relaxed whitespace-pre-line">{text}</span>
                 </li>
               ))}
@@ -152,19 +152,19 @@ export function Footer() {
         {/* ── Bottom row ────────────────────────────────── */}
         <div
           className="pt-12 flex flex-col md:flex-row items-center justify-between gap-5"
-          style={{ borderTop: '1px solid rgba(212,175,55,0.10)' }}
+          style={{ borderTop: '1px solid rgba(212,68,122,0.10)' }}
         >
           <p className="text-[8.5px] uppercase tracking-[0.35em] text-white/35 font-medium">
             © 2026 Lakshana Beauty Salon. Chennai&apos;s Premium Choice.
           </p>
           <div className="flex items-center gap-1">
-            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#d4af37]/35" />
-            <div className="w-1 h-1 rounded-full bg-[#d4af37]/45" />
-            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#d4af37]/35" />
+            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#D4447A]/35" />
+            <div className="w-1 h-1 rounded-full bg-[#D4447A]/45" />
+            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#D4447A]/35" />
           </div>
           <div className="flex items-center gap-6 text-[8.5px] uppercase tracking-[0.35em] text-white/35">
-            <Link href="#" className="hover:text-[#e5c158] transition-colors duration-300">Privacy</Link>
-            <Link href="#" className="hover:text-[#e5c158] transition-colors duration-300">Terms</Link>
+            <Link href="#" className="hover:text-[#E8A0B4] transition-colors duration-300">Privacy</Link>
+            <Link href="#" className="hover:text-[#E8A0B4] transition-colors duration-300">Terms</Link>
           </div>
         </div>
       </div>
