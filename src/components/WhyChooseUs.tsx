@@ -14,18 +14,18 @@ function Crown({ size, className }: { size: number; className?: string }) {
 
 const features = [
   { title: 'Experienced Professionals', desc: 'Our trained beauty experts stay updated with the latest trends to deliver exceptional results.', icon: UserCheck,  hoverBg: '#0891B2', hoverText: '#ffffff', hoverShadow: 'rgba(8,145,178,0.45)' },
-  { title: 'Personalized Consultation', desc: 'Every client is unique. We recommend treatments that best suit your individual beauty needs.',  icon: Award,       hoverBg: '#d4af37', hoverText: '#ffffff', hoverShadow: 'rgba(212,175,55,0.45)' },
-  { title: 'Premium Quality Products',  desc: 'We use trusted, high-quality beauty products to ensure the safety and well-being of our clients.', icon: Sparkles,   hoverBg: '#d4af37', hoverText: '#ffffff', hoverShadow: 'rgba(212,175,55,0.45)' },
+  { title: 'Personalized Consultation', desc: 'Every client is unique. We recommend treatments that best suit your individual beauty needs.',  icon: Award,       hoverBg: '#D4447A', hoverText: '#ffffff', hoverShadow: 'rgba(212,68,122,0.45)' },
+  { title: 'Premium Quality Products',  desc: 'We use trusted, high-quality beauty products to ensure the safety and well-being of our clients.', icon: Sparkles,   hoverBg: '#D4447A', hoverText: '#ffffff', hoverShadow: 'rgba(212,68,122,0.45)' },
   { title: 'Hygienic Environment',      desc: 'We follow strict hygiene protocols and maintain a clean, sanitized environment for every service.', icon: ShieldCheck, hoverBg: '#16A34A', hoverText: '#ffffff', hoverShadow: 'rgba(22,163,74,0.45)' },
   { title: 'Modern Beauty Techniques',  desc: 'Equipped with the latest tools and contemporary methods for superior beauty outcomes.',          icon: Zap,         hoverBg: '#2563EB', hoverText: '#ffffff', hoverShadow: 'rgba(37,99,235,0.45)' },
   { title: 'Relaxing Ambience',         desc: 'Our thoughtfully designed salon space provides a peaceful escape from everyday stress.',        icon: Coffee,      hoverBg: '#92400E', hoverText: '#ffffff', hoverShadow: 'rgba(146,64,14,0.45)' },
-  { title: 'Affordable Luxury',         desc: 'Premium salon experiences at accessible prices, bringing elegance to every woman in Chennai.',  icon: Crown,       hoverBg: '#d4af37', hoverText: '#ffffff', hoverShadow: 'rgba(212,175,55,0.45)' },
+  { title: 'Affordable Luxury',         desc: 'Premium salon experiences at accessible prices, bringing elegance to every woman in Chennai.',  icon: Crown,       hoverBg: '#D4447A', hoverText: '#ffffff', hoverShadow: 'rgba(212,68,122,0.45)' },
   { title: 'Exceptional Service',       desc: 'Your comfort and happiness are at the heart of everything we do, ensuring a flawless experience.', icon: Smile,   hoverBg: '#EAB308', hoverText: '#07050A', hoverShadow: 'rgba(234,179,8,0.45)' },
 ];
 
 export function WhyChooseUs() {
   return (
-    <section className="py-36 bg-[#f7f7f5] relative overflow-hidden">
+    <section className="py-36 bg-[#FFF0F5] relative overflow-hidden">
       {/* Ambient blobs */}
       <div className="floating-blob w-[480px] h-[480px] top-1/4 left-0 opacity-40" />
       <div className="floating-blob floating-blob-2 w-[400px] h-[400px] bottom-0 right-0 opacity-40" />
@@ -42,17 +42,17 @@ export function WhyChooseUs() {
 
           <motion.h2 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: 0.1 }}
-            className="font-headline font-light text-[#1f355e]"
+            className="font-headline font-light text-[#2D1B25]"
             style={{ fontSize: 'clamp(2.8rem,6vw,5rem)' }}>
             Why Clients{' '}
-            <span className="luxury-cursive text-[#d4af37]"
+            <span className="luxury-cursive text-[#D4447A]"
               style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3.2rem,7vw,5.5rem)' }}>
               Love Us
             </span>
           </motion.h2>
 
           <motion.div initial={{ width: 0 }} whileInView={{ width: 80 }} viewport={{ once: true }}
-            transition={{ delay: 0.35, duration: 0.9 }} className="h-[1px] bg-[#d4af37]/35 mx-auto" />
+            transition={{ delay: 0.35, duration: 0.9 }} className="h-[1px] bg-[#D4447A]/35 mx-auto" />
         </div>
 
         {/* Feature grid */}
@@ -70,12 +70,12 @@ export function WhyChooseUs() {
                 className="glass-card group p-8 space-y-6 relative overflow-hidden cursor-default"
               >
                 {/* Corner accent */}
-                <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-[#d4af37]/0 group-hover:border-[#d4af37]/25 transition-all duration-500" />
-                <div className="absolute bottom-0 left-0 w-12 h-12 border-b border-l border-[#d4af37]/0 group-hover:border-[#d4af37]/25 transition-all duration-500" />
+                <div className="absolute top-0 right-0 w-12 h-12 border-t border-r border-[#D4447A]/0 group-hover:border-[#D4447A]/25 transition-all duration-500" />
+                <div className="absolute bottom-0 left-0 w-12 h-12 border-b border-l border-[#D4447A]/0 group-hover:border-[#D4447A]/25 transition-all duration-500" />
 
                 {/* Icon */}
                 <div
-                  className="w-14 h-14 border border-[#d4af37]/18 flex items-center justify-center text-[#d4af37] transition-all duration-500"
+                  className="w-14 h-14 border border-[#D4447A]/18 flex items-center justify-center text-[#D4447A] transition-all duration-500"
                   onMouseEnter={(e) => {
                     const el = e.currentTarget;
                     el.style.background = feature.hoverBg;
@@ -86,8 +86,8 @@ export function WhyChooseUs() {
                   onMouseLeave={(e) => {
                     const el = e.currentTarget;
                     el.style.background = '';
-                    el.style.color = '#d4af37';
-                    el.style.borderColor = 'rgba(212,175,55,0.18)';
+                    el.style.color = '#D4447A';
+                    el.style.borderColor = 'rgba(212,68,122,0.18)';
                     el.style.boxShadow = '';
                   }}
                 >
@@ -98,10 +98,10 @@ export function WhyChooseUs() {
 
                 {/* Text */}
                 <div className="space-y-3">
-                  <h3 className="font-headline text-lg font-medium text-[#1f355e] group-hover:text-[#d4af37] transition-colors duration-300">
+                  <h3 className="font-headline text-lg font-medium text-[#2D1B25] group-hover:text-[#D4447A] transition-colors duration-300">
                     {feature.title}
                   </h3>
-                  <p className="text-xs text-[#4a5f7f] leading-relaxed font-light">
+                  <p className="text-xs text-[#7B4F62] leading-relaxed font-light">
                     {feature.desc}
                   </p>
                 </div>

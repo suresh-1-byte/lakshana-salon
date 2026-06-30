@@ -109,7 +109,7 @@ export default function GalleryPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Images',    value: total,    color: '#d4af37' },
+          { label: 'Total Images',    value: total,    color: '#D4447A' },
           { label: 'Featured',        value: featured, color: '#D4AF37' },
           { label: 'Categories',      value: CATEGORIES.filter(c => images.some(i => i.category === c)).length, color: '#818CF8' },
         ].map(s => (
@@ -129,7 +129,7 @@ export default function GalleryPage() {
             <button key={cat} onClick={() => setFilter(cat)}
               className="px-3 h-8 rounded-xl text-[11px] font-medium transition-all"
               style={filter === cat
-                ? { background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37' }
+                ? { background: 'rgba(212,68,122,0.2)', border: '1px solid rgba(212,68,122,0.4)', color: '#D4447A' }
                 : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
               }>
               {cat || 'All'}
@@ -143,7 +143,7 @@ export default function GalleryPage() {
               <button key={mode} onClick={() => setViewMode(mode)}
                 className="w-9 h-9 flex items-center justify-center transition-all"
                 style={viewMode === mode
-                  ? { background: 'rgba(212,175,55,0.2)', color: '#d4af37' }
+                  ? { background: 'rgba(212,68,122,0.2)', color: '#D4447A' }
                   : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.3)' }
                 }>
                 <Icon size={14} />
@@ -156,7 +156,7 @@ export default function GalleryPage() {
           </button>
           <button onClick={() => setAddOpen(true)}
             className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium"
-            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
+            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
             <Plus size={13} /> Add Image
           </button>
         </div>
@@ -169,12 +169,12 @@ export default function GalleryPage() {
         onDrop={handleDrop}
         className="rounded-2xl border-2 border-dashed flex items-center justify-center gap-3 py-4 transition-all duration-300 cursor-pointer"
         style={{
-          borderColor: dragOver ? '#d4af37' : 'rgba(212,175,55,0.15)',
-          background: dragOver ? 'rgba(212,175,55,0.06)' : 'transparent',
+          borderColor: dragOver ? '#D4447A' : 'rgba(212,68,122,0.15)',
+          background: dragOver ? 'rgba(212,68,122,0.06)' : 'transparent',
         }}
         onClick={() => setAddOpen(true)}
       >
-        <Upload size={16} className="text-[#d4af37] opacity-60" />
+        <Upload size={16} className="text-[#D4447A] opacity-60" />
         <p className="text-white/30 text-sm">
           {dragOver ? 'Drop image URL here' : 'Click to add image or drag & drop an image URL'}
         </p>
@@ -203,12 +203,12 @@ export default function GalleryPage() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.25, delay: i * 0.02 }}
                   className="group relative aspect-square rounded-2xl overflow-hidden"
-                  style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                  style={{ border: '1px solid rgba(212,68,122,0.1)' }}>
                   <Image src={img.url} alt={img.caption || 'Gallery'} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="220px" unoptimized={img.url.startsWith('http')} />
 
                   {/* Category badge */}
                   <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide text-white"
-                    style={{ background: 'rgba(212,175,55,0.85)', backdropFilter: 'blur(8px)' }}>
+                    style={{ background: 'rgba(212,68,122,0.85)', backdropFilter: 'blur(8px)' }}>
                     {img.category}
                   </div>
 
@@ -254,7 +254,7 @@ export default function GalleryPage() {
 
       {/* List view */}
       {viewMode === 'list' && !loading && (
-        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(212,68,122,0.12)' }}>
           {images.length === 0 ? (
             <div className="text-center py-12 text-white/25 text-sm">No images yet</div>
           ) : images.map((img, i) => (
@@ -268,7 +268,7 @@ export default function GalleryPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white/70 text-sm truncate">{img.caption || 'No caption'}</p>
-                <p className="text-[#d4af37] text-[10px] uppercase tracking-wide mt-0.5">{img.category}</p>
+                <p className="text-[#D4447A] text-[10px] uppercase tracking-wide mt-0.5">{img.category}</p>
               </div>
               {img.isFeatured && (
                 <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-full"
@@ -282,7 +282,7 @@ export default function GalleryPage() {
                   {img.isFeatured ? <StarOff size={14} /> : <Star size={14} />}
                 </button>
                 <button onClick={() => openEdit(img)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-[#d4af37] hover:bg-[rgba(212,175,55,0.1)] transition-all">
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-[#D4447A] hover:bg-[rgba(212,68,122,0.1)] transition-all">
                   <Edit2 size={14} />
                 </button>
                 <button onClick={() => handleDelete(img.id)}
@@ -315,7 +315,7 @@ export default function GalleryPage() {
             style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="relative w-10 h-5 shrink-0">
               <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(p => ({ ...p, isFeatured: e.target.checked }))} className="sr-only peer" />
-              <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#d4af37] bg-white/10" />
+              <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#D4447A] bg-white/10" />
               <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200 peer-checked:translate-x-5" />
             </div>
             <div>
@@ -329,7 +329,7 @@ export default function GalleryPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
+              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
               {submitting ? 'Adding...' : 'Add to Gallery'}
             </button>
           </div>
@@ -349,7 +349,7 @@ export default function GalleryPage() {
           <label className="flex items-center gap-3 cursor-pointer">
             <div className="relative w-10 h-5 shrink-0">
               <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(p => ({ ...p, isFeatured: e.target.checked }))} className="sr-only peer" />
-              <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#d4af37] bg-white/10" />
+              <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#D4447A] bg-white/10" />
               <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200 peer-checked:translate-x-5" />
             </div>
             <span className="text-white/60 text-sm">Featured image</span>
@@ -359,7 +359,7 @@ export default function GalleryPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
+              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
               {submitting ? 'Saving...' : 'Save Changes'}
             </button>
           </div>

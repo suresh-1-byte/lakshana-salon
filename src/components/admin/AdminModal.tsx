@@ -44,16 +44,16 @@ export function AdminModal({ open, onClose, title, children, size = 'md' }: Admi
               className={`pointer-events-auto w-full ${sizeMap[size]} rounded-2xl overflow-hidden max-h-[90vh] flex flex-col`}
               style={{
                 background: 'linear-gradient(145deg, #1A1025 0%, #130D1E 100%)',
-                border: '1px solid rgba(212,175,55,0.2)',
-                boxShadow: '0 40px 120px rgba(0,0,0,0.6), 0 0 60px rgba(212,175,55,0.1)',
+                border: '1px solid rgba(212,68,122,0.2)',
+                boxShadow: '0 40px 120px rgba(0,0,0,0.6), 0 0 60px rgba(212,68,122,0.1)',
               }}
             >
               {/* Top bar */}
-              <div className="h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #d4af37, #e5c158, #d4af37)' }} />
+              <div className="h-[2px] shrink-0" style={{ background: 'linear-gradient(90deg, #D4447A, #E8A0B4, #D4447A)' }} />
 
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 shrink-0"
-                style={{ borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+                style={{ borderBottom: '1px solid rgba(212,68,122,0.1)' }}>
                 <h2 className="text-white font-light text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                   {title}
                 </h2>
