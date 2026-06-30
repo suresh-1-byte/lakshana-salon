@@ -184,7 +184,7 @@ export function NotificationPrompt() {
           animate={{ opacity: 1, y: 0,  scale: 1    }}
           exit={{    opacity: 0, y: 80, scale: 0.95 }}
           transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-          className="fixed bottom-24 sm:bottom-6 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] sm:w-full max-w-sm"
+          className="fixed bottom-24 sm:bottom-6 left-0 right-0 z-[200] mx-auto w-[90%] sm:w-full max-w-sm px-4"
           style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div
