@@ -1,3 +1,6 @@
+// Firebase Cloud Messaging Service Worker v2.0
+// Updated: 2026-06-30 - New lakshana-salon project credentials
+
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
