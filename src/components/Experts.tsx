@@ -12,27 +12,6 @@ const experts = [
     details: '8+ Years • Hair Styling, Bridal Makeup',
     bio: 'The heart and soul of Lakshana. Priya specializes in transformative bridal looks and managing high-end salon operations with effortless grace.',
   },
-  {
-    id: 'expert-divya',
-    name: 'Divya Krishnan',
-    title: 'Senior Hair Stylist',
-    details: '6+ Years • Coloring, Keratin, Balayage',
-    bio: "Divya is our expert hair artist with a sharp eye for detail. She excels in modern coloring techniques and restorative hair spa rituals.",
-  },
-  {
-    id: 'expert-meena',
-    name: 'Meena Rajesh',
-    title: 'Skin Care Specialist',
-    details: '5+ Years • Hydra Facial, Anti-Aging',
-    bio: 'Meena brings deep skincare science to every facial, dedicated to helping clients achieve their best skin through personalized ritual care.',
-  },
-  {
-    id: 'expert-kavitha',
-    name: 'Kavitha Suresh',
-    title: 'Nail Technician & Makeup Artist',
-    details: '4+ Years • Nail Art, Gel, HD Makeup',
-    bio: 'Kavitha turns every nail and face into a work of art, specializing in intricate nail designs and flawless festive makeup looks.',
-  },
 ];
 
 export function Experts() {
@@ -67,7 +46,7 @@ export function Experts() {
         </motion.div>
 
         {/* Expert Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="flex justify-center">
           {experts.map((expert, index) => {
             const img = PlaceHolderImages.find((i) => i.id === expert.id);
             const imageUrl = expert.id === 'expert-priya' ? '/image.png' : (img?.imageUrl || '');
