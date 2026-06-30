@@ -256,8 +256,8 @@ export function Hero() {
             className="px-4 py-3 backdrop-blur-sm"
             style={{
               background: 'rgba(45,27,37,0.55)',
-              border: '1px solid rgba(232,160,180,0.3)',
-              boxShadow: '0 4px 24px rgba(212,68,122,0.2)',
+              border: '1px solid rgba(229,193,88,0.3)',
+              boxShadow: '0 4px 24px rgba(212,175,55,0.2)',
             }}
           >
             <p className="font-light leading-tight text-left"
@@ -272,13 +272,13 @@ export function Hero() {
                   fontStyle: 'italic',
                   fontSize: 'clamp(1.1rem,1.9vw,1.55rem)',
                   lineHeight: 1.1,
-                  textShadow: '0 0 20px rgba(212,68,122,0.5)',
+                  textShadow: '0 0 20px rgba(212,175,55,0.5)',
                 }}>
                 luxury of self&#8209;care.
               </span>
             </p>
             <div className="mt-1.5 h-[1px]"
-              style={{ background: 'linear-gradient(90deg,#D4447A,transparent)', width: '100%' }} />
+              style={{ background: 'linear-gradient(90deg,#d4af37,transparent)', width: '100%' }} />
           </div>
         </motion.div>
 
@@ -297,11 +297,11 @@ export function Hero() {
               style={{ opacity: fadeOut, y: eyebrowY }}
               className="inline-flex items-center gap-5 mb-12 mt-6 will-change-transform"
             >
-              <span className="h-[1px] w-16 bg-gradient-to-r from-transparent to-[#E8A0B4]/60" />
-              <span className="text-[#E8A0B4] text-[9px] font-semibold tracking-[0.55em] uppercase">
+              <span className="h-[1px] w-16 bg-gradient-to-r from-transparent to-[#e5c158]/60" />
+              <span className="text-[#e5c158] text-[9px] font-semibold tracking-[0.55em] uppercase">
                 Nolambur&apos;s Finest Sanctuary
               </span>
-              <span className="h-[1px] w-16 bg-gradient-to-l from-transparent to-[#E8A0B4]/60" />
+              <span className="h-[1px] w-16 bg-gradient-to-l from-transparent to-[#e5c158]/60" />
             </motion.div>
 
             {/* CENTER headline — fades out as badge appears */}
@@ -316,7 +316,7 @@ export function Hero() {
                 className="block text-[clamp(3.2rem,8vw,6.5rem)] font-light tracking-tight text-[#FCE4EC]"
                 style={{
                   fontFamily: "'Times New Roman', Times, serif",
-                  textShadow: '0 0 80px rgba(232,160,180,0.25)',
+                  textShadow: '0 0 80px rgba(229,193,88,0.25)',
                 }}
               >
                 Experience the
@@ -355,12 +355,12 @@ export function Hero() {
               className="flex flex-col sm:flex-row gap-5 justify-center items-center will-change-transform"
             >
               <Button asChild
-                className="btn-luxury shine-on-hover bg-[#D4447A] hover:bg-[#B03060] text-white font-semibold rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase border border-[#D4447A]/60 shadow-[0_0_40px_rgba(212,68,122,0.35)]"
+                className="btn-luxury shine-on-hover bg-[#d4af37] hover:bg-[#b8941f] text-white font-semibold rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase border border-[#d4af37]/60 shadow-[0_0_40px_rgba(212,175,55,0.35)]"
               >
                 <Link href="#appointment">Book Appointment</Link>
               </Button>
               <Button asChild variant="outline"
-                className="btn-luxury bg-white/[0.06] hover:bg-white/[0.12] text-white hover:text-white border border-white/30 hover:border-[#E8A0B4]/60 rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase backdrop-blur-sm transition-all duration-500"
+                className="btn-luxury bg-white/[0.06] hover:bg-white/[0.12] text-white hover:text-white border border-white/30 hover:border-[#e5c158]/60 rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase backdrop-blur-sm transition-all duration-500"
               >
                 <Link href="#services">Explore Menu</Link>
               </Button>
@@ -377,11 +377,11 @@ export function Hero() {
           style={{ opacity: scrollHintOpacity }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-10 pointer-events-none"
         >
-          <span className="text-[8px] uppercase tracking-[0.45em] text-[#E8A0B4]/70 font-semibold">Scroll</span>
+          <span className="text-[8px] uppercase tracking-[0.45em] text-[#e5c158]/70 font-semibold">Scroll</span>
           <motion.div
             animate={{ scaleY: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
             transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-            className="w-[1px] h-16 bg-gradient-to-b from-[#E8A0B4]/80 to-transparent origin-top"
+            className="w-[1px] h-16 bg-gradient-to-b from-[#e5c158]/80 to-transparent origin-top"
           />
         </motion.div>
 

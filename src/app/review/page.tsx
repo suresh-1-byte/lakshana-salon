@@ -16,7 +16,7 @@ function InteractiveStars({ value, onChange }: { value: number; onChange: (v: nu
           onClick={() => onChange(i + 1)}
           className="transition-transform hover:scale-110 active:scale-95">
           <Star size={36}
-            className={(hovered || value) > i ? 'text-[#D4447A] fill-[#D4447A]' : 'text-[#D4447A]/20'} />
+            className={(hovered || value) > i ? 'text-[#d4af37] fill-[#d4af37]' : 'text-[#d4af37]/20'} />
         </button>
       ))}
     </div>
@@ -75,11 +75,11 @@ export default function ReviewPage() {
           className="w-full max-w-md rounded-3xl p-8 text-center"
           style={{
             background: 'rgba(255,255,255,0.95)',
-            border: '1px solid rgba(212,68,122,0.2)',
-            boxShadow: '0 20px 60px rgba(212,68,122,0.15)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            boxShadow: '0 20px 60px rgba(212,175,55,0.15)',
           }}>
           <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
             <Check size={40} className="text-white" />
           </div>
           <h2 className="text-3xl font-light mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#2D1B25' }}>
@@ -88,7 +88,7 @@ export default function ReviewPage() {
           <p className="text-[#2D1B25]/60 leading-relaxed mb-6">
             Your review has been submitted and will appear on our website once approved by our team.
           </p>
-          <p className="text-sm text-[#D4447A] font-medium">
+          <p className="text-sm text-[#d4af37] font-medium">
             We appreciate your feedback! 💕
           </p>
         </motion.div>
@@ -101,8 +101,8 @@ export default function ReviewPage() {
       style={{ background: 'linear-gradient(135deg, #FFF0F5 0%, #FFE4F0 100%)' }}>
       
       {/* Ambient decorations */}
-      <div className="fixed top-20 left-10 w-64 h-64 rounded-full bg-[#D4447A]/10 blur-[80px] pointer-events-none" />
-      <div className="fixed bottom-20 right-10 w-48 h-48 rounded-full bg-[#E8A0B4]/15 blur-[60px] pointer-events-none" />
+      <div className="fixed top-20 left-10 w-64 h-64 rounded-full bg-[#d4af37]/10 blur-[80px] pointer-events-none" />
+      <div className="fixed bottom-20 right-10 w-48 h-48 rounded-full bg-[#e5c158]/15 blur-[60px] pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -110,14 +110,14 @@ export default function ReviewPage() {
         className="w-full max-w-lg rounded-3xl overflow-hidden relative z-10"
         style={{
           background: 'rgba(255,255,255,0.97)',
-          border: '1px solid rgba(212,68,122,0.2)',
-          boxShadow: '0 20px 60px rgba(212,68,122,0.15)',
+          border: '1px solid rgba(212,175,55,0.2)',
+          boxShadow: '0 20px 60px rgba(212,175,55,0.15)',
           backdropFilter: 'blur(20px)',
         }}>
         
         {/* Header with logo */}
         <div className="relative h-32 flex flex-col items-center justify-center"
-          style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
           <Sparkles className="text-white/20 absolute top-4 right-6" size={24} />
           <div className="relative w-16 h-16 rounded-full mb-2"
             style={{ background: 'rgba(255,255,255,0.2)', padding: '4px' }}>
@@ -134,7 +134,7 @@ export default function ReviewPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div>
-            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4447A] mb-2">
+            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#d4af37] mb-2">
               Your Name *
             </label>
             <input
@@ -143,12 +143,12 @@ export default function ReviewPage() {
               onChange={e => setForm(p => ({ ...p, customerName: e.target.value }))}
               placeholder="Enter your name"
               required
-              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#D4447A]/20 focus:border-[#D4447A] focus:outline-none transition-all"
+              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#d4af37]/20 focus:border-[#d4af37] focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4447A] mb-2">
+            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#d4af37] mb-2">
               Phone Number (Optional)
             </label>
             <input
@@ -156,12 +156,12 @@ export default function ReviewPage() {
               value={form.customerPhone}
               onChange={e => setForm(p => ({ ...p, customerPhone: e.target.value }))}
               placeholder="+91..."
-              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#D4447A]/20 focus:border-[#D4447A] focus:outline-none transition-all"
+              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#d4af37]/20 focus:border-[#d4af37] focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4447A] mb-3 text-center">
+            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#d4af37] mb-3 text-center">
               Rate Your Experience *
             </label>
             <InteractiveStars value={form.rating} onChange={v => setForm(p => ({ ...p, rating: v }))} />
@@ -171,7 +171,7 @@ export default function ReviewPage() {
           </div>
 
           <div>
-            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4447A] mb-2">
+            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#d4af37] mb-2">
               Your Review *
             </label>
             <textarea
@@ -180,12 +180,12 @@ export default function ReviewPage() {
               placeholder="Tell us about your experience..."
               required
               rows={5}
-              className="w-full px-4 py-3 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#D4447A]/20 focus:border-[#D4447A] focus:outline-none transition-all resize-none leading-relaxed"
+              className="w-full px-4 py-3 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#d4af37]/20 focus:border-[#d4af37] focus:outline-none transition-all resize-none leading-relaxed"
             />
           </div>
 
           <div>
-            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#D4447A] mb-2">
+            <label className="block text-[9px] uppercase tracking-[0.3em] font-bold text-[#d4af37] mb-2">
               Service (Optional)
             </label>
             <input
@@ -193,7 +193,7 @@ export default function ReviewPage() {
               value={form.service}
               onChange={e => setForm(p => ({ ...p, service: e.target.value }))}
               placeholder="e.g. Bridal Makeup, Hair Spa..."
-              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#D4447A]/20 focus:border-[#D4447A] focus:outline-none transition-all"
+              className="w-full h-12 px-4 rounded-xl text-[#2D1B25] text-sm bg-[#FFF0F5] border border-[#d4af37]/20 focus:border-[#d4af37] focus:outline-none transition-all"
             />
           </div>
 
@@ -202,8 +202,8 @@ export default function ReviewPage() {
             disabled={loading}
             className="w-full h-14 rounded-xl text-white font-semibold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-60 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             style={{
-              background: 'linear-gradient(135deg, #D4447A, #B03060)',
-              boxShadow: '0 8px 24px rgba(212,68,122,0.3)',
+              background: 'linear-gradient(135deg, #d4af37, #b8941f)',
+              boxShadow: '0 8px 24px rgba(212,175,55,0.3)',
             }}>
             {loading ? (
               <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />

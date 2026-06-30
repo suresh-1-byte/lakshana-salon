@@ -76,10 +76,10 @@ export default function CouponsPage() {
       render: (c: Coupon) => (
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: 'rgba(212,68,122,0.15)' }}>
-            <Tag size={13} className="text-[#D4447A]" />
+            style={{ background: 'rgba(212,175,55,0.15)' }}>
+            <Tag size={13} className="text-[#d4af37]" />
           </div>
-          <span className="text-[#D4447A] text-sm font-mono font-bold">{c.code}</span>
+          <span className="text-[#d4af37] text-sm font-mono font-bold">{c.code}</span>
         </div>
       ),
     },
@@ -138,7 +138,7 @@ export default function CouponsPage() {
       <div className="flex justify-end">
         <button onClick={() => setOpen(true)}
           className="h-10 px-5 rounded-xl flex items-center gap-2 text-white text-sm font-medium"
-          style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
           <Plus size={14} /> Create Coupon
         </button>
       </div>
@@ -163,7 +163,7 @@ export default function CouponsPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
               {submitting ? 'Creating...' : 'Create Coupon'}
             </button>
           </div>

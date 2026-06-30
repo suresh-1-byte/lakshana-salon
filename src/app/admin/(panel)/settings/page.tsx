@@ -130,7 +130,7 @@ export default function SettingsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <div className="w-8 h-8 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin" />
+      <div className="w-8 h-8 rounded-full border-2 border-[#d4af37] border-t-transparent animate-spin" />
     </div>
   );
 
@@ -142,7 +142,7 @@ export default function SettingsPage() {
           <button key={t.id} onClick={() => setTab(t.id)}
             className="flex items-center gap-2 px-4 h-9 rounded-xl text-xs font-medium transition-all"
             style={tab === t.id
-              ? { background: 'rgba(212,68,122,0.2)', border: '1px solid rgba(212,68,122,0.4)', color: '#D4447A' }
+              ? { background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37' }
               : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
             }>
             <t.icon size={13} /> {t.label}
@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
       {/* Panel */}
       <div className="rounded-2xl p-6"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
+        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.12)' }}>
 
         {/* ── Salon Info ── */}
         {tab === 'salon' && settings && (
@@ -194,7 +194,7 @@ export default function SettingsPage() {
               onChange={e => set('gstNumber', e.target.value)} />
 
             <div className="pt-2">
-              <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">Social Links</p>
+              <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">Social Links</p>
               <div className="grid grid-cols-2 gap-4">
                 <AdminInput label="Instagram"
                   value={settings.socialLinks?.instagram || ''}
@@ -235,7 +235,7 @@ export default function SettingsPage() {
                         checked={!h.closed}
                         onChange={e => set(`businessHours.${day}.closed`, !e.target.checked)}
                         className="sr-only peer" />
-                      <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#D4447A] bg-white/10" />
+                      <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#d4af37] bg-white/10" />
                       <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200 peer-checked:translate-x-5" />
                     </div>
                     <span className={`text-xs font-medium ${h.closed ? 'text-red-400' : 'text-green-400'}`}>
@@ -246,11 +246,11 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-3">
                       <input type="time" value={h.open}
                         onChange={e => set(`businessHours.${day}.open`, e.target.value)}
-                        className="h-8 rounded-lg px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
+                        className="h-8 rounded-lg px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.4)]" />
                       <span className="text-white/25 text-xs">to</span>
                       <input type="time" value={h.close}
                         onChange={e => set(`businessHours.${day}.close`, e.target.value)}
-                        className="h-8 rounded-lg px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
+                        className="h-8 rounded-lg px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.4)]" />
                     </div>
                   )}
                 </div>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                     checked={settings.notificationSettings[opt.key] ?? false}
                     onChange={e => set(`notificationSettings.${opt.key}`, e.target.checked)}
                     className="sr-only peer" />
-                  <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#D4447A] bg-white/10" />
+                  <div className="w-10 h-5 rounded-full transition-all duration-200 peer-checked:bg-[#d4af37] bg-white/10" />
                   <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200 peer-checked:translate-x-5" />
                 </label>
               </div>
@@ -296,13 +296,13 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">
+                  <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">
                     <Mail size={11} className="inline mr-1.5" />Resend Email API
                   </p>
                   <p className="text-white/30 text-xs mt-0.5">Get your API key at resend.com</p>
                 </div>
                 <button onClick={testEmail} disabled={testingEmail}
-                  className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs text-[#D4447A] border border-[rgba(212,68,122,0.3)] hover:bg-[rgba(212,68,122,0.1)] transition-all disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs text-[#d4af37] border border-[rgba(212,175,55,0.3)] hover:bg-[rgba(212,175,55,0.1)] transition-all disabled:opacity-50">
                   <TestTube size={12} />
                   {testingEmail ? 'Sending...' : 'Test'}
                 </button>
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                   value={settings?.resendApiKey || ''}
                   onChange={e => set('resendApiKey', e.target.value)}
                   placeholder="re_xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full h-11 rounded-xl px-4 pr-12 text-sm text-white placeholder:text-white/25 border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.45)]"
+                  className="w-full h-11 rounded-xl px-4 pr-12 text-sm text-white placeholder:text-white/25 border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.45)]"
                 />
                 <button type="button" onClick={() => setShowResend(!showResend)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
@@ -326,13 +326,13 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">
+                  <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">
                     <MessageCircle size={11} className="inline mr-1.5" />Telegram Bot
                   </p>
                   <p className="text-white/30 text-xs mt-0.5">Create a bot via @BotFather on Telegram</p>
                 </div>
                 <button onClick={testTelegram} disabled={testingTelegram}
-                  className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs text-[#D4447A] border border-[rgba(212,68,122,0.3)] hover:bg-[rgba(212,68,122,0.1)] transition-all disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 h-8 rounded-lg text-xs text-[#d4af37] border border-[rgba(212,175,55,0.3)] hover:bg-[rgba(212,175,55,0.1)] transition-all disabled:opacity-50">
                   <TestTube size={12} />
                   {testingTelegram ? 'Sending...' : 'Test'}
                 </button>
@@ -343,7 +343,7 @@ export default function SettingsPage() {
                   value={settings?.telegramBotToken || ''}
                   onChange={e => set('telegramBotToken', e.target.value)}
                   placeholder="1234567890:ABCdefGHI..."
-                  className="w-full h-11 rounded-xl px-4 pr-12 text-sm text-white placeholder:text-white/25 border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.45)]"
+                  className="w-full h-11 rounded-xl px-4 pr-12 text-sm text-white placeholder:text-white/25 border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,175,55,0.45)]"
                 />
                 <button type="button" onClick={() => setShowBotToken(!showBotToken)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
@@ -360,7 +360,7 @@ export default function SettingsPage() {
             {/* Admin Notification Email */}
             <div className="space-y-4">
               <div>
-                <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">
+                <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">
                   <Bell size={11} className="inline mr-1.5" />Admin Notification Email
                 </p>
                 <p className="text-white/30 text-xs mt-0.5">Email address to receive booking notifications</p>
@@ -377,8 +377,8 @@ export default function SettingsPage() {
 
             {/* Instructions */}
             <div className="rounded-xl p-4 text-xs space-y-2"
-              style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.12)' }}>
-              <p className="text-[#D4447A] font-bold uppercase tracking-wide text-[9px]">Setup Instructions</p>
+              style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              <p className="text-[#d4af37] font-bold uppercase tracking-wide text-[9px]">Setup Instructions</p>
               <p className="text-white/40 leading-relaxed">
                 <strong className="text-white/60">Resend:</strong> Sign up at resend.com → API Keys → Create Key → paste above
               </p>
@@ -392,7 +392,7 @@ export default function SettingsPage() {
         {/* ── Security ── */}
         {tab === 'security' && (
           <div className="max-w-sm">
-            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-5">Change Admin Password</p>
+            <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-5">Change Admin Password</p>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <AdminInput label="Current Password" type="password"
                 value={pwdForm.current}
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                 required placeholder="Repeat new password" />
               <button type="submit" disabled={savingPwd}
                 className="h-10 px-6 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50 flex items-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+                style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
                 <Lock size={13} />
                 {savingPwd ? 'Updating...' : 'Update Password'}
               </button>
@@ -434,7 +434,7 @@ export default function SettingsPage() {
         <div className="flex justify-end">
           <button onClick={handleSave} disabled={saving}
             className="h-10 px-6 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50 flex items-center gap-2"
-            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
             <Save size={14} />
             {saving ? 'Saving...' : 'Save Settings'}
           </button>

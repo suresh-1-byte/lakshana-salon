@@ -62,14 +62,14 @@ export function SpecialOffers() {
             className="font-headline font-light text-[#2D1B25]"
             style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)' }}>
             Special{' '}
-            <span className="luxury-cursive text-[#D4447A]"
+            <span className="luxury-cursive text-[#d4af37]"
               style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3.2rem,7vw,6rem)' }}>
               Offers
             </span>
           </motion.h2>
 
           <motion.div initial={{ width: 0 }} whileInView={{ width: 80 }} viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.9 }} className="h-[1px] bg-[#D4447A]/40 mx-auto" />
+            transition={{ delay: 0.3, duration: 0.9 }} className="h-[1px] bg-[#d4af37]/40 mx-auto" />
 
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
             viewport={{ once: true }} transition={{ delay: 0.4 }}
@@ -91,27 +91,27 @@ export function SpecialOffers() {
               className="group relative flex flex-col"
               style={{
                 background: 'linear-gradient(160deg, rgba(255,255,255,0.97) 0%, rgba(255,240,245,0.95) 100%)',
-                border: offer.bestseller ? '1px solid rgba(212,68,122,0.38)' : '1px solid rgba(212,68,122,0.15)',
+                border: offer.bestseller ? '1px solid rgba(212,175,55,0.38)' : '1px solid rgba(212,175,55,0.15)',
                 boxShadow: offer.bestseller
-                  ? '0 0 40px rgba(212,68,122,0.10), 0 12px 40px rgba(45,27,37,0.10)'
+                  ? '0 0 40px rgba(212,175,55,0.10), 0 12px 40px rgba(45,27,37,0.10)'
                   : '0 8px 30px rgba(45,27,37,0.07)',
                 transition: 'all 0.55s cubic-bezier(0.22,1,0.36,1)',
               }}
             >
               {/* Bestseller badge */}
               {offer.bestseller && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#D4447A] text-white px-5 py-1 text-[8px] font-bold uppercase tracking-[0.4em] shadow-[0_0_20px_rgba(212,68,122,0.4)] z-20">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-[#d4af37] text-white px-5 py-1 text-[8px] font-bold uppercase tracking-[0.4em] shadow-[0_0_20px_rgba(212,175,55,0.4)] z-20">
                   <Sparkles size={9} />
                   Bestseller
                 </div>
               )}
 
               {/* Inner top accent line */}
-              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#D4447A]/45 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#d4af37]/45 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="p-9 pt-12 flex flex-col flex-1 space-y-7">
                 {/* Title */}
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#D4447A] leading-relaxed group-hover:text-[#2D1B25] transition-colors duration-[400ms]">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#d4af37] leading-relaxed group-hover:text-[#2D1B25] transition-colors duration-[400ms]">
                   {offer.title}
                 </h3>
 
@@ -121,10 +121,10 @@ export function SpecialOffers() {
                     ₹{offer.price}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] uppercase tracking-widest text-[#D4447A] font-semibold">
+                    <span className="text-[9px] uppercase tracking-widest text-[#d4af37] font-semibold">
                       Save ₹{offer.save}
                     </span>
-                    <div className="h-[1px] flex-1 bg-[#D4447A]/20" />
+                    <div className="h-[1px] flex-1 bg-[#d4af37]/20" />
                   </div>
                 </div>
 
@@ -135,7 +135,7 @@ export function SpecialOffers() {
 
                 {/* Validity */}
                 <div className="flex items-center gap-2.5 text-[#B89BAA]">
-                  <Clock size={11} className="text-[#D4447A]" />
+                  <Clock size={11} className="text-[#d4af37]" />
                   <span className="text-[9px] uppercase tracking-widest font-bold text-[#B89BAA]">
                     {offer.validity}
                   </span>
@@ -144,7 +144,7 @@ export function SpecialOffers() {
                 {/* CTA */}
                 <div className="pt-3 mt-auto">
                   <Button
-                    className="w-full bg-transparent border border-[#D4447A]/35 text-[#7B4F62] hover:bg-[#D4447A] hover:border-[#D4447A] hover:text-white rounded-none h-12 text-[10px] font-bold tracking-[0.32em] uppercase transition-all duration-500 btn-luxury"
+                    className="w-full bg-transparent border border-[#d4af37]/35 text-[#7B4F62] hover:bg-[#d4af37] hover:border-[#d4af37] hover:text-white rounded-none h-12 text-[10px] font-bold tracking-[0.32em] uppercase transition-all duration-500 btn-luxury"
                   >
                     Book Package
                   </Button>
@@ -152,7 +152,7 @@ export function SpecialOffers() {
               </div>
 
               {/* Bottom glow line */}
-              <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-gradient-to-r from-[#D4447A] to-transparent group-hover:w-full transition-all duration-700" />
+              <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-gradient-to-r from-[#d4af37] to-transparent group-hover:w-full transition-all duration-700" />
             </motion.div>
           ))}
         </div>

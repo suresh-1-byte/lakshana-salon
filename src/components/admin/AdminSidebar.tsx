@@ -59,15 +59,15 @@ export function AdminSidebar() {
       className="h-screen flex flex-col overflow-hidden relative z-10 shrink-0"
       style={{
         background: 'linear-gradient(180deg, #130D1E 0%, #0D0A14 100%)',
-        borderRight: '1px solid rgba(212,68,122,0.12)',
+        borderRight: '1px solid rgba(212,175,55,0.12)',
         boxShadow: '4px 0 30px rgba(0,0,0,0.4)',
       }}
     >
       {/* Logo area */}
       <div className="flex items-center gap-3 p-4 pb-3 min-h-[72px]"
-        style={{ borderBottom: '1px solid rgba(212,68,122,0.1)' }}>
+        style={{ borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
         <div className="relative w-10 h-10 shrink-0"
-          style={{ background: '#1A0D15', borderRadius: '50%', boxShadow: '0 0 20px rgba(212,68,122,0.25)' }}>
+          style={{ background: '#1A0D15', borderRadius: '50%', boxShadow: '0 0 20px rgba(212,175,55,0.25)' }}>
           <Image src="/logo.png" alt="Logo" fill className="object-contain rounded-full p-1"
             style={{ mixBlendMode: 'screen', filter: 'brightness(1.9) saturate(2.2)' }} />
         </div>
@@ -84,7 +84,7 @@ export function AdminSidebar() {
                 style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Lakshana Beauty
               </p>
-              <p className="text-[#D4447A] text-[8px] tracking-[0.35em] uppercase font-bold">Admin Panel</p>
+              <p className="text-[#d4af37] text-[8px] tracking-[0.35em] uppercase font-bold">Admin Panel</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -100,9 +100,9 @@ export function AdminSidebar() {
                 active ? 'text-white' : 'text-white/50 hover:text-white/80'
               }`}
               style={active ? {
-                background: 'linear-gradient(135deg, rgba(212,68,122,0.2), rgba(176,48,96,0.12))',
-                border: '1px solid rgba(212,68,122,0.25)',
-                boxShadow: '0 4px 16px rgba(212,68,122,0.1)',
+                background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(184,148,31,0.12))',
+                border: '1px solid rgba(212,175,55,0.25)',
+                boxShadow: '0 4px 16px rgba(212,175,55,0.1)',
               } : {}}
               title={collapsed ? label : undefined}
             >
@@ -110,10 +110,10 @@ export function AdminSidebar() {
                 <motion.div
                   layoutId="activeIndicator"
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full"
-                  style={{ background: '#D4447A' }}
+                  style={{ background: '#d4af37' }}
                 />
               )}
-              <Icon size={17} className={`shrink-0 ${active ? 'text-[#D4447A]' : ''}`} />
+              <Icon size={17} className={`shrink-0 ${active ? 'text-[#d4af37]' : ''}`} />
               <AnimatePresence>
                 {!collapsed && (
                   <motion.span
@@ -134,7 +134,7 @@ export function AdminSidebar() {
       </nav>
 
       {/* Logout */}
-      <div className="p-2 pb-4" style={{ borderTop: '1px solid rgba(212,68,122,0.1)' }}>
+      <div className="p-2 pb-4" style={{ borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <button
           onClick={handleLogout}
           disabled={loggingOut}
@@ -159,10 +159,10 @@ export function AdminSidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-[76px] w-6 h-6 rounded-full flex items-center justify-center text-[#D4447A] z-20 transition-all duration-200 hover:scale-110"
+        className="absolute -right-3 top-[76px] w-6 h-6 rounded-full flex items-center justify-center text-[#d4af37] z-20 transition-all duration-200 hover:scale-110"
         style={{
           background: '#130D1E',
-          border: '1px solid rgba(212,68,122,0.3)',
+          border: '1px solid rgba(212,175,55,0.3)',
           boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
         }}
       >

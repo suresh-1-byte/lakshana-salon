@@ -24,8 +24,8 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
   return (
     <div style={{ fontFamily: 'Georgia, serif', color: '#2D1B25', padding: '32px', maxWidth: '680px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ textAlign: 'center', borderBottom: '3px solid #D4447A', paddingBottom: '20px', marginBottom: '28px' }}>
-        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 300, color: '#D4447A', letterSpacing: '0.05em' }}>{salonName}</h1>
+      <div style={{ textAlign: 'center', borderBottom: '3px solid #d4af37', paddingBottom: '20px', marginBottom: '28px' }}>
+        <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 300, color: '#d4af37', letterSpacing: '0.05em' }}>{salonName}</h1>
         <p style={{ margin: '6px 0 0', color: '#7B4F62', fontSize: '13px' }}>Nolambur, Chennai, Tamil Nadu</p>
       </div>
 
@@ -47,7 +47,7 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
 
       {/* Bill to */}
       <div style={{ background: '#FFF0F5', borderRadius: '8px', padding: '16px', marginBottom: '24px' }}>
-        <p style={{ margin: '0 0 6px', fontSize: '10px', color: '#D4447A', letterSpacing: '0.35em', textTransform: 'uppercase' }}>Bill To</p>
+        <p style={{ margin: '0 0 6px', fontSize: '10px', color: '#d4af37', letterSpacing: '0.35em', textTransform: 'uppercase' }}>Bill To</p>
         <p style={{ margin: 0, fontWeight: 600, fontSize: '16px', color: '#2D1B25' }}>{bill.customerName}</p>
         <p style={{ margin: '2px 0 0', color: '#7B4F62', fontSize: '13px' }}>{bill.customerPhone}</p>
         {bill.customerEmail && <p style={{ margin: '2px 0 0', color: '#7B4F62', fontSize: '13px' }}>{bill.customerEmail}</p>}
@@ -56,7 +56,7 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
       {/* Items table */}
       <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px', fontSize: '13px' }}>
         <thead>
-          <tr style={{ background: '#D4447A', color: 'white' }}>
+          <tr style={{ background: '#d4af37', color: 'white' }}>
             <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 400, letterSpacing: '0.1em' }}>Service / Product</th>
             <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 400 }}>Qty</th>
             <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400 }}>Unit Price</th>
@@ -93,7 +93,7 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
               <span>Tax</span><span>₹{bill.tax.toLocaleString('en-IN')}</span>
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', color: '#D4447A', fontWeight: 700, fontSize: '18px', borderTop: '2px solid #D4447A', marginTop: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', color: '#d4af37', fontWeight: 700, fontSize: '18px', borderTop: '2px solid #d4af37', marginTop: '4px' }}>
             <span>TOTAL</span><span>₹{bill.total.toLocaleString('en-IN')}</span>
           </div>
         </div>
@@ -107,7 +107,7 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
 
       {/* Footer */}
       <div style={{ textAlign: 'center', borderTop: '1px solid #FCE4EC', paddingTop: '20px' }}>
-        <p style={{ margin: 0, color: '#D4447A', fontSize: '15px' }}>Thank you for choosing {salonName}! 💄</p>
+        <p style={{ margin: 0, color: '#d4af37', fontSize: '15px' }}>Thank you for choosing {salonName}! 💄</p>
         <p style={{ margin: '6px 0 0', color: '#B89BAA', fontSize: '12px' }}>
           Visit us again soon • Nolambur, Chennai
         </p>
@@ -205,7 +205,7 @@ export default function BillingPage() {
     {
       key: 'invoiceNumber' as keyof Bill,
       label: 'Invoice',
-      render: (b: Bill) => <span className="text-[#D4447A] text-sm font-mono font-bold">#{b.invoiceNumber}</span>,
+      render: (b: Bill) => <span className="text-[#d4af37] text-sm font-mono font-bold">#{b.invoiceNumber}</span>,
     },
     {
       key: 'customerName' as keyof Bill,
@@ -256,7 +256,7 @@ export default function BillingPage() {
       label: 'Print',
       render: (b: Bill) => (
         <button onClick={e => { e.stopPropagation(); handlePrint(b); }}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/35 hover:text-[#D4447A] hover:bg-[rgba(212,68,122,0.1)] transition-all">
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-white/35 hover:text-[#d4af37] hover:bg-[rgba(212,175,55,0.1)] transition-all">
           <Printer size={14} />
         </button>
       ),
@@ -268,7 +268,7 @@ export default function BillingPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Bills',    value: bills.length,               color: '#D4447A' },
+          { label: 'Total Bills',    value: bills.length,               color: '#d4af37' },
           { label: 'Paid',           value: paidBills,                  color: '#22C55E' },
           { label: 'Total Revenue',  value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: '#D4AF37' },
         ].map(s => (
@@ -286,19 +286,19 @@ export default function BillingPage() {
           <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Search invoice, customer, phone..."
-            className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl pl-9 pr-4 text-white/70 text-sm outline-none placeholder:text-white/25 focus:border-[rgba(212,68,122,0.4)]" />
+            className="w-full h-10 bg-white/[0.05] border border-white/10 rounded-xl pl-9 pr-4 text-white/70 text-sm outline-none placeholder:text-white/25 focus:border-[rgba(212,175,55,0.4)]" />
         </div>
         <button onClick={fetchBills}
           className="h-10 w-10 rounded-xl flex items-center justify-center text-white/40 hover:text-white border border-white/10 bg-white/[0.05]">
           <RefreshCw size={14} />
         </button>
         <button onClick={handleExport} disabled={exporting}
-          className="h-10 px-4 rounded-xl flex items-center gap-2 text-[#D4447A] text-sm border border-[rgba(212,68,122,0.3)] hover:bg-[rgba(212,68,122,0.1)] transition-all disabled:opacity-50">
+          className="h-10 px-4 rounded-xl flex items-center gap-2 text-[#d4af37] text-sm border border-[rgba(212,175,55,0.3)] hover:bg-[rgba(212,175,55,0.1)] transition-all disabled:opacity-50">
           <FileDown size={14} /> {exporting ? 'Exporting...' : 'Export'}
         </button>
         <button onClick={() => setCreateOpen(true)}
           className="h-10 px-5 rounded-xl flex items-center gap-2 text-white text-sm font-medium"
-          style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
           <Plus size={14} /> Create Bill
         </button>
       </div>
@@ -321,9 +321,9 @@ export default function BillingPage() {
           {/* Line items */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A]">Services / Products</p>
+              <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#d4af37]">Services / Products</p>
               <button type="button" onClick={addItem}
-                className="flex items-center gap-1 text-[#D4447A] text-xs hover:text-white transition-colors">
+                className="flex items-center gap-1 text-[#d4af37] text-xs hover:text-white transition-colors">
                 <Plus size={12} /> Add Row
               </button>
             </div>
@@ -387,7 +387,7 @@ export default function BillingPage() {
                   {/* Total */}
                   <div className="col-span-2 flex items-center justify-between">
                     {i === 0 && <div />}
-                    <span className="text-[#D4447A] text-sm font-semibold">
+                    <span className="text-[#d4af37] text-sm font-semibold">
                       ₹{((item.unitPrice || 0) * (item.quantity || 1) - (item.discount || 0)).toLocaleString('en-IN')}
                     </span>
                     {items.length > 1 && (
@@ -415,12 +415,12 @@ export default function BillingPage() {
           {/* Total summary */}
           <div className="flex justify-end">
             <div className="rounded-xl p-4 w-56"
-              style={{ background: 'rgba(212,68,122,0.08)', border: '1px solid rgba(212,68,122,0.2)' }}>
+              style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between text-white/40"><span>Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
                 {form.discount > 0 && <div className="flex justify-between text-green-400"><span>Discount</span><span>-₹{form.discount}</span></div>}
                 {form.tax > 0 && <div className="flex justify-between text-white/40"><span>Tax</span><span>₹{form.tax}</span></div>}
-                <div className="flex justify-between text-[#D4447A] font-bold text-lg pt-2" style={{ borderTop: '1px solid rgba(212,68,122,0.2)' }}>
+                <div className="flex justify-between text-[#d4af37] font-bold text-lg pt-2" style={{ borderTop: '1px solid rgba(212,175,55,0.2)' }}>
                   <span>TOTAL</span><span>₹{total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function BillingPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
               <Receipt size={14} />
               {submitting ? 'Creating...' : 'Create Bill'}
             </button>

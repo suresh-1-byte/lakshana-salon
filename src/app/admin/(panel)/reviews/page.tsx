@@ -83,7 +83,7 @@ export default function ReviewsPage() {
         width: 400,
         margin: 2,
         color: {
-          dark: '#D4447A',
+          dark: '#d4af37',
           light: '#FFFFFF',
         },
       });
@@ -151,7 +151,7 @@ export default function ReviewsPage() {
       render: (r: Review) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
             {r.customerName?.[0]?.toUpperCase()}
           </div>
           <div>
@@ -227,7 +227,7 @@ export default function ReviewsPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Total Reviews',  value: reviews.length,                                         color: '#D4447A' },
+          { label: 'Total Reviews',  value: reviews.length,                                         color: '#d4af37' },
           { label: 'Pending',        value: reviews.filter(r => r.status === 'pending').length,     color: '#EAB308' },
           { label: 'Approved',       value: reviews.filter(r => r.status === 'approved').length,    color: '#22C55E' },
           { label: 'Avg Rating',     value: `${avgRating} ⭐`,                                       color: '#D4AF37' },
@@ -247,7 +247,7 @@ export default function ReviewsPage() {
             <button key={f} onClick={() => setFilter(f)}
               className="px-4 h-9 rounded-xl text-xs font-medium capitalize transition-all"
               style={filter === f
-                ? { background: 'rgba(212,68,122,0.2)', border: '1px solid rgba(212,68,122,0.4)', color: '#D4447A' }
+                ? { background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37' }
                 : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
               }>
               {f === 'all' ? 'All' : f}
@@ -263,12 +263,12 @@ export default function ReviewsPage() {
             <RefreshCw size={13} />
           </button>
           <button onClick={generateQRCode}
-            className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium border border-[#D4447A]/30 hover:bg-[#D4447A]/10 transition-all">
+            className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium border border-[#d4af37]/30 hover:bg-[#d4af37]/10 transition-all">
             <QrCode size={14} /> QR Code
           </button>
           <button onClick={() => setAddOpen(true)}
             className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium"
-            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
             <Plus size={13} /> Add Review
           </button>
         </div>
@@ -287,7 +287,7 @@ export default function ReviewsPage() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A]">Rating</p>
+            <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#d4af37]">Rating</p>
             <InteractiveStars value={form.rating} onChange={v => setForm(p => ({ ...p, rating: v }))} />
           </div>
 
@@ -304,7 +304,7 @@ export default function ReviewsPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
               {submitting ? 'Adding...' : 'Add Review'}
             </button>
           </div>
@@ -315,7 +315,7 @@ export default function ReviewsPage() {
       <AdminModal open={qrOpen} onClose={() => setQrOpen(false)} title="Customer Review QR Code" size="md">
         <div className="space-y-6">
           <div className="rounded-2xl p-6 text-center"
-            style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.15)' }}>
+            style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)' }}>
             <p className="text-white/70 text-sm mb-4 leading-relaxed">
               Customers can scan this QR code to leave a review directly. The review will appear in the pending section for your approval.
             </p>
@@ -324,7 +324,7 @@ export default function ReviewsPage() {
           {qrDataUrl && (
             <div className="flex justify-center">
               <div className="rounded-2xl p-6 inline-block"
-                style={{ background: 'white', border: '2px solid #D4447A' }}>
+                style={{ background: 'white', border: '2px solid #d4af37' }}>
                 <img src={qrDataUrl} alt="Review QR Code" className="w-64 h-64" />
               </div>
             </div>
@@ -339,18 +339,18 @@ export default function ReviewsPage() {
             <button
               onClick={downloadQR}
               className="h-11 rounded-xl flex items-center justify-center gap-2 text-white text-sm font-medium"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.3)' }}>
               <Download size={14} /> Download QR
             </button>
           </div>
 
           <div className="rounded-xl p-4"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <p className="text-[9px] uppercase tracking-[0.3em] text-[#D4447A] font-bold mb-2">💡 Tips</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#d4af37] font-bold mb-2">💡 Tips</p>
             <ul className="text-white/50 text-xs space-y-1.5 leading-relaxed">
               <li>• Print and display the QR code at your reception or checkout counter</li>
               <li>• Add it to your service receipts or thank-you cards</li>
-              <li>• Share the review page link: <code className="text-[#D4447A] text-[10px]">{typeof window !== 'undefined' ? `${window.location.origin}/review` : '/review'}</code></li>
+              <li>• Share the review page link: <code className="text-[#d4af37] text-[10px]">{typeof window !== 'undefined' ? `${window.location.origin}/review` : '/review'}</code></li>
               <li>• All submissions require your approval before appearing on the website</li>
             </ul>
           </div>

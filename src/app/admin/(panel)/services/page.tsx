@@ -108,7 +108,7 @@ export default function ServicesPage() {
     {
       key: 'memberPrice' as keyof Service,
       label: 'Member Price',
-      render: (s: Service) => <span className="text-[#D4447A] text-sm font-medium">₹{s.memberPrice}</span>,
+      render: (s: Service) => <span className="text-[#d4af37] text-sm font-medium">₹{s.memberPrice}</span>,
     },
     {
       key: 'nonMemberPrice' as keyof Service,
@@ -126,7 +126,7 @@ export default function ServicesPage() {
       render: (s: Service) => (
         <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
           <button onClick={() => openEdit(s)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-[#D4447A] hover:bg-[rgba(212,68,122,0.1)] transition-all">
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-[#d4af37] hover:bg-[rgba(212,175,55,0.1)] transition-all">
             <Edit2 size={12} />
           </button>
           <button onClick={() => toggleActive(s)}
@@ -153,7 +153,7 @@ export default function ServicesPage() {
           </button>
           <button onClick={openCreate}
             className="h-10 px-5 rounded-xl flex items-center gap-2 text-white text-sm font-medium"
-            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
             <Plus size={14} /> Add Service
           </button>
         </div>
@@ -180,7 +180,7 @@ export default function ServicesPage() {
             <AdminInput label="Regular Price (₹)" type="number" min="0" value={form.nonMemberPrice} onChange={e => setForm(p => ({ ...p, nonMemberPrice: e.target.value }))} placeholder="0" />
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(p => ({ ...p, isFeatured: e.target.checked }))} className="w-4 h-4 rounded accent-[#D4447A]" />
+            <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(p => ({ ...p, isFeatured: e.target.checked }))} className="w-4 h-4 rounded accent-[#d4af37]" />
             <span className="text-white/60 text-sm">Mark as featured service</span>
           </label>
           <div className="flex gap-3 pt-2">
@@ -188,7 +188,7 @@ export default function ServicesPage() {
               className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
             <button type="submit" disabled={submitting}
               className="flex-1 h-10 rounded-xl text-white text-sm font-medium transition-all disabled:opacity-50"
-              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
+              style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
               {submitting ? 'Saving...' : editService ? 'Save Changes' : 'Create Service'}
             </button>
           </div>
