@@ -226,8 +226,6 @@ export function Hero() {
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: 'rgba(255,192,203,0.18)', mixBlendMode: 'multiply', zIndex: 1 }} />
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'rgba(200,220,255,0.08)', mixBlendMode: 'screen', zIndex: 2 }} />
-          <div className="absolute inset-0 pointer-events-none"
             style={{
               background: 'linear-gradient(180deg, rgba(45,27,37,0.4) 0%, rgba(45,27,37,0.2) 40%, rgba(45,27,37,0.65) 80%, rgba(45,27,37,0.92) 100%)',
               zIndex: 3,
