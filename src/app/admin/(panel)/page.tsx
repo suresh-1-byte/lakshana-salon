@@ -32,7 +32,7 @@ interface DashboardData {
   popularServices: { name: string; count: number }[];
 }
 
-const CHART_COLORS = ['#d4af37', '#e5c158', '#b8941f', '#7B4F62', '#AD1457'];
+const CHART_COLORS = ['#D4447A', '#E8A0B4', '#B03060', '#7B4F62', '#AD1457'];
 
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -48,23 +48,23 @@ export default function AdminDashboard() {
   const s = data?.stats;
 
   const statCards = [
-    { title: 'Total Customers',   value: s?.totalCustomers ?? 0,   subtitle: `${s?.monthlyCustomers ?? 0} this month`, icon: Users,          color: '#d4af37' },
-    { title: "Today's Customers", value: s?.todayCustomers ?? 0,   subtitle: 'Visits today',                           icon: Users,          color: '#e5c158' },
-    { title: 'Total Bookings',    value: s?.totalBookings ?? 0,    subtitle: `${s?.pendingBookings ?? 0} pending`,     icon: CalendarCheck,  color: '#b8941f' },
+    { title: 'Total Customers',   value: s?.totalCustomers ?? 0,   subtitle: `${s?.monthlyCustomers ?? 0} this month`, icon: Users,          color: '#D4447A' },
+    { title: "Today's Customers", value: s?.todayCustomers ?? 0,   subtitle: 'Visits today',                           icon: Users,          color: '#E8A0B4' },
+    { title: 'Total Bookings',    value: s?.totalBookings ?? 0,    subtitle: `${s?.pendingBookings ?? 0} pending`,     icon: CalendarCheck,  color: '#B03060' },
     { title: 'Completed',         value: s?.completedBookings ?? 0,subtitle: 'Services done',                          icon: CheckCircle,    color: '#7B4F62' },
-    { title: "Today's Revenue",   value: `₹${(s?.todayRevenue ?? 0).toLocaleString('en-IN')}`, subtitle: 'Cash + Card + UPI', icon: TrendingUp, color: '#d4af37' },
-    { title: 'Monthly Revenue',   value: `₹${(s?.monthlyRevenue ?? 0).toLocaleString('en-IN')}`, subtitle: 'This month',  icon: Receipt,       color: '#e5c158' },
-    { title: 'Total Revenue',     value: `₹${(s?.totalRevenue ?? 0).toLocaleString('en-IN')}`,   subtitle: 'All time',    icon: Receipt,       color: '#b8941f' },
+    { title: "Today's Revenue",   value: `₹${(s?.todayRevenue ?? 0).toLocaleString('en-IN')}`, subtitle: 'Cash + Card + UPI', icon: TrendingUp, color: '#D4447A' },
+    { title: 'Monthly Revenue',   value: `₹${(s?.monthlyRevenue ?? 0).toLocaleString('en-IN')}`, subtitle: 'This month',  icon: Receipt,       color: '#E8A0B4' },
+    { title: 'Total Revenue',     value: `₹${(s?.totalRevenue ?? 0).toLocaleString('en-IN')}`,   subtitle: 'All time',    icon: Receipt,       color: '#B03060' },
     { title: 'Pending Reviews',   value: s?.newReviews ?? 0,       subtitle: 'Need approval',                          icon: Star,           color: '#7B4F62' },
     { title: 'Notifications',     value: s?.notificationsSent ?? 0,subtitle: 'Sent total',                             icon: Bell,           color: '#AD1457' },
-    { title: 'Active Services',   value: s?.activeServices ?? 0,   subtitle: 'In menu',                                icon: Scissors,       color: '#d4af37' },
+    { title: 'Active Services',   value: s?.activeServices ?? 0,   subtitle: 'In menu',                                icon: Scissors,       color: '#D4447A' },
   ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-10 h-10 rounded-full border-2 border-[#d4af37] border-t-transparent animate-spin mx-auto mb-3" />
+          <div className="w-10 h-10 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin mx-auto mb-3" />
           <p className="text-white/30 text-sm">Loading dashboard...</p>
         </div>
       </div>
@@ -79,16 +79,16 @@ export default function AdminDashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl p-6 relative overflow-hidden"
         style={{
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(184,148,31,0.08) 100%)',
-          border: '1px solid rgba(212,175,55,0.2)',
+          background: 'linear-gradient(135deg, rgba(212,68,122,0.15) 0%, rgba(176,48,96,0.08) 100%)',
+          border: '1px solid rgba(212,68,122,0.2)',
         }}
       >
         <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[120px] opacity-5 pointer-events-none select-none"
-          style={{ fontFamily: "'Great Vibes', cursive", color: '#d4af37' }}>
+          style={{ fontFamily: "'Great Vibes', cursive", color: '#D4447A' }}>
           Lakshana
         </div>
         <div className="relative">
-          <p className="text-[#d4af37] text-[10px] tracking-[0.4em] uppercase font-bold mb-1">Welcome back</p>
+          <p className="text-[#D4447A] text-[10px] tracking-[0.4em] uppercase font-bold mb-1">Welcome back</p>
           <h2 className="text-white text-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Lakshana Premier Beauty Salon
           </h2>
@@ -115,11 +115,11 @@ export default function AdminDashboard() {
           className="lg:col-span-2 rounded-2xl p-5"
           style={{
             background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(212,175,55,0.12)',
+            border: '1px solid rgba(212,68,122,0.12)',
           }}
         >
           <div className="mb-4">
-            <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">Revenue Trend</p>
+            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">Revenue Trend</p>
             <p className="text-white text-lg font-light mt-0.5" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Last 7 Days
             </p>
@@ -128,8 +128,8 @@ export default function AdminDashboard() {
             <AreaChart data={data?.revenueChart || []}>
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#d4af37" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#d4af37" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#D4447A" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#D4447A" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
@@ -138,12 +138,12 @@ export default function AdminDashboard() {
                 tickFormatter={v => `₹${v}`} />
               <Tooltip
                 contentStyle={{
-                  background: '#1A1025', border: '1px solid rgba(212,175,55,0.3)',
+                  background: '#1A1025', border: '1px solid rgba(212,68,122,0.3)',
                   borderRadius: '12px', color: 'white', fontSize: '12px',
                 }}
                 formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, 'Revenue']}
               />
-              <Area type="monotone" dataKey="revenue" stroke="#d4af37" strokeWidth={2}
+              <Area type="monotone" dataKey="revenue" stroke="#D4447A" strokeWidth={2}
                 fill="url(#revenueGrad)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -157,11 +157,11 @@ export default function AdminDashboard() {
           className="rounded-2xl p-5"
           style={{
             background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(212,175,55,0.12)',
+            border: '1px solid rgba(212,68,122,0.12)',
           }}
         >
           <div className="mb-4">
-            <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">Popular</p>
+            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">Popular</p>
             <p className="text-white text-lg font-light mt-0.5" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Top Services
             </p>
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: '#1A1025', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', color: 'white', fontSize: '12px' }}
+                  contentStyle={{ background: '#1A1025', border: '1px solid rgba(212,68,122,0.3)', borderRadius: '12px', color: 'white', fontSize: '12px' }}
                 />
                 <Legend
                   formatter={(value) => <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px' }}>{value}</span>}
@@ -205,11 +205,11 @@ export default function AdminDashboard() {
         className="rounded-2xl p-5"
         style={{
           background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(212,175,55,0.12)',
+          border: '1px solid rgba(212,68,122,0.12)',
         }}
       >
         <div className="mb-4">
-          <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">Appointments</p>
+          <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">Appointments</p>
           <p className="text-white text-lg font-light mt-0.5" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Monthly Bookings — Last 6 Months
           </p>
@@ -220,9 +220,9 @@ export default function AdminDashboard() {
             <XAxis dataKey="month" stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} />
             <YAxis stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} />
             <Tooltip
-              contentStyle={{ background: '#1A1025', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', color: 'white', fontSize: '12px' }}
+              contentStyle={{ background: '#1A1025', border: '1px solid rgba(212,68,122,0.3)', borderRadius: '12px', color: 'white', fontSize: '12px' }}
             />
-            <Bar dataKey="bookings" fill="#d4af37" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="bookings" fill="#D4447A" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </motion.div>
@@ -235,15 +235,15 @@ export default function AdminDashboard() {
         className="rounded-2xl p-5"
         style={{
           background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(212,175,55,0.12)',
+          border: '1px solid rgba(212,68,122,0.12)',
         }}
       >
-        <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">Quick Actions</p>
+        <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">Quick Actions</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'New Booking',      href: '/admin/bookings',      icon: CalendarCheck, color: '#d4af37' },
-            { label: 'Add Customer',     href: '/admin/customers',     icon: Users,         color: '#e5c158' },
-            { label: 'Create Bill',      href: '/admin/billing',       icon: Receipt,       color: '#b8941f' },
+            { label: 'New Booking',      href: '/admin/bookings',      icon: CalendarCheck, color: '#D4447A' },
+            { label: 'Add Customer',     href: '/admin/customers',     icon: Users,         color: '#E8A0B4' },
+            { label: 'Create Bill',      href: '/admin/billing',       icon: Receipt,       color: '#B03060' },
             { label: 'Send Notification',href: '/admin/notifications', icon: Bell,          color: '#7B4F62' },
           ].map(action => (
             <a key={action.label} href={action.href}

@@ -33,7 +33,7 @@ export function Experts() {
           <h2 className="font-headline font-light text-[#2D1B25]"
             style={{ fontSize: 'clamp(2.8rem,6vw,5rem)' }}>
             Meet Our{' '}
-            <span className="luxury-cursive text-[#d4af37]"
+            <span className="luxury-cursive text-[#D4447A]"
               style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3.2rem,7vw,6rem)' }}>
               Experts
             </span>
@@ -62,11 +62,11 @@ export function Experts() {
                 {/* Portrait */}
                 <div className="relative w-60 h-60 flex-shrink-0">
                   {/* Decorative ring */}
-                  <div className="absolute inset-0 rounded-full border border-[#d4af37]/15 scale-[1.07] group-hover:border-[#d4af37]/45 group-hover:scale-[1.1] transition-all duration-700" />
-                  <div className="absolute inset-0 rounded-full border border-[#d4af37]/06 scale-[1.14] group-hover:border-[#d4af37]/18 transition-all duration-700" />
+                  <div className="absolute inset-0 rounded-full border border-[#D4447A]/15 scale-[1.07] group-hover:border-[#D4447A]/45 group-hover:scale-[1.1] transition-all duration-700" />
+                  <div className="absolute inset-0 rounded-full border border-[#D4447A]/06 scale-[1.14] group-hover:border-[#D4447A]/18 transition-all duration-700" />
 
-                  <div className="relative w-60 h-60 rounded-full overflow-hidden border border-[#d4af37]/25 group-hover:border-[#d4af37]/60 transition-all duration-700 shadow-[0_20px_60px_rgba(45,27,37,0.12)]"
-                    style={{ boxShadow: '0 20px 60px rgba(45,27,37,0.12), 0 0 0 0 rgba(212,175,55,0)' }}>
+                  <div className="relative w-60 h-60 rounded-full overflow-hidden border border-[#D4447A]/25 group-hover:border-[#D4447A]/60 transition-all duration-700 shadow-[0_20px_60px_rgba(45,27,37,0.12)]"
+                    style={{ boxShadow: '0 20px 60px rgba(45,27,37,0.12), 0 0 0 0 rgba(212,68,122,0)' }}>
                     <Image
                       src={imageUrl}
                       alt={expert.name}
@@ -76,19 +76,19 @@ export function Experts() {
                     {/* Inner vignette */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#FFF0F5]/20 group-hover:to-transparent transition-all duration-700" />
                     {/* Pink overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/0 to-[#d4af37]/0 group-hover:from-[#d4af37]/05 transition-all duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#D4447A]/0 to-[#D4447A]/0 group-hover:from-[#D4447A]/05 transition-all duration-700" />
                   </div>
                 </div>
 
                 {/* Info */}
                 <div className="space-y-4 px-2">
-                  <h3 className="font-headline text-xl font-medium text-[#2D1B25] group-hover:text-[#d4af37] transition-colors duration-[400ms]">
+                  <h3 className="font-headline text-xl font-medium text-[#2D1B25] group-hover:text-[#D4447A] transition-colors duration-[400ms]">
                     {expert.name}
                   </h3>
-                  <p className="text-[10px] uppercase tracking-[0.32em] font-bold text-[#7B4F62] group-hover:text-[#d4af37] transition-colors duration-[400ms]">
+                  <p className="text-[10px] uppercase tracking-[0.32em] font-bold text-[#7B4F62] group-hover:text-[#D4447A] transition-colors duration-[400ms]">
                     {expert.title}
                   </p>
-                  <div className="h-[1px] w-10 bg-[#d4af37]/30 mx-auto group-hover:w-16 group-hover:bg-[#d4af37]/70 transition-all duration-500" />
+                  <div className="h-[1px] w-10 bg-[#D4447A]/30 mx-auto group-hover:w-16 group-hover:bg-[#D4447A]/70 transition-all duration-500" />
                   <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-[#B89BAA]">
                     {expert.details}
                   </p>

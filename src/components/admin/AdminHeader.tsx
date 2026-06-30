@@ -44,7 +44,7 @@ export function AdminHeader() {
       className="h-[72px] flex items-center justify-between px-6 shrink-0"
       style={{
         background: 'rgba(13,10,20,0.95)',
-        borderBottom: '1px solid rgba(212,175,55,0.1)',
+        borderBottom: '1px solid rgba(212,68,122,0.1)',
         backdropFilter: 'blur(20px)',
       }}
     >
@@ -75,9 +75,9 @@ export function AdminHeader() {
 
         {/* Admin badge */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          style={{ background: 'rgba(212,68,122,0.12)', border: '1px solid rgba(212,68,122,0.2)' }}>
           <div className="w-6 h-6 rounded-full flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)' }}>
+            style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
             <User size={12} className="text-white" />
           </div>
           <span className="text-white/70 text-[11px] font-medium hidden sm:block">Admin</span>

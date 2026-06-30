@@ -57,10 +57,10 @@ export default function BookingCalendarPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
         <div className="lg:col-span-2 rounded-2xl overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.12)' }}>
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
           {/* Header */}
           <div className="flex items-center justify-between p-5"
-            style={{ borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ borderBottom: '1px solid rgba(212,68,122,0.1)' }}>
             <button onClick={prevMonth}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
               <ChevronLeft size={18} />
@@ -102,13 +102,13 @@ export default function BookingCalendarPage() {
                   className="relative aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all duration-200"
                   style={
                     isSelected
-                      ? { background: 'rgba(212,175,55,0.25)', border: '1px solid rgba(212,175,55,0.5)' }
+                      ? { background: 'rgba(212,68,122,0.25)', border: '1px solid rgba(212,68,122,0.5)' }
                       : isToday
-                        ? { background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }
+                        ? { background: 'rgba(212,68,122,0.1)', border: '1px solid rgba(212,68,122,0.25)' }
                         : { border: '1px solid transparent' }
                   }
                 >
-                  <span className={`text-sm font-medium ${isToday ? 'text-[#d4af37]' : isSelected ? 'text-white' : 'text-white/60'}`}>
+                  <span className={`text-sm font-medium ${isToday ? 'text-[#D4447A]' : isSelected ? 'text-white' : 'text-white/60'}`}>
                     {day}
                   </span>
                   {dayBookings.length > 0 && (
@@ -150,9 +150,9 @@ export default function BookingCalendarPage() {
 
         {/* Selected day bookings */}
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,175,55,0.12)' }}>
-          <div className="p-5" style={{ borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
-            <p className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold mb-1">
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
+          <div className="p-5" style={{ borderBottom: '1px solid rgba(212,68,122,0.1)' }}>
+            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-1">
               {selectedDate ? 'Bookings for' : 'Select a Day'}
             </p>
             {selectedDate && (
@@ -191,7 +191,7 @@ export default function BookingCalendarPage() {
                 <div className="space-y-1">
                   {b.services?.slice(0, 2).map((s, i) => (
                     <p key={i} className="text-white/50 text-xs flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#d4af37] inline-block" />
+                      <span className="w-1 h-1 rounded-full bg-[#D4447A] inline-block" />
                       {s.name}
                     </p>
                   ))}
@@ -200,7 +200,7 @@ export default function BookingCalendarPage() {
                   )}
                 </div>
                 {b.scheduledTime && (
-                  <p className="text-[#d4af37] text-[11px] mt-2 flex items-center gap-1">
+                  <p className="text-[#D4447A] text-[11px] mt-2 flex items-center gap-1">
                     <CalIcon size={10} /> {b.scheduledTime}
                   </p>
                 )}

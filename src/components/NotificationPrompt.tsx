@@ -191,14 +191,14 @@ export function NotificationPrompt() {
             className="rounded-2xl overflow-hidden shadow-2xl relative"
             style={{
               background: 'linear-gradient(145deg, rgba(45,27,37,0.97) 0%, rgba(26,13,21,0.98) 100%)',
-              border:     '1px solid rgba(212,175,55,0.3)',
-              boxShadow:  '0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(212,175,55,0.15)',
+              border:     '1px solid rgba(212,68,122,0.3)',
+              boxShadow:  '0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(212,68,122,0.15)',
               backdropFilter: 'blur(40px)',
             }}
           >
             {/* Pink top bar */}
             <div className="h-[2px]"
-              style={{ background: 'linear-gradient(90deg, #d4af37, #e5c158, #d4af37)' }} />
+              style={{ background: 'linear-gradient(90deg, #D4447A, #E8A0B4, #D4447A)' }} />
 
             {granted ? (
               /* ── Success state ── */
@@ -208,7 +208,7 @@ export function NotificationPrompt() {
                 className="p-5 flex items-center gap-4"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 20px rgba(212,175,55,0.4)' }}>
+                  style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.4)' }}>
                   <Sparkles size={18} className="text-white" />
                 </div>
                 <div>
@@ -234,11 +234,11 @@ export function NotificationPrompt() {
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                     style={{
-                      background: 'rgba(212,175,55,0.2)',
-                      border:     '1px solid rgba(212,175,55,0.35)',
+                      background: 'rgba(212,68,122,0.2)',
+                      border:     '1px solid rgba(212,68,122,0.35)',
                     }}
                   >
-                    <Sparkles size={20} className="text-[#d4af37]" />
+                    <Sparkles size={20} className="text-[#D4447A]" />
                   </div>
                   <div>
                     <p className="text-white font-medium text-sm leading-snug">
@@ -255,7 +255,7 @@ export function NotificationPrompt() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full h-10 px-4 rounded-xl text-white text-sm bg-white/5 border border-white/10 focus:border-[#d4af37] focus:outline-none mb-3"
+                  className="w-full h-10 px-4 rounded-xl text-white text-sm bg-white/5 border border-white/10 focus:border-[#D4447A] focus:outline-none mb-3"
                   style={{ background: 'rgba(255,255,255,0.03)' }}
                   autoFocus
                 />
@@ -272,8 +272,8 @@ export function NotificationPrompt() {
                     disabled={loading}
                     className="flex-1 h-9 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                     style={{
-                      background: 'linear-gradient(135deg, #d4af37, #b8941f)',
-                      boxShadow:  '0 0 20px rgba(212,175,55,0.35)',
+                      background: 'linear-gradient(135deg, #D4447A, #B03060)',
+                      boxShadow:  '0 0 20px rgba(212,68,122,0.35)',
                     }}
                   >
                     {loading ? (
@@ -302,11 +302,11 @@ export function NotificationPrompt() {
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                     style={{
-                      background: 'rgba(212,175,55,0.2)',
-                      border:     '1px solid rgba(212,175,55,0.35)',
+                      background: 'rgba(212,68,122,0.2)',
+                      border:     '1px solid rgba(212,68,122,0.35)',
                     }}
                   >
-                    <Bell size={20} className="text-[#d4af37]" />
+                    <Bell size={20} className="text-[#D4447A]" />
                   </div>
                   <div>
                     <p className="text-white font-medium text-sm leading-snug">
@@ -332,8 +332,8 @@ export function NotificationPrompt() {
                     disabled={loading}
                     className="flex-1 h-9 rounded-xl text-white text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-60 flex items-center justify-center gap-2"
                     style={{
-                      background: 'linear-gradient(135deg, #d4af37, #b8941f)',
-                      boxShadow:  '0 0 20px rgba(212,175,55,0.35)',
+                      background: 'linear-gradient(135deg, #D4447A, #B03060)',
+                      boxShadow:  '0 0 20px rgba(212,68,122,0.35)',
                     }}
                   >
                     {loading ? (
