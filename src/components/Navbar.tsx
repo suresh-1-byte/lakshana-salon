@@ -47,12 +47,12 @@ export function Navbar() {
             : 'pt-8 pb-5 bg-transparent'
         }`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
 
           {/* ── Logo + Name ───────────────────────────────── */}
-          <Link href="/" className="group flex flex-row items-center gap-3 relative">
+          <Link href="/" className="group flex flex-row items-center gap-2 md:gap-3 relative">
             {/* Circular logo — isolated blend removes black bg */}
-            <div style={{ isolation: 'isolate', width: '48px', height: '48px', flexShrink: 0 }}>
+            <div style={{ isolation: 'isolate' }} className="w-9 h-9 md:w-12 md:h-12 flex-shrink-0">
               <div
                 className="relative w-full h-full rounded-full transition-transform duration-500 group-hover:scale-105"
                 style={{ background: 'transparent' }}
@@ -61,19 +61,19 @@ export function Navbar() {
                   src="/logo.png?v=2"
                   alt="LP Beauty Salon Logo"
                   fill
-                  sizes="48px"
+                  sizes="(max-width: 768px) 36px, 48px"
                   className="object-contain rounded-full p-1"
                   priority
                 />
               </div>
             </div>
-            {/* name.png — aligned straight to logo, shifted up */}
-            <div className="relative h-16 w-64 flex-shrink-0" style={{ marginTop: '-18px' }}>
+            {/* name.png — aligned straight to logo, responsive sizing */}
+            <div className="relative h-10 w-32 md:h-16 md:w-64 flex-shrink-0" style={{ marginTop: '-12px' }}>
               <Image
                 src="/name.png"
                 alt="Lakshana"
                 fill
-                sizes="256px"
+                sizes="(max-width: 768px) 128px, 256px"
                 className="object-contain object-left"
               />
             </div>
