@@ -42,9 +42,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-[#0D0A14] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background ambient orbs */}
       <div className="absolute top-0 left-0 w-[600px] h-[600px] rounded-full opacity-20 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(212,68,122,0.3) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.3) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full opacity-15 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(176,48,96,0.3) 0%, transparent 70%)', filter: 'blur(100px)' }} />
+        style={{ background: 'radial-gradient(circle, rgba(184,148,31,0.3) 0%, transparent 70%)', filter: 'blur(100px)' }} />
 
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -57,19 +57,19 @@ export default function AdminLoginPage() {
           className="rounded-2xl overflow-hidden"
           style={{
             background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,240,245,0.03) 100%)',
-            border: '1px solid rgba(212,68,122,0.2)',
-            boxShadow: '0 40px 120px rgba(0,0,0,0.5), 0 0 60px rgba(212,68,122,0.1)',
+            border: '1px solid rgba(212,175,55,0.2)',
+            boxShadow: '0 40px 120px rgba(0,0,0,0.5), 0 0 60px rgba(212,175,55,0.1)',
             backdropFilter: 'blur(40px)',
           }}
         >
           {/* Top gradient bar */}
-          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #D4447A, #E8A0B4, #D4447A)' }} />
+          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #e5c158, #d4af37)' }} />
 
           <div className="p-10">
             {/* Logo */}
             <div className="flex flex-col items-center mb-10">
               <div className="relative w-16 h-16 mb-4"
-                style={{ background: '#1A0D15', borderRadius: '50%', boxShadow: '0 0 30px rgba(212,68,122,0.3)' }}>
+                style={{ background: '#1A0D15', borderRadius: '50%', boxShadow: '0 0 30px rgba(212,175,55,0.3)' }}>
                 <Image src="/logo.png" alt="Logo" fill className="object-contain rounded-full p-1"
                   style={{ mixBlendMode: 'screen', filter: 'brightness(1.9) saturate(2.2)' }} />
               </div>
@@ -77,16 +77,16 @@ export default function AdminLoginPage() {
                 Lakshana Beauty
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <Sparkles size={10} className="text-[#D4447A]" />
-                <span className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">Admin Portal</span>
-                <Sparkles size={10} className="text-[#D4447A]" />
+                <Sparkles size={10} className="text-[#d4af37]" />
+                <span className="text-[#d4af37] text-[9px] tracking-[0.4em] uppercase font-bold">Admin Portal</span>
+                <Sparkles size={10} className="text-[#d4af37]" />
               </div>
             </div>
 
             {/* Form */}
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.35em] font-bold text-[#D4447A]">Email</label>
+                <label className="text-[10px] uppercase tracking-[0.35em] font-bold text-[#d4af37]">Email</label>
                 <div className="relative">
                   <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#B89BAA]" />
                   <input
@@ -95,13 +95,13 @@ export default function AdminLoginPage() {
                     onChange={e => setEmail(e.target.value)}
                     required
                     placeholder="admin@example.com"
-                    className="w-full h-12 bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-4 text-white placeholder:text-white/30 text-sm outline-none transition-all duration-300 focus:border-[rgba(212,68,122,0.5)] focus:bg-white/[0.08]"
+                    className="w-full h-12 bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-4 text-white placeholder:text-white/30 text-sm outline-none transition-all duration-300 focus:border-[rgba(212,175,55,0.5)] focus:bg-white/[0.08]"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.35em] font-bold text-[#D4447A]">Password</label>
+                <label className="text-[10px] uppercase tracking-[0.35em] font-bold text-[#d4af37]">Password</label>
                 <div className="relative">
                   <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#B89BAA]" />
                   <input
@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
                     onChange={e => setPassword(e.target.value)}
                     required
                     placeholder="••••••••"
-                    className="w-full h-12 bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-12 text-white placeholder:text-white/30 text-sm outline-none transition-all duration-300 focus:border-[rgba(212,68,122,0.5)] focus:bg-white/[0.08]"
+                    className="w-full h-12 bg-white/[0.06] border border-white/10 rounded-xl pl-11 pr-12 text-white placeholder:text-white/30 text-sm outline-none transition-all duration-300 focus:border-[rgba(212,175,55,0.5)] focus:bg-white/[0.08]"
                   />
                   <button type="button" onClick={() => setShowPwd(!showPwd)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[#B89BAA] hover:text-white transition-colors">
@@ -133,7 +133,7 @@ export default function AdminLoginPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full h-12 rounded-xl text-white text-[11px] font-bold uppercase tracking-[0.3em] transition-all duration-400 disabled:opacity-50 relative overflow-hidden"
-                style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 30px rgba(212,68,122,0.4)' }}
+                style={{ background: 'linear-gradient(135deg, #d4af37, #b8941f)', boxShadow: '0 0 30px rgba(212,175,55,0.4)' }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">

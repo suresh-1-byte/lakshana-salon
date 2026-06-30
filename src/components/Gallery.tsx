@@ -95,10 +95,10 @@ export function Gallery() {
 
           <motion.h2 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ delay: 0.1 }}
-            className="font-headline font-light text-[#2D1B25]"
+            className="font-headline font-light text-[#1f355e]"
             style={{ fontSize: 'clamp(2.8rem,6.5vw,5.5rem)' }}>
             World of{' '}
-            <span className="luxury-cursive text-[#D4447A]"
+            <span className="luxury-cursive text-[#d4af37]"
               style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3.2rem,7.5vw,6.5rem)' }}>
               Transformation
             </span>
@@ -107,11 +107,11 @@ export function Gallery() {
           <motion.div initial={{ width: 0 }} whileInView={{ width: 120 }}
             viewport={{ once: true }} transition={{ delay: 0.3, duration: 0.9 }}
             className="h-[2px] mx-auto rounded-full"
-            style={{ background: 'linear-gradient(90deg,transparent,#D4447A,#E8A0B4,transparent)' }} />
+            style={{ background: 'linear-gradient(90deg,transparent,#d4af37,#e5c158,transparent)' }} />
 
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
             viewport={{ once: true }} transition={{ delay: 0.4 }}
-            className="text-[#7B4F62] font-light max-w-xl mx-auto leading-relaxed">
+            className="text-[#4a5f7f] font-light max-w-xl mx-auto leading-relaxed">
             Every transformation tells a story. Explore real results from our salon.
           </motion.p>
         </div>
@@ -126,13 +126,13 @@ export function Gallery() {
               onClick={() => setActive(cat)}
               className={`px-8 py-3 text-[9px] tracking-[0.35em] font-bold uppercase transition-all duration-400 rounded-full ${
                 active === cat
-                  ? 'text-white shadow-[0_4px_20px_rgba(212,68,122,0.4)] scale-105'
-                  : 'text-[#7B4F62] hover:text-[#D4447A]'
+                  ? 'text-white shadow-[0_4px_20px_rgba(212,175,55,0.4)] scale-105'
+                  : 'text-[#4a5f7f] hover:text-[#d4af37]'
               }`}
               style={
                 active === cat
-                  ? { background: 'linear-gradient(135deg,#D4447A,#E8A0B4)', border: 'none' }
-                  : { background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(212,68,122,0.18)' }
+                  ? { background: 'linear-gradient(135deg,#d4af37,#e5c158)', border: 'none' }
+                  : { background: 'rgba(255,255,255,0.9)', border: '1px solid rgba(212,175,55,0.18)' }
               }
             >
               {cat}
@@ -152,7 +152,7 @@ export function Gallery() {
                 exit={{ opacity: 0, scale: 0.93 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className={`relative group overflow-hidden rounded-2xl ${item.span}`}
-                style={{ border: '1px solid rgba(212,68,122,0.10)' }}
+                style={{ border: '1px solid rgba(212,175,55,0.10)' }}
               >
                 <Image
                   src={item.src}
@@ -162,13 +162,13 @@ export function Gallery() {
                 />
 
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2D1B25]/80 via-[#2D1B25]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1f355e]/80 via-[#1f355e]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
                 {/* Category pill — always visible */}
                 <div className="absolute top-4 left-4 z-20">
                   <span
                     className="text-[9px] font-bold uppercase tracking-[0.32em] px-3 py-1.5 rounded-full text-white"
-                    style={{ background: 'rgba(212,68,122,0.75)', backdropFilter: 'blur(8px)' }}
+                    style={{ background: 'rgba(212,175,55,0.75)', backdropFilter: 'blur(8px)' }}
                   >
                     {item.category}
                   </span>
@@ -181,8 +181,8 @@ export function Gallery() {
                 </div>
 
                 {/* Corner accents */}
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#D4447A]/0 group-hover:border-[#D4447A]/60 transition-all duration-500 z-20 rounded-tr-2xl" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#D4447A]/0 group-hover:border-[#D4447A]/60 transition-all duration-500 z-20 rounded-bl-2xl" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#d4af37]/0 group-hover:border-[#d4af37]/60 transition-all duration-500 z-20 rounded-tr-2xl" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#d4af37]/0 group-hover:border-[#d4af37]/60 transition-all duration-500 z-20 rounded-bl-2xl" />
               </motion.div>
             ))}
           </AnimatePresence>

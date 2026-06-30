@@ -7,14 +7,14 @@ import type { ActivityLog } from '@/types/admin';
 
 const ACTION_COLORS: Record<string, string> = {
   admin_login:       '#22C55E',
-  customer_create:   '#D4447A',
-  customer_update:   '#E8A0B4',
+  customer_create:   '#d4af37',
+  customer_update:   '#e5c158',
   customer_delete:   '#EF4444',
   billing_create:    '#D4AF37',
   gallery_add:       '#818CF8',
   gallery_delete:    '#EF4444',
-  service_create:    '#D4447A',
-  service_update:    '#E8A0B4',
+  service_create:    '#d4af37',
+  service_update:    '#e5c158',
   service_delete:    '#EF4444',
   notification_sent: '#22C55E',
   coupon_create:     '#D4AF37',
@@ -45,7 +45,7 @@ export default function ActivityPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-48">
-        <div className="w-8 h-8 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#d4af37] border-t-transparent animate-spin" />
       </div>
     );
   }
