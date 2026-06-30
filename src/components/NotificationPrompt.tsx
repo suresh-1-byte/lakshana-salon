@@ -6,36 +6,47 @@ import { Bell, X, Sparkles } from 'lucide-react';
 
 async function registerAndGetToken(): Promise<string | null> {
   try {
-    // 0. FORCE unregister old service workers (fixes stale cache issue)
+    console.log('[FCM] Starting token registration...');
+    
+    // 0. FORCE unregister ALL old service workers (fixes stale cache issue)
     const existingRegs = await navigator.serviceWorker.getRegistrations();
+    console.log('[FCM] Found', existingRegs.length, 'existing service worker(s)');
+    
     for (const reg of existingRegs) {
-      console.log('[FCM] Unregistering old service worker...');
+      console.log('[FCM] Unregistering old service worker:', reg.scope);
       await reg.unregister();
     }
 
-    // Small delay to ensure cleanup
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Delay to ensure cleanup completes
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-    // 1. Register NEW service worker with updateViaCache to prevent caching
-    const swReg = await navigator.serviceWorker.register(
-      '/firebase-messaging-sw.js?v=' + Date.now(), // Cache bust with timestamp
-      { 
-        scope: '/',
-        updateViaCache: 'none' // Prevent aggressive caching
-      }
-    );
+    // 1. Register NEW service worker with cache-busting and no cache
+    const swUrl = '/firebase-messaging-sw.js?v=' + Date.now();
+    console.log('[FCM] Registering new service worker:', swUrl);
+    
+    const swReg = await navigator.serviceWorker.register(swUrl, { 
+      scope: '/',
+      updateViaCache: 'none' // Prevent aggressive caching
+    });
 
     // Force immediate update check
+    console.log('[FCM] Forcing service worker update...');
     await swReg.update();
 
-    // 2. Wait for SW to become active (handles first-install delay)
+    // 2. Wait for SW to become active
     await new Promise<void>((resolve) => {
-      if (swReg.active) { resolve(); return; }
+      if (swReg.active) { 
+        console.log('[FCM] Service worker already active');
+        resolve(); 
+        return; 
+      }
 
       // SW is installing or waiting — listen for activation
       const sw = swReg.installing || swReg.waiting;
       if (sw) {
+        console.log('[FCM] Waiting for service worker to activate, state:', sw.state);
         sw.addEventListener('statechange', function onState() {
+          console.log('[FCM] Service worker state changed to:', sw.state);
           if (sw.state === 'activated') {
             sw.removeEventListener('statechange', onState);
             resolve();
@@ -43,24 +54,44 @@ async function registerAndGetToken(): Promise<string | null> {
         });
       } else {
         // Already registered but not yet controlling — use ready
-        navigator.serviceWorker.ready.then(() => resolve());
+        console.log('[FCM] Waiting for service worker ready...');
+        navigator.serviceWorker.ready.then(() => {
+          console.log('[FCM] Service worker ready');
+          resolve();
+        });
       }
     });
 
-    // 3. Get FCM token
+    // 3. Get FCM token from Firebase Messaging
+    console.log('[FCM] Getting Firebase Messaging instance...');
     const { getFirebaseMessaging } = await import('@/lib/firebase');
     const { getToken }             = await import('firebase/messaging');
     const messaging                = await getFirebaseMessaging();
-    if (!messaging) return null;
+    
+    if (!messaging) {
+      console.error('[FCM] Firebase Messaging not supported in this browser');
+      return null;
+    }
 
+    console.log('[FCM] Requesting FCM token with VAPID key...');
     const token = await getToken(messaging, {
       vapidKey:                  process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
       serviceWorkerRegistration: swReg,
     });
 
+    if (token) {
+      console.log('[FCM] Token obtained successfully:', token.substring(0, 30) + '...');
+    } else {
+      console.warn('[FCM] Failed to obtain token');
+    }
+
     return token || null;
   } catch (err) {
-    console.error('SW/Token registration error:', err);
+    console.error('[FCM] SW/Token registration error:', err);
+    if (err instanceof Error) {
+      console.error('[FCM] Error message:', err.message);
+      console.error('[FCM] Error stack:', err.stack);
+    }
     return null;
   }
 }
