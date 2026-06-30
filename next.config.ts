@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Force rebuild: updated for QR review system
 };
 
 export default nextConfig;
