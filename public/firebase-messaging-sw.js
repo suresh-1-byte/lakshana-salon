@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:            'AIzaSyAH8i8dTKxQA6y0PB2_k9aOzO7RROvnpkI',
-  authDomain:        'lakshana-beauty-5ff20.firebaseapp.com',
-  projectId:         'lakshana-beauty-5ff20',
-  storageBucket:     'lakshana-beauty-5ff20.firebasestorage.app',
-  messagingSenderId: '206527136985',
-  appId:             '1:206527136985:web:384da17fe3d81aeaa76ac8',
+  apiKey:            'AIzaSyCQ9Kekxf5dUyxfojnTviIr0UL7biWdgFI',
+  authDomain:        'lakshana-salon.firebaseapp.com',
+  projectId:         'lakshana-salon',
+  storageBucket:     'lakshana-salon.firebasestorage.app',
+  messagingSenderId: '447885307542',
+  appId:             '1:447885307542:web:331f7f282d387c92e3dcb7',
 });
 
 const messaging = firebase.messaging();
