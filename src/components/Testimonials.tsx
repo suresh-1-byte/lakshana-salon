@@ -7,33 +7,81 @@ import { Star, Quote } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 
-const reviews = [
+interface Review {
+  id: string;
+  customerName: string;
+  rating: number;
+  comment: string;
+  service?: string;
+  isFeatured?: boolean;
+  createdAt?: string;
+}
+
+const fallbackReviews = [
   {
-    name: 'Sarah J.',
-    role: 'Loyal Client',
-    text: 'The service was exceptional and the entire experience felt luxurious. From the moment I walked in, I was treated like royalty. My bridal makeup was exactly what I dreamed of.',
+    id: '1',
+    customerName: 'Sarah J.',
+    service: 'Loyal Client',
+    comment: 'The service was exceptional and the entire experience felt luxurious. From the moment I walked in, I was treated like royalty. My bridal makeup was exactly what I dreamed of.',
     rating: 5,
     avatarId: 'client-1',
   },
   {
-    name: 'Emily Davis',
-    role: 'Fashion Consultant',
-    text: "Truly the best salon in the city. The hair spa treatments are rejuvenating and the stylists are world-class. I won't go anywhere else for my hair needs.",
+    id: '2',
+    customerName: 'Emily Davis',
+    service: 'Fashion Consultant',
+    comment: "Truly the best salon in the city. The hair spa treatments are rejuvenating and the stylists are world-class. I won't go anywhere else for my hair needs.",
     rating: 5,
     avatarId: 'client-2',
   },
   {
-    name: 'Jessica M.',
-    role: 'Regular Customer',
-    text: 'A haven of tranquility. Their skin treatments have completely transformed my complexion. Professional, hygienic, and incredibly skilled team.',
+    id: '3',
+    customerName: 'Jessica M.',
+    service: 'Regular Customer',
+    comment: 'A haven of tranquility. Their skin treatments have completely transformed my complexion. Professional, hygienic, and incredibly skilled team.',
     rating: 5,
     avatarId: 'client-1',
   },
 ];
 
 export function Testimonials() {
+  const [reviews, setReviews] = useState<any[]>(fallbackReviews);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Fetch approved reviews from API
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch('/api/cms/reviews');
+        const data = await res.json();
+        if (data.success && data.reviews?.length > 0) {
+          // Map database reviews to display format
+          const mappedReviews = data.reviews
+            .filter((r: Review) => r.isFeatured) // Only featured reviews
+            .slice(0, 10) // Limit to 10 reviews
+            .map((r: Review, idx: number) => ({
+              id: r.id,
+              customerName: r.customerName,
+              service: r.service || 'Valued Customer',
+              comment: r.comment,
+              rating: r.rating,
+              avatarId: idx % 2 === 0 ? 'client-1' : 'client-2',
+            }));
+          
+          // Use fetched reviews if available, otherwise fallback
+          if (mappedReviews.length > 0) {
+            setReviews(mappedReviews);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch reviews:', err);
+        // Keep fallback reviews on error
+      }
+    };
+
+    fetchReviews();
+  }, []);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -127,15 +175,15 @@ export function Testimonials() {
                       {/* Quote */}
                       <blockquote className="font-headline italic text-2xl leading-relaxed text-[#2D1B25]/90"
                         style={{ fontSize: 'clamp(1.15rem,2.5vw,1.5rem)' }}>
-                        &ldquo;{review.text}&rdquo;
+                        &ldquo;{review.comment}&rdquo;
                       </blockquote>
 
                       {/* Author */}
                       <div>
                         <h4 className="font-bold tracking-[0.3em] uppercase text-sm text-[#D4447A] mb-1">
-                          {review.name}
+                          {review.customerName}
                         </h4>
-                        <p className="text-[10px] text-[#B89BAA] uppercase tracking-[0.3em]">{review.role}</p>
+                        <p className="text-[10px] text-[#B89BAA] uppercase tracking-[0.3em]">{review.service}</p>
                       </div>
                     </div>
 

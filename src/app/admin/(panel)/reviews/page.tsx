@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Check, X, Trash2, Crown, Plus, RefreshCw, MessageSquare } from 'lucide-react';
+import { Star, Check, X, Trash2, Crown, Plus, RefreshCw, MessageSquare, QrCode, Download, ExternalLink } from 'lucide-react';
 import { AdminTable } from '@/components/admin/AdminTable';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { AdminInput, AdminTextarea, AdminSelect } from '@/components/admin/AdminInput';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import type { Review } from '@/types/admin';
 import { useToast } from '@/hooks/use-toast';
+import QRCode from 'qrcode';
 
 function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
@@ -44,6 +45,7 @@ const SOURCE_OPTS = [
   { value: 'website',   label: 'Website' },
   { value: 'google',    label: 'Google' },
   { value: 'instagram', label: 'Instagram' },
+  { value: 'qr_scan',   label: 'QR Code Scan' },
   { value: 'manual',    label: 'Manual Entry' },
 ];
 
@@ -53,7 +55,10 @@ export default function ReviewsPage() {
   const [loading, setLoading]   = useState(true);
   const [filter, setFilter]     = useState('all');
   const [addOpen, setAddOpen]   = useState(false);
+  const [qrOpen, setQrOpen]     = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [form, setForm] = useState({
     customerName: '', customerPhone: '', rating: 5,
@@ -69,6 +74,37 @@ export default function ReviewsPage() {
   };
 
   useEffect(() => { fetchReviews(); }, []);
+
+  // Generate QR Code
+  const generateQRCode = async () => {
+    const reviewUrl = `${window.location.origin}/review`;
+    try {
+      const dataUrl = await QRCode.toDataURL(reviewUrl, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#D4447A',
+          light: '#FFFFFF',
+        },
+      });
+      setQrDataUrl(dataUrl);
+      setQrOpen(true);
+    } catch (err) {
+      console.error('QR generation error:', err);
+      toast({ title: 'Failed to generate QR code', variant: 'destructive' });
+    }
+  };
+
+  const downloadQR = () => {
+    const link = document.createElement('a');
+    link.download = 'lakshana-review-qr-code.png';
+    link.href = qrDataUrl;
+    link.click();
+  };
+
+  const openReviewPage = () => {
+    window.open('/review', '_blank');
+  };
 
   const updateReview = async (id: string, updates: Record<string, unknown>) => {
     const res = await fetch(`/api/admin/reviews/${id}`, {
@@ -226,6 +262,10 @@ export default function ReviewsPage() {
             className="h-9 w-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white border border-white/10 bg-white/[0.05]">
             <RefreshCw size={13} />
           </button>
+          <button onClick={generateQRCode}
+            className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium border border-[#D4447A]/30 hover:bg-[#D4447A]/10 transition-all">
+            <QrCode size={14} /> QR Code
+          </button>
           <button onClick={() => setAddOpen(true)}
             className="h-9 px-4 rounded-xl flex items-center gap-2 text-white text-xs font-medium"
             style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
@@ -269,6 +309,52 @@ export default function ReviewsPage() {
             </button>
           </div>
         </form>
+      </AdminModal>
+
+      {/* QR Code Modal */}
+      <AdminModal open={qrOpen} onClose={() => setQrOpen(false)} title="Customer Review QR Code" size="md">
+        <div className="space-y-6">
+          <div className="rounded-2xl p-6 text-center"
+            style={{ background: 'rgba(212,68,122,0.06)', border: '1px solid rgba(212,68,122,0.15)' }}>
+            <p className="text-white/70 text-sm mb-4 leading-relaxed">
+              Customers can scan this QR code to leave a review directly. The review will appear in the pending section for your approval.
+            </p>
+          </div>
+
+          {qrDataUrl && (
+            <div className="flex justify-center">
+              <div className="rounded-2xl p-6 inline-block"
+                style={{ background: 'white', border: '2px solid #D4447A' }}>
+                <img src={qrDataUrl} alt="Review QR Code" className="w-64 h-64" />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={openReviewPage}
+              className="h-11 rounded-xl flex items-center justify-center gap-2 text-white/70 text-sm border border-white/10 hover:bg-white/5 transition-all">
+              <ExternalLink size={14} /> Preview Page
+            </button>
+            <button
+              onClick={downloadQR}
+              className="h-11 rounded-xl flex items-center justify-center gap-2 text-white text-sm font-medium"
+              style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)', boxShadow: '0 0 20px rgba(212,68,122,0.3)' }}>
+              <Download size={14} /> Download QR
+            </button>
+          </div>
+
+          <div className="rounded-xl p-4"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-[#D4447A] font-bold mb-2">💡 Tips</p>
+            <ul className="text-white/50 text-xs space-y-1.5 leading-relaxed">
+              <li>• Print and display the QR code at your reception or checkout counter</li>
+              <li>• Add it to your service receipts or thank-you cards</li>
+              <li>• Share the review page link: <code className="text-[#D4447A] text-[10px]">{typeof window !== 'undefined' ? `${window.location.origin}/review` : '/review'}</code></li>
+              <li>• All submissions require your approval before appearing on the website</li>
+            </ul>
+          </div>
+        </div>
       </AdminModal>
     </div>
   );
