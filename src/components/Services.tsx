@@ -40,11 +40,20 @@ function CategoryBox({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: catIndex * 0.05, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-2xl overflow-hidden flex flex-col"
+      className="rounded-2xl overflow-hidden flex flex-col group/card hover:scale-[1.02] transition-all duration-500"
       style={{
         background: 'rgba(255,255,255,0.97)',
         border: `1.5px solid ${category.accent}28`,
         boxShadow: '0 4px 24px rgba(45,27,37,0.07)',
+        transition: 'box-shadow 0.5s ease, border-color 0.5s ease, transform 0.5s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 12px 48px rgba(45,27,37,0.12), 0 0 40px ${category.accent}25`;
+        e.currentTarget.style.borderColor = `${category.accent}60`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 4px 24px rgba(45,27,37,0.07)';
+        e.currentTarget.style.borderColor = `${category.accent}28`;
       }}
     >
       {/* ── Box header ─────────────────────────────── */}

@@ -352,7 +352,7 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.95 }}
               style={{ opacity: fadeOut }}
-              className="flex flex-col sm:flex-row gap-5 justify-center items-center will-change-transform"
+              className="flex flex-col sm:flex-row gap-5 justify-center items-center will-change-transform mb-20 sm:mb-0"
             >
               <Button asChild
                 className="btn-luxury shine-on-hover bg-[#D4447A] hover:bg-[#B03060] text-white font-semibold rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase border border-[#D4447A]/60 shadow-[0_0_40px_rgba(212,68,122,0.35)]"
