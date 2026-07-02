@@ -50,27 +50,27 @@ export function Navbar() {
         <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
 
           {/* ── Logo + Name ───────────────────────────────── */}
-          <Link href="/" className="group flex flex-row items-center gap-3 md:gap-4 relative">
-            {/* LP Beauty Salon Logo - Transparent (Larger Size) */}
-            <div className="w-12 h-12 md:w-16 md:h-16 flex-shrink-0">
+          <Link href="/" className="group flex flex-row items-center relative" style={{ gap: '18px' }}>
+            {/* LP Beauty Salon Logo - Transparent (Optimized Size & Position) */}
+            <div className="w-[44px] h-[44px] md:w-[54px] md:h-[54px] flex-shrink-0" style={{ marginTop: '-4px' }}>
               <div className="relative w-full h-full transition-transform duration-500 group-hover:scale-105">
                 <Image
                   src="/lp-logo-transparent.png"
                   alt="Lakshana Beauty Salon"
                   fill
-                  sizes="(max-width: 768px) 48px, 64px"
+                  sizes="(max-width: 768px) 44px, 54px"
                   className="object-contain"
                   priority
                 />
               </div>
             </div>
-            {/* name.png — aligned straight to logo, responsive sizing */}
-            <div className="relative h-10 w-32 md:h-16 md:w-64 flex-shrink-0">
+            {/* name.png — vertically centered with logo, responsive sizing */}
+            <div className="relative h-9 w-28 md:h-12 md:w-56 flex-shrink-0">
               <Image
                 src="/name.png"
                 alt="Lakshana"
                 fill
-                sizes="(max-width: 768px) 128px, 256px"
+                sizes="(max-width: 768px) 112px, 224px"
                 className="object-contain object-left"
               />
             </div>
@@ -151,8 +151,8 @@ export function Navbar() {
               >
                 {/* Menu Header */}
                 <div className="sticky top-0 bg-white border-b border-[#D4447A]/10 px-6 py-5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9">
+                  <div className="flex items-center" style={{ gap: '12px' }}>
+                    <div className="w-9 h-9" style={{ marginTop: '-2px' }}>
                       <Image
                         src="/lp-logo-transparent.png"
                         alt="Lakshana Beauty Salon"
