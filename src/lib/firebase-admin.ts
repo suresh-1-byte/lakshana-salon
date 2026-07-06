@@ -10,6 +10,11 @@ import { getMessaging } from 'firebase-admin/messaging';
 // Initialize Firebase Admin SDK only if environment variables are available
 // This prevents build-time errors when env vars aren't available
 function initializeFirebaseAdmin() {
+  // Skip initialization during build time
+  if (typeof window === 'undefined' && !process.env.FIREBASE_PROJECT_ID) {
+    return null;
+  }
+
   if (getApps().length > 0) {
     return getApps()[0];
   }
