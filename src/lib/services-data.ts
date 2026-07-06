@@ -22,7 +22,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Threading',
     description: 'Professional threading services with precise shaping and finishing.',
     icon: '✦',
-    accent: '#D4447A',
+    accent: '#5A4636',
     services: [
       { name: 'Eyebrow', nonMember: '₹50', member: '₹50', duration: '10 min' },
       { name: 'Upper Lip / Lower Lip / Chin', nonMember: '₹50', member: '₹50', duration: '10 min' },
@@ -34,7 +34,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Hair Cut',
     description: 'Precision cuts crafted to complement your face shape and personal style.',
     icon: '✂',
-    accent: '#C2185B',
+    accent: '#5A4636',
     services: [
       { name: 'Classic Cut', nonMember: '₹450', member: '₹350', duration: '20 min' },
       { name: 'Straight / U Cut', nonMember: '₹600', member: '₹500', duration: '30 min' },
@@ -47,7 +47,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Ironing / Temporary Straightening',
     description: 'Instant silky-smooth straightening for a sleek, polished finish.',
     icon: '〰',
-    accent: '#AD1457',
+    accent: '#5A4636',
     services: [
       { name: 'Short Hair Length', nonMember: '₹700', member: '₹600', duration: '1 hr' },
       { name: 'Medium Hair Length', nonMember: '₹850', member: '₹750', duration: '1 hr' },
@@ -59,7 +59,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Shampoo + Conditioning + Blow Dry',
     description: 'Revitalising cleanse and professional blow-dry styling.',
     icon: '◈',
-    accent: '#E91E8C',
+    accent: '#5A4636',
     services: [
       { name: 'Hair Wash Blast Dry (Medium)', nonMember: '₹500', member: '₹450', duration: '25 min' },
       { name: 'Hair Wash Blast Dry (Long)', nonMember: '₹600', member: '₹550', duration: '25 min' },
@@ -72,7 +72,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Head Massage',
     description: 'Deeply relaxing scalp massages to relieve tension and nourish roots.',
     icon: '❋',
-    accent: '#D4447A',
+    accent: '#5A4636',
     services: [
       { name: 'Single Oil Head Massage', nonMember: '₹600', member: '₹500', duration: '30 min' },
       { name: 'Multi Oil Head Massage', nonMember: '₹800', member: '₹750', duration: '30 min' },
@@ -84,7 +84,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Premium Hair Spa',
     description: 'Intensive repair and hydration rituals tailored to your hair type.',
     icon: '✿',
-    accent: '#C2185B',
+    accent: '#5A4636',
     services: [
       { name: 'Moisturizing Hair Spa', nonMember: '₹1,000', member: '₹900', duration: '45 min' },
       { name: 'Colour Protect Hair Spa', nonMember: '₹1,200', member: '₹1,000', duration: '45 min' },
@@ -101,7 +101,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Advanced Hair Treatment',
     description: 'Targeted clinical treatments to address hair and scalp concerns.',
     icon: '⚕',
-    accent: '#AD1457',
+    accent: '#5A4636',
     services: [
       { name: 'Dandruff Treatment', nonMember: '₹1,500', member: '₹1,300', duration: '30 min' },
       { name: 'Dandruff Clear Treatment Spa', nonMember: '₹3,500', member: '₹3,300', duration: '30 min' },
@@ -114,7 +114,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Hair Colouring',
     description: 'Vibrant, long-lasting colour from root touch-ups to full global transformations.',
     icon: '◉',
-    accent: '#E91E8C',
+    accent: '#5A4636',
     services: [
       { name: 'Per Streak', nonMember: '₹300', member: '₹250', duration: '1 hr 15 min' },
       { name: 'Per Streak (Ammonia Free)', nonMember: '₹350', member: '₹300', duration: '2 hr 15 min' },
@@ -141,7 +141,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Hair Texture Treatment',
     description: 'Permanent smoothening and transformation treatments for frizz-free, glossy hair.',
     icon: '❦',
-    accent: '#D4447A',
+    accent: '#5A4636',
     services: [
       {
         name: 'Smoothening / Straightening',
@@ -178,7 +178,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'De-Tan',
     description: 'Brightening treatments to remove tan and restore natural skin radiance.',
     icon: '☀',
-    accent: '#C2185B',
+    accent: '#5A4636',
     services: [
       { name: 'Face Only', nonMember: '₹400', member: '₹350', duration: '15 min' },
       { name: 'Face & Neck', nonMember: '₹600', member: '₹550', duration: '15 min' },
@@ -193,7 +193,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Cleanup + Facials',
     description: 'Signature facials for deep cleansing, hydration, and luminous glow.',
     icon: '✾',
-    accent: '#AD1457',
+    accent: '#5A4636',
     services: [
       { name: 'Face Massage', nonMember: '₹500', member: '₹500', duration: '30 min' },
       { name: 'Express Cleanup', nonMember: '₹800', member: '₹750', duration: '20 min' },
@@ -205,7 +205,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Hydra Facial',
     description: 'Medical-grade hydradermabrasion for visibly refreshed, glowing skin.',
     icon: '◆',
-    accent: '#E91E8C',
+    accent: '#5A4636',
     services: [
       { name: 'Dermaplaning', nonMember: '₹3,500', member: '₹3,300', duration: '45 min' },
       { name: 'Microdermabrasion & Brightening Peel', nonMember: '₹4,500', member: '₹4,300', duration: '50 min' },
@@ -219,7 +219,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Waxing',
     description: 'Smooth, long-lasting hair removal with gentle precision.',
     icon: '✦',
-    accent: '#D4447A',
+    accent: '#5A4636',
     services: [
       { name: 'Upper Lip / Lower Lip / Chin', nonMember: '₹250', member: '₹200', duration: '10 min' },
       { name: 'Side Chin', nonMember: '₹300', member: '₹250', duration: '10 min' },
@@ -240,7 +240,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Body Polishing with Steam',
     description: 'Luxurious full-body exfoliation with steam for radiant, velvety-smooth skin.',
     icon: '✿',
-    accent: '#C2185B',
+    accent: '#5A4636',
     services: [
       { name: 'Choco Glow Body Polish', nonMember: '₹5,000', member: '₹4,800', duration: '1 hr 30 min' },
       { name: 'Lemon Walnut Body Polish', nonMember: '₹5,500', member: '₹5,300', duration: '1 hr 30 min' },
@@ -253,7 +253,7 @@ export const serviceCategories: ServiceCategory[] = [
     title: 'Pedicure & Manicure',
     description: 'Indulgent nail and foot care rituals for perfectly pampered hands and feet.',
     icon: '◈',
-    accent: '#AD1457',
+    accent: '#5A4636',
     services: [
       { name: 'Express Pedi/Manicure', nonMember: '₹1,000', member: '₹1,000', duration: '40 min' },
       { name: 'Aromatic Pedi/Manicure', nonMember: '₹900', member: '₹800', duration: '30 min' },

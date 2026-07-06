@@ -5,7 +5,7 @@ export async function DELETE() {
   try {
     const snap = await adminDb.collection(Collections.NOTIFICATIONS).get();
     const batch = adminDb.batch();
-    snap.docs.forEach(doc => batch.delete(doc.ref));
+    snap.docs.forEach((doc: any) => batch.delete(doc.ref));
     await batch.commit();
     return NextResponse.json({ success: true, deleted: snap.size });
   } catch (err) {

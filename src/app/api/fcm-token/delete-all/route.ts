@@ -15,7 +15,7 @@ export async function DELETE() {
     }
 
     const batch = adminDb.batch();
-    tokensSnap.docs.forEach(doc => {
+    tokensSnap.docs.forEach((doc: any) => {
       batch.delete(doc.ref);
     });
     

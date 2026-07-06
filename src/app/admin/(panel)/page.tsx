@@ -7,6 +7,7 @@ import {
   TrendingUp, Clock, CheckCircle, AlertCircle,
 } from 'lucide-react';
 import { StatCard } from '@/components/admin/StatCard';
+import BirthdayWidget from '@/components/admin/BirthdayWidget';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -30,6 +31,8 @@ interface DashboardData {
   revenueChart: { date: string; revenue: number }[];
   bookingChart: { month: string; bookings: number }[];
   popularServices: { name: string; count: number }[];
+  birthdays: any[];
+  todayAppointments: any[];
 }
 
 const CHART_COLORS = ['#D4447A', '#E8A0B4', '#B03060', '#7B4F62', '#AD1457'];
@@ -38,11 +41,15 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/admin/dashboard')
       .then(r => r.json())
       .then(d => { if (d.success) setData(d.data); })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   const s = data?.stats;
@@ -226,6 +233,63 @@ export default function AdminDashboard() {
           </BarChart>
         </ResponsiveContainer>
       </motion.div>
+
+      {/* Birthday Widget & Today's Appointments */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Birthday Widget - Always Show */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <BirthdayWidget />
+        </motion.div>
+
+        {/* Today's Appointments */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="rounded-2xl p-5"
+          style={{
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(212,68,122,0.12)',
+          }}
+        >
+          <div className="mb-4">
+            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">Today</p>
+            <p className="text-white text-lg font-light mt-0.5" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Appointments
+            </p>
+          </div>
+          {data?.todayAppointments && data.todayAppointments.length > 0 ? (
+            <div className="space-y-3">
+              {data.todayAppointments.slice(0, 5).map((apt: any) => (
+                <div key={apt.id} className="flex items-center justify-between p-3 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div>
+                    <p className="text-white text-sm font-medium">{apt.customerName}</p>
+                    <p className="text-white/40 text-xs mt-0.5">
+                      {apt.appointmentType} • {apt.appointmentTime}
+                    </p>
+                  </div>
+                  <span className={`px-2 py-1 rounded text-[10px] font-semibold ${
+                    apt.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                    apt.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
+                    'bg-orange-500/20 text-orange-400'
+                  }`}>
+                    {apt.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[220px] flex items-center justify-center text-white/25 text-sm">
+              No appointments scheduled for today
+            </div>
+          )}
+        </motion.div>
+      </div>
 
       {/* Quick actions */}
       <motion.div

@@ -14,7 +14,7 @@ export async function GET() {
       .limit(20)
       .get();
 
-    const reviews = snap.docs.map(d => ({
+    const reviews = snap.docs.map((d: any) => ({
       id:           d.id,
       customerName: d.data().customerName,
       rating:       d.data().rating,

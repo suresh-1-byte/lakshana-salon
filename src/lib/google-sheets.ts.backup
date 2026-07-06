@@ -1,0 +1,159 @@
+import { google } from 'googleapis'
+
+const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ''
+
+// Initialize Google Sheets API
+function getGoogleSheetsClient() {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    },
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  })
+
+  return google.sheets({ version: 'v4', auth })
+}
+
+export async function syncToGoogleSheets(
+  sheetName: string,
+  data: any[],
+  action: 'insert' | 'update' | 'delete'
+) {
+  try {
+    const sheets = getGoogleSheetsClient()
+
+    if (action === 'insert') {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: data,
+        },
+      })
+    } else if (action === 'update') {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:Z`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: data,
+        },
+      })
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Google Sheets sync error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function saveBookingToSheets(booking: any) {
+  const row = [
+    booking.booking_id,
+    booking.customer_name,
+    booking.mobile_number,
+    booking.service_name,
+    booking.appointment_date,
+    booking.appointment_time,
+    booking.total_amount,
+    booking.booking_status,
+    booking.payment_status,
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Bookings', [row], 'insert')
+}
+
+export async function saveCustomerToSheets(customer: any) {
+  const row = [
+    customer.customer_id,
+    customer.full_name,
+    customer.mobile_number,
+    customer.email || '',
+    customer.date_of_birth || '',
+    customer.city || '',
+    customer.member_since,
+    customer.total_visits,
+    customer.total_spent,
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Customers', [row], 'insert')
+}
+
+export async function saveEnquiryToSheets(enquiry: any) {
+  const row = [
+    enquiry.name,
+    enquiry.phone,
+    enquiry.email || '',
+    enquiry.interested_service || '',
+    enquiry.message || '',
+    enquiry.source,
+    enquiry.status,
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Enquiries', [row], 'insert')
+}
+
+export async function savePaymentToSheets(payment: any) {
+  const row = [
+    payment.invoice_number,
+    payment.customer_name,
+    payment.amount,
+    payment.payment_method,
+    payment.payment_status,
+    payment.transaction_id || '',
+    new Date(payment.payment_date).toISOString(),
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Payments', [row], 'insert')
+}
+
+export async function saveConsultationToSheets(consultation: any) {
+  const row = [
+    consultation.customer_name,
+    consultation.consultant_name || '',
+    consultation.consultation_date,
+    consultation.hair_type || '',
+    consultation.skin_type || '',
+    consultation.problems || '',
+    consultation.suggestions || '',
+    consultation.status,
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Consultations', [row], 'insert')
+}
+
+export async function saveBirthdayLogToSheets(customer: any, messageSent: boolean) {
+  const row = [
+    customer.customer_id,
+    customer.full_name,
+    customer.mobile_number,
+    customer.date_of_birth,
+    messageSent ? 'Sent' : 'Failed',
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Birthday_Wishes', [row], 'insert')
+}
+
+export async function saveMembershipToSheets(membership: any) {
+  const row = [
+    membership.member_card_number,
+    membership.customer_name,
+    membership.membership_type,
+    membership.joining_date,
+    membership.expiry_date,
+    membership.discount_percentage,
+    membership.status,
+    new Date().toISOString(),
+  ]
+
+  return await syncToGoogleSheets('Memberships', [row], 'insert')
+}

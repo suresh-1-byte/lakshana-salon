@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Plus, RefreshCw, Printer, Trash2, FileDown, Receipt } from 'lucide-react';
+import { Search, Plus, RefreshCw, Printer, Trash2, FileDown, Receipt, Sparkles } from 'lucide-react';
 import { AdminTable } from '@/components/admin/AdminTable';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { AdminInput, AdminSelect, AdminTextarea } from '@/components/admin/AdminInput';
@@ -10,6 +10,8 @@ import { StatusBadge } from '@/components/admin/StatusBadge';
 import type { Bill, BillItem } from '@/types/admin';
 import { serviceCategories } from '@/lib/services-data';
 import { useToast } from '@/hooks/use-toast';
+import { getAllAddons } from '@/lib/api/service-addons';
+import type { ServiceAddon } from '@/types/database.types';
 
 const PAYMENT_OPTS = [
   { value: 'cash',  label: 'Cash'  },
@@ -126,12 +128,36 @@ export default function BillingPage() {
   const [printBill, setPrintBill]   = useState<Bill | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [exporting, setExporting]   = useState(false);
+  const [addons, setAddons] = useState<ServiceAddon[]>([]);
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     customerName: '', customerPhone: '', customerEmail: '',
     discount: 0, tax: 0, paymentMethod: 'cash', notes: '',
   });
   const [items, setItems] = useState<Partial<BillItem>[]>([{ ...EMPTY_ITEM }]);
+
+  // Load add-ons
+  useEffect(() => {
+    loadAddons();
+  }, []);
+
+  const loadAddons = async () => {
+    try {
+      const data = await getAllAddons(true); // activeOnly = true
+      setAddons(data);
+    } catch (error) {
+      console.error('Error loading add-ons:', error);
+    }
+  };
+
+  const toggleAddon = (addonId: string) => {
+    setSelectedAddons(prev => 
+      prev.includes(addonId) 
+        ? prev.filter(id => id !== addonId)
+        : [...prev, addonId]
+    );
+  };
 
   const fetchBills = useCallback(async () => {
     setLoading(true);
@@ -152,22 +178,43 @@ export default function BillingPage() {
     setItems(p => p.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
 
   const subtotal = items.reduce((s, i) => s + ((i.unitPrice || 0) * (i.quantity || 1)) - (i.discount || 0), 0);
-  const total    = subtotal - (form.discount || 0) + (form.tax || 0);
+  const addonsTotal = selectedAddons.reduce((s, id) => {
+    const addon = addons.find(a => a.id === id);
+    return s + (addon?.price || 0);
+  }, 0);
+  const total    = subtotal + addonsTotal - (form.discount || 0) + (form.tax || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!items[0]?.name) { toast({ title: 'Add at least one service or item', variant: 'destructive' }); return; }
     setSubmitting(true);
+    
+    // Include selected add-ons as items
+    const addonItems = selectedAddons.map(id => {
+      const addon = addons.find(a => a.id === id);
+      return {
+        name: addon?.name || 'Add-on',
+        type: 'service' as const,
+        quantity: 1,
+        unitPrice: addon?.price || 0,
+        discount: 0,
+        total: addon?.price || 0,
+      };
+    });
+    
+    const allItems = [...items, ...addonItems];
+    
     const res = await fetch('/api/admin/billing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, items }),
+      body: JSON.stringify({ ...form, items: allItems }),
     });
     const data = await res.json();
     if (res.ok && data.success) {
       toast({ title: `✅ Bill created! Invoice: ${data.invoiceNumber}` });
       setCreateOpen(false);
       setItems([{ ...EMPTY_ITEM }]);
+      setSelectedAddons([]);
       setForm({ customerName:'', customerPhone:'', customerEmail:'', discount:0, tax:0, paymentMethod:'cash', notes:'' });
       fetchBills();
     } else {
@@ -178,7 +225,11 @@ export default function BillingPage() {
 
   const handlePrint = (bill: Bill) => {
     setPrintBill(bill);
-    setTimeout(() => window.print(), 500);
+    setTimeout(() => {
+      window.print();
+      // Reset after print dialog closes
+      setTimeout(() => setPrintBill(null), 1000);
+    }, 500);
   };
 
   const handleExport = async () => {
@@ -402,6 +453,66 @@ export default function BillingPage() {
             </div>
           </div>
 
+          {/* Add-ons section */}
+          {addons.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={14} className="text-[#D4447A]" />
+                <p className="text-[9px] uppercase tracking-[0.35em] font-bold text-[#D4447A]">Add-ons</p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {addons.map(addon => {
+                  const isSelected = selectedAddons.includes(addon.id);
+                  return (
+                    <button
+                      key={addon.id}
+                      type="button"
+                      onClick={() => toggleAddon(addon.id)}
+                      className={`
+                        p-3 rounded-xl border transition-all text-left
+                        ${isSelected 
+                          ? 'bg-[rgba(212,68,122,0.15)] border-[#D4447A] ring-2 ring-[rgba(212,68,122,0.3)]' 
+                          : 'bg-white/[0.02] border-white/10 hover:border-white/20'}
+                      `}
+                    >
+                      <div className="flex items-start justify-between mb-1">
+                        <p className={`text-sm font-medium ${isSelected ? 'text-[#D4447A]' : 'text-white/80'}`}>
+                          {addon.name}
+                        </p>
+                        {isSelected && (
+                          <div className="w-5 h-5 rounded-full bg-[#D4447A] flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/40 mb-2 line-clamp-2">{addon.description}</p>
+                      <p className={`text-sm font-semibold ${isSelected ? 'text-[#D4447A]' : 'text-white/60'}`}>
+                        +₹{addon.price.toLocaleString('en-IN')}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedAddons.length > 0 && (
+                <div className="mt-3 p-3 rounded-xl bg-[rgba(212,68,122,0.08)] border border-[rgba(212,68,122,0.2)]">
+                  <p className="text-xs text-white/60 mb-2">Selected Add-ons:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedAddons.map(id => {
+                      const addon = addons.find(a => a.id === id);
+                      return addon ? (
+                        <span key={id} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#D4447A]/20 text-[#D4447A] text-xs">
+                          {addon.name} • ₹{addon.price}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Discount / Tax / Payment */}
           <div className="grid grid-cols-3 gap-4">
             <AdminInput label="Overall Discount (₹)" type="number" min="0"
@@ -418,6 +529,12 @@ export default function BillingPage() {
               style={{ background: 'rgba(212,68,122,0.08)', border: '1px solid rgba(212,68,122,0.2)' }}>
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between text-white/40"><span>Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
+                {addonsTotal > 0 && (
+                  <div className="flex justify-between text-[#D4AF37]">
+                    <span>Add-ons ({selectedAddons.length})</span>
+                    <span>₹{addonsTotal.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
                 {form.discount > 0 && <div className="flex justify-between text-green-400"><span>Discount</span><span>-₹{form.discount}</span></div>}
                 {form.tax > 0 && <div className="flex justify-between text-white/40"><span>Tax</span><span>₹{form.tax}</span></div>}
                 <div className="flex justify-between text-[#D4447A] font-bold text-lg pt-2" style={{ borderTop: '1px solid rgba(212,68,122,0.2)' }}>

@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Bell, Search, User, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import GlobalSearch from './GlobalSearch';
 
 const PAGE_TITLES: Record<string, string> = {
   '/admin': 'Dashboard',
@@ -23,6 +24,7 @@ const PAGE_TITLES: Record<string, string> = {
 export function AdminHeader() {
   const pathname = usePathname();
   const [time, setTime] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const title = PAGE_TITLES[pathname] || PAGE_TITLES[Object.keys(PAGE_TITLES).find(k => pathname.startsWith(k + '/')) || ''] || 'Admin';
 
@@ -37,6 +39,18 @@ export function AdminHeader() {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Keyboard shortcut for search (Ctrl+K or Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   return (
@@ -67,11 +81,15 @@ export function AdminHeader() {
         </div>
 
         {/* Search */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/5 transition-colors"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
           <Search size={13} className="text-white/30" />
-          <input placeholder="Search..." className="bg-transparent text-white/60 text-xs outline-none placeholder:text-white/25 w-32" />
-        </div>
+          <span className="text-white/40 text-xs">Search...</span>
+          <kbd className="text-[10px] text-white/30 ml-2">Ctrl+K</kbd>
+        </button>
 
         {/* Admin badge */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
@@ -83,6 +101,9 @@ export function AdminHeader() {
           <span className="text-white/70 text-[11px] font-medium hidden sm:block">Admin</span>
         </div>
       </div>
+
+      {/* Global Search Dialog */}
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }

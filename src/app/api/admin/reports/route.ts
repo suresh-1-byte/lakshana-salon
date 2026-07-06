@@ -14,27 +14,27 @@ export async function GET(req: NextRequest) {
 
     if (type === 'revenue') {
       const snap = await adminDb.collection(Collections.BILLING).orderBy('createdAt', 'desc').get();
-      const bills = snap.docs.map(d => ({
+      const bills = snap.docs.map((d: any) => ({
         total: d.data().total || 0,
         createdAt: d.data().createdAt?.toDate?.() ?? new Date(d.data().createdAt || 0),
         paymentMethod: d.data().paymentMethod,
-      })).filter(b => b.createdAt >= from && b.createdAt <= to);
+      })).filter((b: any) => b.createdAt >= from && b.createdAt <= to);
 
       // Group by day
       const byDay: Record<string, { revenue: number; count: number }> = {};
-      bills.forEach(b => {
+      bills.forEach((b: any) => {
         const key = b.createdAt.toISOString().slice(0, 10);
         if (!byDay[key]) byDay[key] = { revenue: 0, count: 0 };
         byDay[key].revenue += b.total;
         byDay[key].count   += 1;
       });
 
-      const totalRevenue = bills.reduce((s, b) => s + b.total, 0);
+      const totalRevenue = bills.reduce((s: any, b) => s + b.total, 0);
       const avgPerDay    = Object.keys(byDay).length > 0 ? totalRevenue / Object.keys(byDay).length : 0;
 
       // Payment method breakdown
       const byPayment: Record<string, number> = {};
-      bills.forEach(b => { byPayment[b.paymentMethod] = (byPayment[b.paymentMethod] || 0) + b.total; });
+      bills.forEach((b: any) => { byPayment[b.paymentMethod] = (byPayment[b.paymentMethod] || 0) + b.total; });
 
       return NextResponse.json({
         success: true,
@@ -50,23 +50,23 @@ export async function GET(req: NextRequest) {
 
     if (type === 'customers') {
       const snap = await adminDb.collection(Collections.CUSTOMERS).orderBy('createdAt', 'desc').get();
-      const customers = snap.docs.map(d => ({
+      const customers = snap.docs.map((d: any) => ({
         createdAt: d.data().createdAt?.toDate?.() ?? new Date(d.data().createdAt || 0),
         loyaltyStatus: d.data().loyaltyStatus || 'Bronze',
         totalSpent: d.data().totalSpent || 0,
-      })).filter(c => c.createdAt >= from && c.createdAt <= to);
+      })).filter((c: any) => c.createdAt >= from && c.createdAt <= to);
 
       // Group by month
       const byMonth: Record<string, number> = {};
-      customers.forEach(c => {
+      customers.forEach((c: any) => {
         const key = c.createdAt.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
         byMonth[key] = (byMonth[key] || 0) + 1;
       });
 
       // Loyalty breakdown
       const byLoyalty: Record<string, number> = {};
-      const allCust = snap.docs.map(d => d.data().loyaltyStatus || 'Bronze');
-      allCust.forEach(l => { byLoyalty[l] = (byLoyalty[l] || 0) + 1; });
+      const allCust = snap.docs.map((d: any) => d.data().loyaltyStatus || 'Bronze');
+      allCust.forEach((l: any) => { byLoyalty[l] = (byLoyalty[l] || 0) + 1; });
 
       return NextResponse.json({
         success: true,
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
     if (type === 'services') {
       const snap = await adminDb.collection(Collections.BILLING).get();
       const serviceCount: Record<string, { count: number; revenue: number }> = {};
-      snap.docs.forEach(d => {
+      snap.docs.forEach((d: any) => {
         const items = d.data().items || [];
         items.forEach((item: any) => {
           if (item.type === 'service') {

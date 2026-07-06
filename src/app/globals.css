@@ -21,7 +21,9 @@
     --shadow-deep: 0 40px 120px rgba(31,53,94,0.12);
   }
 
-  *, *::before, *::after { box-sizing: border-box; }
+  *, *::before, *::after { 
+    box-sizing: border-box;
+  }
 
   html {
     scroll-behavior: smooth;
@@ -58,6 +60,19 @@
   p { font-weight: 300; line-height: 1.8; letter-spacing: 0.03em; }
 
   button, input, textarea, select { font: inherit; }
+
+  /* Performance optimizations */
+  img, video {
+    content-visibility: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -287,6 +302,8 @@
   justify-content: center;
   overflow: hidden;
   background: #f7f7f5;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .hero-background {
@@ -297,13 +314,15 @@
   object-fit: cover;
   filter: brightness(0.55) saturate(1.15) contrast(1.05);
   z-index: 0;
-  transform: scale(1.05);
+  transform: scale(1.05) translateZ(0);
   animation: hero-drift 20s ease-in-out infinite alternate;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @keyframes hero-drift {
-  0%   { transform: scale(1.05) translateX(0); }
-  100% { transform: scale(1.08) translateX(-1%); }
+  0%   { transform: scale(1.05) translateX(0) translateZ(0); }
+  100% { transform: scale(1.08) translateX(-1%) translateZ(0); }
 }
 
 .hero-section::before {
@@ -599,3 +618,74 @@
   @page { margin: 0.5cm; }
 }
 
+
+
+/* Print Invoice Styles */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* Show only the print content */
+  .print\:block,
+  .print\:block *,
+  .print-invoice,
+  .print-invoice *,
+  #print-content,
+  #print-content * {
+    visibility: visible !important;
+  }
+  
+  /* Position print content at top left */
+  .print\:block,
+  .print-invoice,
+  #print-content {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  /* Hide all UI elements */
+  button,
+  nav,
+  aside,
+  header:not(.print-invoice header),
+  footer:not(.print-invoice footer),
+  [class*="sidebar"],
+  [class*="nav"],
+  [role="button"],
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Remove margins for print */
+  @page {
+    margin: 0.5cm;
+    size: A4 portrait;
+  }
+  
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Typography for print */
+  body {
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Page breaks */
+  table, tr, img {
+    page-break-inside: avoid !important;
+  }
+  
+  h1, h2, h3 {
+    page-break-after: avoid !important;
+  }
+}

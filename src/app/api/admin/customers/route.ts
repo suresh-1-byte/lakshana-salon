@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     let query = adminDb.collection(Collections.CUSTOMERS).orderBy('createdAt', 'desc');
 
     const snap = await query.get();
-    let customers = snap.docs.map(d => ({
+    let customers = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt,
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     // Client-side search filter
     if (search) {
       const q = search.toLowerCase();
-      customers = customers.filter(c =>
+      customers = customers.filter((c: any) =>
         (c as any).name?.toLowerCase().includes(q) ||
         (c as any).phone?.includes(q) ||
         (c as any).email?.toLowerCase().includes(q)

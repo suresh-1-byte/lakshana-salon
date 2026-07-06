@@ -6,11 +6,11 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Target, Eye, Sparkles, Gem, ShieldCheck, Heart, Zap } from 'lucide-react';
 
 const values = [
-  { title: 'Excellence',  desc: 'Delivering quality in every service.',   icon: Gem,        initial: 'E', hoverBg: '#7C3AED', hoverText: '#ffffff', hoverShadow: 'rgba(124,58,237,0.45)' },
-  { title: 'Integrity',   desc: 'Building trust through honesty.',         icon: ShieldCheck, initial: 'I', hoverBg: '#16A34A', hoverText: '#ffffff', hoverShadow: 'rgba(22,163,74,0.45)' },
-  { title: 'Innovation',  desc: 'Adapting to evolving trends.',            icon: Zap,        initial: 'N', hoverBg: '#2563EB', hoverText: '#ffffff', hoverShadow: 'rgba(37,99,235,0.45)' },
-  { title: 'Care',        desc: 'Prioritizing comfort & well-being.',      icon: Heart,      initial: 'C', hoverBg: '#DC2626', hoverText: '#ffffff', hoverShadow: 'rgba(220,38,38,0.45)' },
-  { title: 'Passion',     desc: 'Striving for perfection.',                icon: Sparkles,   initial: 'P', hoverBg: '#D4447A', hoverText: '#ffffff', hoverShadow: 'rgba(212,68,122,0.45)' },
+  { title: 'Excellence',  desc: 'Delivering quality in every service.',   icon: Gem,        initial: 'E', hoverBg: '#d4af37', hoverText: '#ffffff', hoverShadow: 'rgba(212,175,55,0.45)' },
+  { title: 'Integrity',   desc: 'Building trust through honesty.',         icon: ShieldCheck, initial: 'I', hoverBg: '#b8941f', hoverText: '#ffffff', hoverShadow: 'rgba(184,148,31,0.45)' },
+  { title: 'Innovation',  desc: 'Adapting to evolving trends.',            icon: Zap,        initial: 'N', hoverBg: '#C9A84C', hoverText: '#ffffff', hoverShadow: 'rgba(201,168,76,0.45)' },
+  { title: 'Care',        desc: 'Prioritizing comfort & well-being.',      icon: Heart,      initial: 'C', hoverBg: '#CD7F32', hoverText: '#ffffff', hoverShadow: 'rgba(205,127,50,0.45)' },
+  { title: 'Passion',     desc: 'Striving for perfection.',                icon: Sparkles,   initial: 'P', hoverBg: '#E7C96B', hoverText: '#2D1B25', hoverShadow: 'rgba(231,201,107,0.45)' },
 ];
 
 // Use inline motion props instead of shared variants to avoid TS ease-array issues
@@ -38,7 +38,7 @@ export function About() {
             className="font-headline font-light leading-tight text-[#2D1B25]"
             style={{ fontSize: 'clamp(2.8rem,6vw,5.5rem)' }}>
             About{' '}
-            <span className="block luxury-cursive text-[#D4447A] mt-2"
+            <span className="block luxury-cursive text-[#d4af37] mt-2"
               style={{ fontSize: 'clamp(3rem,7vw,6rem)', lineHeight: 1.1 }}>
               Lakshana Salon
             </span>
@@ -61,11 +61,11 @@ export function About() {
             >
               {/* Year badge */}
               <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full"
-                style={{ background: 'rgba(212,68,122,0.08)', border: '1px solid rgba(212,68,122,0.2)' }}>
-                <span className="text-[#D4447A] text-xs font-bold uppercase tracking-[0.35em]">Est. 2015</span>
+                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                <span className="text-[#d4af37] text-xs font-bold uppercase tracking-[0.35em]">Est. 2015</span>
               </div>
 
-              <blockquote className="border-l-[2px] border-[#D4447A]/40 pl-8 py-2">
+              <blockquote className="border-l-[2px] border-[#d4af37]/40 pl-8 py-2">
                 <p className="text-[#2D1B25] text-xl font-headline italic leading-relaxed">
                   &ldquo;Founded on a passion for beauty, continuous learning, and a commitment to excellence.&rdquo;
                 </p>
@@ -92,8 +92,8 @@ export function About() {
                   { number: '50+', label: 'Premium\nServices' },
                 ].map(({ number, label }) => (
                   <div key={label} className="text-center p-4 rounded-2xl"
-                    style={{ background: 'rgba(212,68,122,0.05)', border: '1px solid rgba(212,68,122,0.12)' }}>
-                    <p className="font-headline text-2xl font-semibold text-[#D4447A] leading-none">{number}</p>
+                    style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.12)' }}>
+                    <p className="font-headline text-2xl font-semibold text-[#d4af37] leading-none">{number}</p>
                     <p className="text-[9px] uppercase tracking-[0.25em] text-[#B89BAA] font-semibold mt-1.5 whitespace-pre-line leading-snug">{label}</p>
                   </div>
                 ))}
@@ -105,7 +105,7 @@ export function About() {
               initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
               className="relative h-[520px] overflow-hidden group image-luxury-frame"
-              style={{ border: '1px solid rgba(212,68,122,0.2)' }}
+              style={{ border: '1px solid rgba(212,175,55,0.2)' }}
             >
               <Image
                 src={img1?.imageUrl || ''}
@@ -115,18 +115,18 @@ export function About() {
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#2D1B25]/50 z-10 pointer-events-none" />
               <div className="absolute bottom-10 left-10 z-20">
-                <span className="luxury-cursive text-4xl text-[#D4447A]"
+                <span className="luxury-cursive text-4xl text-[#d4af37]"
                   style={{ fontFamily: "'Great Vibes', cursive" }}>
                   Lakshana Salon
                 </span>
-                <div className="h-[1px] w-20 bg-gradient-to-r from-[#D4447A]/60 to-transparent mt-2" />
+                <div className="h-[1px] w-20 bg-gradient-to-r from-[#d4af37]/60 to-transparent mt-2" />
               </div>
             </motion.div>
           </div>
         </div>
 
         {/* ── Values ─────────────────────────────────────── */}
-        <div className="pt-24 border-t border-[rgba(212,68,122,0.08)]">
+        <div className="pt-24 border-t border-[rgba(212,175,55,0.08)]">
           <div className="text-center mb-20">
             <motion.h3
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -134,7 +134,7 @@ export function About() {
               className="font-headline font-light text-[#2D1B25]"
               style={{ fontSize: 'clamp(2.5rem,5.5vw,5rem)' }}>
               Our Core{' '}
-              <span className="luxury-cursive text-[#D4447A]"
+              <span className="luxury-cursive text-[#d4af37]"
                 style={{ fontFamily: "'Great Vibes', cursive", fontSize: 'clamp(3rem,6vw,5.5rem)' }}>
                 Values
               </span>
@@ -154,20 +154,20 @@ export function About() {
                 className="glass-card group p-12 flex flex-col items-center text-center space-y-8 relative overflow-hidden"
               >
                 {/* Ghost letter */}
-                <span className="absolute -top-3 -right-3 text-[7rem] font-headline font-bold text-[#D4447A]/[0.04] pointer-events-none select-none leading-none group-hover:text-[#D4447A]/[0.08] transition-colors duration-700">
+                <span className="absolute -top-3 -right-3 text-[7rem] font-headline font-bold pointer-events-none select-none leading-none transition-colors duration-700"
+                  style={{ color: `${v.hoverBg}15` }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = `${v.hoverBg}25`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = `${v.hoverBg}15`; }}>
                   {v.initial}
                 </span>
 
                 {/* Icon — each card gets its own hover colour */}
                 <div
-                  className="w-16 h-16 rounded-full border border-[#D4447A]/20 flex items-center justify-center text-[#D4447A] transition-all duration-500 relative z-10"
-                  style={
-                    {
-                      '--hover-bg': v.hoverBg,
-                      '--hover-text': v.hoverText,
-                      '--hover-shadow': `0 0 24px ${v.hoverShadow}`,
-                    } as React.CSSProperties
-                  }
+                  className="w-16 h-16 rounded-full border flex items-center justify-center transition-all duration-500 relative z-10"
+                  style={{
+                    borderColor: `${v.hoverBg}40`,
+                    color: v.hoverBg,
+                  }}
                   onMouseEnter={(e) => {
                     const el = e.currentTarget;
                     el.style.background = v.hoverBg;
@@ -178,8 +178,8 @@ export function About() {
                   onMouseLeave={(e) => {
                     const el = e.currentTarget;
                     el.style.background = '';
-                    el.style.color = '#D4447A';
-                    el.style.borderColor = 'rgba(212,68,122,0.2)';
+                    el.style.color = v.hoverBg;
+                    el.style.borderColor = `${v.hoverBg}40`;
                     el.style.boxShadow = '';
                   }}
                 >
@@ -187,7 +187,8 @@ export function About() {
                 </div>
 
                 <div className="space-y-3 relative z-10">
-                  <h5 className="text-[10px] font-bold uppercase tracking-[0.42em] text-[#D4447A] group-hover:text-[#2D1B25] transition-colors duration-[400ms]">
+                  <h5 className="text-[10px] font-bold uppercase tracking-[0.42em] group-hover:text-[#2D1B25] transition-colors duration-[400ms]"
+                    style={{ color: v.hoverBg }}>
                     {v.title}
                   </h5>
                   <p className="text-[11px] text-[#7B4F62] uppercase tracking-[0.18em] font-light leading-relaxed">

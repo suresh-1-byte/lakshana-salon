@@ -9,7 +9,7 @@ export async function GET() {
       .limit(100)
       .get();
 
-    const logs = snap.docs.map(d => ({
+    const logs = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt,

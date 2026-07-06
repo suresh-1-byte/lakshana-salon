@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, CalendarCheck, Receipt, Image as ImageIcon,
   Scissors, Star, Bell, Tag, Settings, FileDown, LogOut,
-  ChevronLeft, ChevronRight, Sparkles, ActivitySquare,
+  ChevronLeft, ChevronRight, Sparkles, ActivitySquare, Clipboard, Cake,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -16,11 +16,14 @@ const NAV_ITEMS = [
   { href: '/admin/bookings',         label: 'Bookings',       icon: CalendarCheck },
   { href: '/admin/bookings/calendar',label: 'Calendar',       icon: Sparkles },
   { href: '/admin/customers',        label: 'Customers',      icon: Users },
+  { href: '/admin/consultations',    label: 'Consultations',  icon: Clipboard },
   { href: '/admin/billing',          label: 'Billing',        icon: Receipt },
   { href: '/admin/services',         label: 'Services',       icon: Scissors },
+  { href: '/admin/service-addons',   label: 'Add-ons',        icon: Sparkles },
   { href: '/admin/gallery',          label: 'Gallery',        icon: ImageIcon },
   { href: '/admin/reviews',          label: 'Reviews',        icon: Star },
   { href: '/admin/notifications',    label: 'Notifications',  icon: Bell },
+  { href: '/admin/birthday-reminders', label: 'Birthdays',    icon: Cake },
   { href: '/admin/coupons',          label: 'Coupons',        icon: Tag },
   { href: '/admin/reports',          label: 'Reports',        icon: FileDown },
   { href: '/admin/activity',         label: 'Activity',       icon: ActivitySquare },

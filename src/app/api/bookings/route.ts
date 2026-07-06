@@ -111,7 +111,7 @@ async function sendTelegram(botToken: string, chatId: string, text: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, services } = body;
+    const { name, phone, email, dateOfBirth, services } = body;
 
     if (!name || !phone || !email || !services?.length) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -120,12 +120,19 @@ export async function POST(req: NextRequest) {
     // Save booking
     const docRef = await adminDb.collection('bookings').add({
       name, phone, email, services,
+      dateOfBirth: dateOfBirth || null,
       status: 'pending',
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    // Upsert customer profile
-    await upsertCustomer({ name, phone, email, services: services.map((s: any) => s.name) });
+    // Upsert customer profile with DOB
+    await upsertCustomer({ 
+      name, 
+      phone, 
+      email, 
+      dateOfBirth: dateOfBirth || null,
+      services: services.map((s: any) => s.name) 
+    });
 
     // Load salon settings (non-fatal if Firebase not configured)
     let settings: any = {};

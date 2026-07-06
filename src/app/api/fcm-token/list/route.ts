@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const tokensSnap = await adminDb.collection('fcm_tokens').get();
     
-    const tokens = tokensSnap.docs.map(d => ({
+    const tokens = tokensSnap.docs.map((d: any) => ({
       id: d.id,
       token: d.data().token,
       email: d.data().email || null,

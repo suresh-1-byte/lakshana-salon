@@ -6,7 +6,7 @@ export async function GET() {
     // Try to fetch reviews without any ordering (to avoid index requirement)
     const snap = await adminDb.collection('reviews').limit(10).get();
     
-    const reviews = snap.docs.map(d => ({
+    const reviews = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
     }));

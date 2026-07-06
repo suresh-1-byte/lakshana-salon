@@ -27,26 +27,19 @@ export function Hero() {
     const vid = videoRef.current;
     if (!vid) return;
     
-    // Aggressively try to play
+    // Single aggressive play attempt
     const playVideo = () => {
-      vid.play().catch((err) => {
-        console.log('Autoplay blocked:', err);
-        // Try again on any user interaction
-        const events = ['click', 'touchstart', 'keydown'];
-        const tryPlay = () => {
-          vid.play();
-          events.forEach(e => document.removeEventListener(e, tryPlay));
-        };
-        events.forEach(e => document.addEventListener(e, tryPlay, { once: true }));
+      vid.play().catch(() => {
+        // Silently fallback - user will see poster/image
       });
     };
     
-    // Try immediately
-    playVideo();
-    
-    // Also try when video can play
-    vid.addEventListener('loadeddata', playVideo, { once: true });
-    vid.addEventListener('canplay', playVideo, { once: true });
+    // Try when ready
+    if (vid.readyState >= 3) {
+      playVideo();
+    } else {
+      vid.addEventListener('canplay', playVideo, { once: true });
+    }
   }, []);
 
   // ── Run the intro→cinematic animation ─────────────────
@@ -219,12 +212,13 @@ export function Hero() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
+            poster="/hero bg.png"
           >
             <source src="/web.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: 'rgba(255,192,203,0.18)', mixBlendMode: 'multiply', zIndex: 1 }} />
+            style={{ background: 'rgba(212,175,55,0.15)', mixBlendMode: 'multiply', zIndex: 1 }} />
           <div className="absolute inset-0 pointer-events-none"
             style={{
               background: 'linear-gradient(180deg, rgba(45,27,37,0.4) 0%, rgba(45,27,37,0.2) 40%, rgba(45,27,37,0.65) 80%, rgba(45,27,37,0.92) 100%)',
@@ -235,6 +229,29 @@ export function Hero() {
         {/* Overlays */}
         <div className="hero-shine"     style={{ zIndex: 3 }} />
         <div className="gold-half-fade" style={{ zIndex: 3 }} />
+
+        {/* ── Premium Golden Ambient Glow from Bottom ──── */}
+        <div 
+          className="absolute inset-x-0 bottom-0 pointer-events-none"
+          style={{ 
+            height: '35%',
+            zIndex: 4,
+            background: `
+              radial-gradient(ellipse 100% 100% at 50% 100%, 
+                rgba(212, 175, 55, 0.22) 0%, 
+                rgba(201, 169, 110, 0.18) 25%, 
+                rgba(201, 169, 110, 0.08) 50%, 
+                transparent 100%
+              ),
+              linear-gradient(0deg, 
+                rgba(201, 169, 110, 0.15) 0%, 
+                rgba(201, 169, 110, 0.08) 35%, 
+                transparent 100%
+              )
+            `,
+            mixBlendMode: 'screen',
+          }} 
+        />
 
         {/* ── TOP-LEFT BADGE: fades in after animation ─────
             Sits at position:absolute so it stays within the hero
@@ -256,13 +273,13 @@ export function Hero() {
             className="px-4 py-3 backdrop-blur-sm"
             style={{
               background: 'rgba(45,27,37,0.55)',
-              border: '1px solid rgba(232,160,180,0.3)',
-              boxShadow: '0 4px 24px rgba(212,68,122,0.2)',
+              border: '1px solid rgba(212,175,55,0.3)',
+              boxShadow: '0 4px 24px rgba(212,175,55,0.2)',
             }}
           >
             <p className="font-light leading-tight text-left"
               style={{ fontSize: 'clamp(0.7rem,1.2vw,0.95rem)' }}>
-              <span className="block text-[#FCE4EC] tracking-tight"
+              <span className="block text-[#E7D6B8] tracking-tight"
                 style={{ fontFamily: "'Times New Roman', Times, serif" }}>
                 Experience the
               </span>
@@ -272,13 +289,13 @@ export function Hero() {
                   fontStyle: 'italic',
                   fontSize: 'clamp(1.1rem,1.9vw,1.55rem)',
                   lineHeight: 1.1,
-                  textShadow: '0 0 20px rgba(212,68,122,0.5)',
+                  textShadow: '0 0 20px rgba(212,175,55,0.5)',
                 }}>
                 luxury of self&#8209;care.
               </span>
             </p>
             <div className="mt-1.5 h-[1px]"
-              style={{ background: 'linear-gradient(90deg,#D4447A,transparent)', width: '100%' }} />
+              style={{ background: 'linear-gradient(90deg,#d4af37,transparent)', width: '100%' }} />
           </div>
         </motion.div>
 
@@ -297,11 +314,11 @@ export function Hero() {
               style={{ opacity: fadeOut, y: eyebrowY }}
               className="inline-flex items-center gap-5 mb-12 mt-6 will-change-transform"
             >
-              <span className="h-[1px] w-16 bg-gradient-to-r from-transparent to-[#E8A0B4]/60" />
-              <span className="text-[#E8A0B4] text-[9px] font-semibold tracking-[0.55em] uppercase">
+              <span className="h-[1px] w-16 bg-gradient-to-r from-transparent to-[#d4af37]/60" />
+              <span className="text-[#d4af37] text-[9px] font-semibold tracking-[0.55em] uppercase">
                 Nolambur&apos;s Finest Sanctuary
               </span>
-              <span className="h-[1px] w-16 bg-gradient-to-l from-transparent to-[#E8A0B4]/60" />
+              <span className="h-[1px] w-16 bg-gradient-to-l from-transparent to-[#d4af37]/60" />
             </motion.div>
 
             {/* CENTER headline — fades out as badge appears */}
@@ -313,10 +330,10 @@ export function Hero() {
               className="leading-[1.05] mb-8 will-change-transform"
             >
               <span
-                className="block text-[clamp(3.2rem,8vw,6.5rem)] font-light tracking-tight text-[#FCE4EC]"
+                className="block text-[clamp(3.2rem,8vw,6.5rem)] font-light tracking-tight text-[#E7D6B8]"
                 style={{
                   fontFamily: "'Times New Roman', Times, serif",
-                  textShadow: '0 0 80px rgba(232,160,180,0.25)',
+                  textShadow: '0 0 80px rgba(212,175,55,0.25)',
                 }}
               >
                 Experience the
@@ -360,7 +377,7 @@ export function Hero() {
                 <Link href="#appointment">Book Appointment</Link>
               </Button>
               <Button asChild variant="outline"
-                className="btn-luxury bg-white/[0.06] hover:bg-white/[0.12] text-white hover:text-white border border-white/30 hover:border-[#E8A0B4]/60 rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase backdrop-blur-sm transition-all duration-500"
+                className="btn-luxury bg-white/[0.06] hover:bg-white/[0.12] text-white hover:text-white border border-white/30 hover:border-[#d4af37]/60 rounded-none h-[58px] px-14 text-[11px] tracking-[0.28em] uppercase backdrop-blur-sm transition-all duration-500"
               >
                 <Link href="#services">Explore Menu</Link>
               </Button>
@@ -377,11 +394,11 @@ export function Hero() {
           style={{ opacity: scrollHintOpacity }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-10 pointer-events-none"
         >
-          <span className="text-[8px] uppercase tracking-[0.45em] text-[#E8A0B4]/70 font-semibold">Scroll</span>
+          <span className="text-[8px] uppercase tracking-[0.45em] text-[#d4af37]/70 font-semibold">Scroll</span>
           <motion.div
             animate={{ scaleY: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
             transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-            className="w-[1px] h-16 bg-gradient-to-b from-[#E8A0B4]/80 to-transparent origin-top"
+            className="w-[1px] h-16 bg-gradient-to-b from-[#d4af37]/80 to-transparent origin-top"
           />
         </motion.div>
 

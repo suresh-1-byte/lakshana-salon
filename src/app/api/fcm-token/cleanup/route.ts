@@ -10,7 +10,7 @@ export async function POST() {
       return NextResponse.json({ success: true, message: 'No tokens to check', deleted: 0 });
     }
 
-    const allTokens = tokensSnap.docs.map(d => ({ 
+    const allTokens = tokensSnap.docs.map((d: any) => ({ 
       id: d.id, 
       token: d.data().token as string,
       email: d.data().email,

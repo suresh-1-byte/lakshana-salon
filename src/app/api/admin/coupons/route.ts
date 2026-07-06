@@ -4,7 +4,7 @@ import { adminDb, Collections, FieldValue, logActivity } from '@/lib/firebase-ad
 export async function GET() {
   try {
     const snap = await adminDb.collection(Collections.COUPONS).orderBy('createdAt', 'desc').get();
-    const coupons = snap.docs.map(d => ({
+    const coupons = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt,

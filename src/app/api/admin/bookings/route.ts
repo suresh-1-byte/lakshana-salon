@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       .limit(200)
       .get();
 
-    let bookings = snap.docs.map(d => ({
+    let bookings = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,

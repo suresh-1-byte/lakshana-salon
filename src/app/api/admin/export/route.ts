@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (type === 'customers') {
       sheetName = 'Customers';
       const snap = await adminDb.collection(Collections.CUSTOMERS).orderBy('createdAt', 'desc').get();
-      worksheetData = snap.docs.map(d => {
+      worksheetData = snap.docs.map((d: any) => {
         const data = d.data();
         return {
           'Name':          data.name,
@@ -35,10 +35,10 @@ export async function GET(req: NextRequest) {
     } else if (type === 'billing') {
       sheetName = 'Billing Report';
       const snap = await adminDb.collection(Collections.BILLING).orderBy('createdAt', 'desc').get();
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+      const docs = snap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
 
       worksheetData = docs
-        .filter(b => {
+        .filter((b: any) => {
           const d = b.createdAt?.toDate?.() ? b.createdAt.toDate() : new Date(b.createdAt || 0);
           return d >= fromDate && d <= toDate;
         })
@@ -58,16 +58,16 @@ export async function GET(req: NextRequest) {
     } else if (type === 'revenue') {
       sheetName = 'Revenue Report';
       const snap = await adminDb.collection(Collections.BILLING).orderBy('createdAt', 'desc').get();
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+      const docs = snap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
 
       // Group by day
       const grouped: Record<string, { revenue: number; count: number }> = {};
       docs
-        .filter(b => {
+        .filter((b: any) => {
           const d = b.createdAt?.toDate?.() ? b.createdAt.toDate() : new Date(b.createdAt || 0);
           return d >= fromDate && d <= toDate;
         })
-        .forEach(b => {
+        .forEach((b: any) => {
           const d = b.createdAt?.toDate?.() ? b.createdAt.toDate() : new Date(b.createdAt || 0);
           const key = d.toLocaleDateString('en-IN');
           if (!grouped[key]) grouped[key] = { revenue: 0, count: 0 };
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     } else if (type === 'appointments') {
       sheetName = 'Appointments';
       const snap = await adminDb.collection(Collections.BOOKINGS).orderBy('createdAt', 'desc').get();
-      worksheetData = snap.docs.map(d => {
+      worksheetData = snap.docs.map((d: any) => {
         const data = d.data();
         return {
           'Name':      data.name,

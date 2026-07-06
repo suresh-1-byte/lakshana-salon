@@ -30,19 +30,188 @@ export type LoyaltyStatus = 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
 
 export interface Customer {
   id: string;
+  customerId?: string;
   name: string;
   phone: string;
-  email: string;
+  whatsappNumber?: string;
+  email?: string;
   address?: string;
+  city?: string;
   dateOfBirth?: string;
   anniversary?: string;
+  gender?: string;
   notes?: string;
+  memberSince?: string;
+  preferredStylist?: string;
+  preferredServices?: string[];
+  customerPhoto?: string;
   totalVisits: number;
   totalSpent: number;
   lastVisit?: string;
-  loyaltyStatus: LoyaltyStatus;
+  upcomingAppointment?: string;
+  loyaltyStatus?: LoyaltyStatus;
+  status: 'active' | 'inactive' | 'deleted';
+  isDeleted?: boolean;
+  deletedAt?: string;
   createdAt: string;
   updatedAt?: string;
+}
+
+// ── Appointment ──────────────────────────────────────────
+export type AppointmentType = 
+  | 'Hair Cut' | 'Hair Spa' | 'Facial' | 'Cleanup' 
+  | 'Bridal Makeup' | 'Party Makeup' | 'Hair Coloring' 
+  | 'Hair Botox' | 'Keratin' | 'Skin Treatment';
+
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no-show';
+
+export interface Appointment {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  staffId?: string;
+  staffName?: string;
+  appointmentType: AppointmentType;
+  appointmentDate: string;
+  appointmentTime: string;
+  duration: number; // in minutes
+  status: AppointmentStatus;
+  notes?: string;
+  reminderSent?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── Consultation ─────────────────────────────────────────
+export type ConsultationStatus = 'scheduled' | 'completed' | 'cancelled';
+
+export interface Consultation {
+  id: string;
+  customerId: string;
+  customerName?: string;
+  consultantId: string | null;
+  consultantName?: string;
+  consultationDate: string;
+  hairType: string | null;
+  skinType: string | null;
+  problems: string | null;
+  suggestions: string | null;
+  recommendedServices: string[];
+  recommendedProducts: string[];
+  beforeImages: string[];
+  notes: string | null;
+  nextVisit: string | null;
+  status: ConsultationStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Package ──────────────────────────────────────────────
+export interface Package {
+  id: string;
+  packageName: string;
+  description?: string;
+  price: number;
+  discountPercentage?: number;
+  validity: number; // in days
+  includedServices: string[];
+  totalSessions: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── Customer Package ─────────────────────────────────────
+export type CustomerPackageStatus = 'active' | 'expired' | 'completed';
+
+export interface CustomerPackage {
+  id: string;
+  customerId: string;
+  packageId: string;
+  packageName: string;
+  purchaseDate: string;
+  expiryDate: string;
+  totalSessions: number;
+  remainingSessions: number;
+  status: CustomerPackageStatus;
+  usageHistory?: Array<{
+    date: string;
+    service: string;
+    notes?: string;
+  }>;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── Membership ───────────────────────────────────────────
+export type MembershipTier = 'Silver' | 'Gold' | 'Premium';
+export type MembershipStatus = 'active' | 'expired' | 'cancelled';
+
+export interface Membership {
+  id: string;
+  customerId: string;
+  customerName: string;
+  tier: MembershipTier;
+  joiningDate: string;
+  expiryDate: string;
+  benefits: string[];
+  discountPercentage: number;
+  membershipCardUrl?: string;
+  qrCode?: string;
+  barcode?: string;
+  status: MembershipStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ── WhatsApp Message ─────────────────────────────────────
+export type WhatsAppMessageType = 'text' | 'image' | 'document' | 'template';
+export type MessageDeliveryStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
+
+export interface WhatsAppMessage {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  messageType: WhatsAppMessageType;
+  content: string;
+  mediaUrl?: string;
+  templateName?: string;
+  deliveryStatus: MessageDeliveryStatus;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  errorMessage?: string;
+  createdAt: string;
+}
+
+// ── Report ───────────────────────────────────────────────
+export type ReportType = 'daily' | 'weekly' | 'monthly';
+export type ReportStatus = 'generating' | 'ready' | 'failed';
+
+export interface Report {
+  id: string;
+  reportType: ReportType;
+  startDate: string;
+  endDate: string;
+  status: ReportStatus;
+  data: {
+    totalBookings?: number;
+    completedBookings?: number;
+    pendingBookings?: number;
+    cancelledBookings?: number;
+    revenue?: number;
+    newCustomers?: number;
+    newEnquiries?: number;
+    payments?: number;
+    popularServices?: Array<{ service: string; count: number }>;
+    repeatCustomers?: number;
+  };
+  pdfUrl?: string;
+  excelUrl?: string;
+  generatedAt?: string;
+  createdAt: string;
 }
 
 // ── Billing ───────────────────────────────────────────────
@@ -227,4 +396,26 @@ export interface ApiResponse<T = unknown> {
     limit: number;
     hasMore: boolean;
   };
+}
+
+
+// ── Customer Profile ──────────────────────────────────────
+export interface CustomerProfile extends Customer {
+  bookings: Booking[];
+  payments: Bill[];
+  appointments: Appointment[];
+  consultations: Consultation[];
+  packages: CustomerPackage[];
+  membership?: Membership;
+  timeline: TimelineEvent[];
+}
+
+export interface TimelineEvent {
+  id: string;
+  type: 'booking' | 'payment' | 'appointment' | 'consultation' | 'package' | 'membership' | 'note';
+  title: string;
+  description?: string;
+  amount?: number;
+  date: string;
+  status?: string;
 }

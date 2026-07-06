@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 import type { DashboardStats } from '@/types/admin';
+import { getTodaysBirthdays } from '@/lib/api/birthdays';
+import { getTodaysAppointments } from '@/lib/api/appointments';
 
 export async function GET() {
   try {
@@ -8,7 +10,7 @@ export async function GET() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Run all queries in parallel
+    // Run all queries in parallel including birthdays and appointments
     const [
       bookingsSnap,
       customersSnap,
@@ -16,6 +18,8 @@ export async function GET() {
       notificationsSnap,
       reviewsSnap,
       servicesSnap,
+      birthdays,
+      todayAppointments,
     ] = await Promise.all([
       adminDb.collection(Collections.BOOKINGS).get(),
       adminDb.collection(Collections.CUSTOMERS).get(),
@@ -23,36 +27,38 @@ export async function GET() {
       adminDb.collection(Collections.NOTIFICATIONS).where('status', '==', 'sent').get(),
       adminDb.collection(Collections.REVIEWS).where('status', '==', 'pending').get(),
       adminDb.collection(Collections.SERVICES).where('isActive', '==', true).get(),
+      getTodaysBirthdays(),
+      getTodaysAppointments(),
     ]);
 
-    const bookings = bookingsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
-    const customers = customersSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
-    const bills = billingSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+    const bookings = bookingsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+    const customers = customersSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+    const bills = billingSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
 
     // Compute stats
-    const pendingBookings = bookings.filter(b => b.status === 'pending').length;
-    const completedBookings = bookings.filter(b => b.status === 'completed').length;
+    const pendingBookings = bookings.filter((b: any) => b.status === 'pending').length;
+    const completedBookings = bookings.filter((b: any) => b.status === 'completed').length;
 
-    const todayBills = bills.filter(b => {
+    const todayBills = bills.filter((b: any) => {
       const d = new Date(b.createdAt);
       return d >= todayStart;
     });
-    const monthBills = bills.filter(b => {
+    const monthBills = bills.filter((b: any) => {
       const d = new Date(b.createdAt);
       return d >= monthStart;
     });
 
-    const todayRevenue = todayBills.reduce((sum, b) => sum + (b.total || 0), 0);
-    const monthlyRevenue = monthBills.reduce((sum, b) => sum + (b.total || 0), 0);
-    const totalRevenue = bills.reduce((sum, b) => sum + (b.total || 0), 0);
+    const todayRevenue = todayBills.reduce((sum: any, b) => sum + (b.total || 0), 0);
+    const monthlyRevenue = monthBills.reduce((sum: any, b) => sum + (b.total || 0), 0);
+    const totalRevenue = bills.reduce((sum: any, b) => sum + (b.total || 0), 0);
 
-    const todayCustomers = customers.filter(c => {
+    const todayCustomers = customers.filter((c: any) => {
       if (!c.lastVisit) return false;
       const d = c.lastVisit?.toDate ? c.lastVisit.toDate() : new Date(c.lastVisit);
       return d >= todayStart;
     }).length;
 
-    const monthlyCustomers = customers.filter(c => {
+    const monthlyCustomers = customers.filter((c: any) => {
       if (!c.createdAt) return false;
       const d = c.createdAt?.toDate ? c.createdAt.toDate() : new Date(c.createdAt);
       return d >= monthStart;
@@ -84,11 +90,11 @@ export async function GET() {
       const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
       const dayEnd = new Date(dayStart.getTime() + 86400000);
       const dayRevenue = bills
-        .filter(b => {
+        .filter((b: any) => {
           const bd = new Date(b.createdAt);
           return bd >= dayStart && bd < dayEnd;
         })
-        .reduce((sum, b) => sum + (b.total || 0), 0);
+        .reduce((sum: any, b) => sum + (b.total || 0), 0);
 
       return {
         date: day.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric' }),
@@ -106,7 +112,7 @@ export async function GET() {
     const bookingChart = last6Months.map(month => {
       const ms = new Date(month.getFullYear(), month.getMonth(), 1);
       const me = new Date(month.getFullYear(), month.getMonth() + 1, 1);
-      const count = bookings.filter(b => {
+      const count = bookings.filter((b: any) => {
         const bd = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
         return bd >= ms && bd < me;
       }).length;
@@ -118,7 +124,7 @@ export async function GET() {
 
     // Service popularity (from bills)
     const serviceCount: Record<string, number> = {};
-    bills.forEach(b => {
+    bills.forEach((b: any) => {
       (b.items || []).forEach((item: any) => {
         if (item.type === 'service') {
           serviceCount[item.name] = (serviceCount[item.name] || 0) + item.quantity;
@@ -137,6 +143,8 @@ export async function GET() {
         revenueChart,
         bookingChart,
         popularServices,
+        birthdays,
+        todayAppointments,
       },
     });
   } catch (err) {

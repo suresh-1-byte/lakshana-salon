@@ -38,27 +38,23 @@ export function PageLoader() {
         pointerEvents: fading ? 'none' : 'all',
       }}
     >
-      {/* ── Full brand logo (pink LP Beauty Salon) ── */}
+      {/* ── LP Beauty Salon logo - transparent ── */}
       <div
         style={{
           position: 'relative',
-          width: 'min(280px, 60vw)',
-          height: 'min(280px, 60vw)',
+          width: 'min(200px, 50vw)',
+          height: 'min(200px, 50vw)',
           flexShrink: 0,
           animation: 'loader-logo-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
           filter: 'drop-shadow(0 0 30px rgba(212,68,122,0.3))',
         }}
       >
         <Image
-          src="/logoentrance.jpeg"
+          src="/lp-logo-transparent.png"
           alt="Lakshana Beauty Salon"
           fill
-          sizes="280px"
+          sizes="200px"
           className="object-contain"
-          style={{
-            mixBlendMode: 'lighten',
-            filter: 'brightness(1.1) contrast(1.2)',
-          }}
           priority
         />
       </div>

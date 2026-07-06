@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       .limit(60)
       .get();
 
-    let images = snap.docs.map(d => ({
+    let images = snap.docs.map((d: any) => ({
       id:         d.id,
       url:        d.data().url,
       caption:    d.data().caption || '',
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     }));
 
     if (category && category !== 'All') {
-      images = images.filter(img => img.category === category);
+      images = images.filter((img: any) => img.category === category);
     }
 
     return NextResponse.json({ success: true, images }, {

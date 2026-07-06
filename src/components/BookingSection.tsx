@@ -27,6 +27,7 @@ export function BookingSection() {
   const [name,      setName]      = useState('');
   const [phone,     setPhone]     = useState('');
   const [email,     setEmail]     = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [search,    setSearch]    = useState('');
   const [dropOpen,  setDropOpen]  = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -63,7 +64,7 @@ export function BookingSection() {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, services: cart }),
+        body: JSON.stringify({ name, phone, email, dateOfBirth, services: cart }),
       });
       if (!res.ok) throw new Error('Booking failed');
       setConfirmed(true);
@@ -76,7 +77,7 @@ export function BookingSection() {
   };
 
   const resetForm = () => {
-    setName(''); setPhone(''); setEmail('');
+    setName(''); setPhone(''); setEmail(''); setDateOfBirth('');
     setConfirmed(false);
   };
 
@@ -144,6 +145,17 @@ export function BookingSection() {
               <label className="text-[10px] uppercase tracking-[0.38em] font-bold text-[#D4447A]">Email</label>
               <Input required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="hello@example.com" className={inputClass} />
+            </div>
+
+            {/* Date of Birth (NEW) */}
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.38em] font-bold text-[#D4447A] flex items-center gap-2">
+                Date of Birth (Optional)
+                <span className="text-[8px] font-normal text-[#B89BAA] tracking-normal">Get special birthday offers! 🎂</span>
+              </label>
+              <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)}
+                placeholder="YYYY-MM-DD" className={inputClass} 
+                max={new Date().toISOString().split('T')[0]} />
             </div>
 
             {/* Service selector */}

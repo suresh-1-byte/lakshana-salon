@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     const tokensSnap = await adminDb.collection('fcm_tokens').get();
-    const tokenDocs = tokensSnap.docs.map(d => ({ id: d.id, token: d.data().token as string }));
+    const tokenDocs = tokensSnap.docs.map((d: any) => ({ id: d.id, token: d.data().token as string }));
     const tokens = tokenDocs.map(t => t.token).filter(Boolean);
 
     if (tokens.length === 0) {
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
     // Remove invalid tokens (those that failed permanently)
     const invalidTokenIds: string[] = [];
-    result.responses.forEach((response, idx) => {
+    result.responses.forEach((response: any, idx) => {
       if (!response.success) {
         const errorCode = (response.error as any)?.code;
         // Remove tokens with permanent errors

@@ -1,290 +1,504 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
-  FileDown, Calendar, TrendingUp, Users, Scissors,
-  RefreshCw, BarChart3,
-} from 'lucide-react';
-import {
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from 'recharts';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Download, FileSpreadsheet, Calendar } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
+import * as XLSX from 'xlsx'
 
-const COLORS = ['#D4447A', '#E8A0B4', '#B03060', '#7B4F62', '#AD1457'];
+type DailyReport = {
+  date: string
+  totalBookings: number
+  completedBookings: number
+  pendingBookings: number
+  cancelledBookings: number
+  revenue: number
+  paymentsCount: number
+  newCustomers: number
+  topServices: Array<{ service: string; count: number }>
+}
 
-const EXPORT_TYPES = [
-  { id: 'customers',    label: 'Customers',    icon: Users,      desc: 'All customer profiles with history' },
-  { id: 'billing',      label: 'Billing',      icon: FileDown,   desc: 'All invoices with amounts' },
-  { id: 'revenue',      label: 'Revenue',      icon: TrendingUp, desc: 'Daily revenue grouped by date' },
-  { id: 'appointments', label: 'Appointments', icon: Calendar,   desc: 'All bookings with status' },
-];
+type WeeklyReport = {
+  startDate: string
+  endDate: string
+  totalBookings: number
+  completedBookings: number
+  revenue: number
+  newCustomers: number
+  repeatCustomers: number
+  customerRetentionRate: number
+  popularServices: Array<{ service: string; count: number; revenue: number }>
+}
 
 export default function ReportsPage() {
-  const { toast } = useToast();
-  const [from, setFrom] = useState(() => {
-    const d = new Date(); d.setDate(d.getDate() - 30);
-    return d.toISOString().slice(0, 10);
-  });
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
-  const [exporting, setExporting] = useState<string | null>(null);
-  const [activeChart, setActiveChart] = useState<'revenue' | 'customers' | 'services'>('revenue');
+  const [loading, setLoading] = useState(false)
+  const [dailyReport, setDailyReport] = useState<DailyReport | null>(null)
+  const [weeklyReport, setWeeklyReport] = useState<WeeklyReport | null>(null)
+  
+  const [dailyDate, setDailyDate] = useState(new Date().toISOString().split('T')[0])
+  const [weeklyStartDate, setWeeklyStartDate] = useState(
+    new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  )
+  const [weeklyEndDate, setWeeklyEndDate] = useState(new Date().toISOString().split('T')[0])
 
-  const [revenueData, setRevenueData]   = useState<any>(null);
-  const [customerData, setCustomerData] = useState<any>(null);
-  const [serviceData, setServiceData]   = useState<any>(null);
-  const [chartLoading, setChartLoading] = useState(false);
-
-  const fetchChartData = async () => {
-    setChartLoading(true);
+  const handleGenerateDailyReport = async () => {
     try {
-      const [rev, cust, svc] = await Promise.all([
-        fetch(`/api/admin/reports?type=revenue&from=${from}&to=${to}`).then(r => r.json()),
-        fetch(`/api/admin/reports?type=customers&from=${from}&to=${to}`).then(r => r.json()),
-        fetch(`/api/admin/reports?type=services`).then(r => r.json()),
-      ]);
-      if (rev.success)  setRevenueData(rev.data);
-      if (cust.success) setCustomerData(cust.data);
-      if (svc.success)  setServiceData(svc.data);
-    } catch { /* ignore */ }
-    setChartLoading(false);
-  };
-
-  useEffect(() => { fetchChartData(); }, [from, to]);
-
-  const handleExport = async (type: string) => {
-    setExporting(type);
-    try {
-      const params = new URLSearchParams({ type, from, to });
-      const res = await fetch(`/api/admin/export?${params}`);
-      if (!res.ok) throw new Error('Export failed');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lakshana-${type}-${new Date().toISOString().slice(0, 10)}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast({ title: `${type} report downloaded!` });
-    } catch {
-      toast({ title: 'Export failed', variant: 'destructive' });
+      setLoading(true)
+      const response = await fetch(`/api/admin/reports/daily?date=${dailyDate}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setDailyReport(data.report)
+        toast({
+          title: 'Success',
+          description: 'Daily report generated successfully',
+        })
+      } else {
+        throw new Error(data.error || 'Failed to generate report')
+      }
+    } catch (error) {
+      console.error('Error generating daily report:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to generate daily report',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-    setExporting(null);
-  };
+  }
 
-  const tooltipStyle = {
-    background: '#1A1025',
-    border: '1px solid rgba(212,68,122,0.3)',
-    borderRadius: '12px',
-    color: 'white',
-    fontSize: '12px',
-  };
+  const handleGenerateWeeklyReport = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/admin/reports/weekly?startDate=${weeklyStartDate}&endDate=${weeklyEndDate}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setWeeklyReport(data.report)
+        toast({
+          title: 'Success',
+          description: 'Weekly report generated successfully',
+        })
+      } else {
+        throw new Error(data.error || 'Failed to generate report')
+      }
+    } catch (error) {
+      console.error('Error generating weekly report:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to generate weekly report',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleExportDailyToExcel = () => {
+    if (!dailyReport) return
+
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new()
+
+      // Summary sheet
+      const summaryData = [
+        ['Daily Report', dailyReport.date],
+        [],
+        ['Metric', 'Value'],
+        ['Total Bookings', dailyReport.totalBookings],
+        ['Completed Bookings', dailyReport.completedBookings],
+        ['Pending Bookings', dailyReport.pendingBookings],
+        ['Cancelled Bookings', dailyReport.cancelledBookings],
+        ['Revenue', `₹${dailyReport.revenue}`],
+        ['Payments Count', dailyReport.paymentsCount],
+        ['New Customers', dailyReport.newCustomers],
+      ]
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData)
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
+
+      // Top Services sheet
+      if (dailyReport.topServices.length > 0) {
+        const servicesData = [
+          ['Service', 'Count'],
+          ...dailyReport.topServices.map(s => [s.service, s.count]),
+        ]
+        const wsServices = XLSX.utils.aoa_to_sheet(servicesData)
+        XLSX.utils.book_append_sheet(wb, wsServices, 'Top Services')
+      }
+
+      // Write file
+      const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `daily-report-${dailyReport.date}.xlsx`
+      a.click()
+      window.URL.revokeObjectURL(url)
+
+      toast({
+        title: 'Success',
+        description: 'Report exported to Excel',
+      })
+    } catch (error) {
+      console.error('Error exporting to Excel:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to export report',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleExportWeeklyToExcel = () => {
+    if (!weeklyReport) return
+
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new()
+
+      // Summary sheet
+      const summaryData = [
+        ['Weekly Report', `${weeklyReport.startDate} to ${weeklyReport.endDate}`],
+        [],
+        ['Metric', 'Value'],
+        ['Total Bookings', weeklyReport.totalBookings],
+        ['Completed Bookings', weeklyReport.completedBookings],
+        ['Total Revenue', `₹${weeklyReport.revenue}`],
+        ['New Customers', weeklyReport.newCustomers],
+        ['Repeat Customers', weeklyReport.repeatCustomers],
+        ['Retention Rate', `${weeklyReport.customerRetentionRate}%`],
+      ]
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData)
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
+
+      // Popular Services sheet
+      if (weeklyReport.popularServices.length > 0) {
+        const servicesData = [
+          ['Service', 'Count', 'Revenue'],
+          ...weeklyReport.popularServices.map(s => [s.service, s.count, `₹${s.revenue}`]),
+        ]
+        const wsServices = XLSX.utils.aoa_to_sheet(servicesData)
+        XLSX.utils.book_append_sheet(wb, wsServices, 'Popular Services')
+      }
+
+      // Write file
+      const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `weekly-report-${weeklyReport.startDate}-to-${weeklyReport.endDate}.xlsx`
+      a.click()
+      window.URL.revokeObjectURL(url)
+
+      toast({
+        title: 'Success',
+        description: 'Report exported to Excel',
+      })
+    } catch (error) {
+      console.error('Error exporting to Excel:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to export report',
+        variant: 'destructive',
+      })
+    }
+  }
 
   return (
-    <div className="space-y-8">
-
-      {/* Date range + refresh */}
-      <div className="flex flex-wrap items-end gap-4 p-5 rounded-2xl"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
-        <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold w-full mb-1">Date Range</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="space-y-1">
-            <p className="text-white/30 text-[9px] uppercase tracking-[0.3em]">From</p>
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-white/30 text-[9px] uppercase tracking-[0.3em]">To</p>
-            <input type="date" value={to} onChange={e => setTo(e.target.value)}
-              className="h-9 rounded-xl px-3 text-sm text-white border border-white/10 bg-white/[0.05] outline-none focus:border-[rgba(212,68,122,0.4)]" />
-          </div>
-          <button onClick={fetchChartData}
-            className="h-9 w-9 rounded-xl flex items-center justify-center border border-white/10 bg-white/[0.05] text-white/40 hover:text-white hover:bg-white/10 transition-all self-end">
-            <RefreshCw size={13} className={chartLoading ? 'animate-spin' : ''} />
-          </button>
-        </div>
-
-        {/* Summary stats */}
-        {revenueData && (
-          <div className="flex gap-6 ml-auto flex-wrap">
-            {[
-              { label: 'Total Revenue',  value: `₹${(revenueData.totalRevenue || 0).toLocaleString('en-IN')}`,  color: '#D4447A' },
-              { label: 'Avg / Day',      value: `₹${(revenueData.avgPerDay || 0).toLocaleString('en-IN')}`,      color: '#E8A0B4' },
-              { label: 'Transactions',   value: revenueData.billCount || 0,                                       color: '#B03060' },
-            ].map(s => (
-              <div key={s.label} className="text-center">
-                <p className="font-light text-xl" style={{ fontFamily: "'Cormorant Garamond', serif", color: s.color }}>{s.value}</p>
-                <p className="text-white/30 text-[9px] uppercase tracking-[0.25em]">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Reports</h1>
+        <p className="text-neutral-600 dark:text-neutral-400">
+          Generate and export business reports
+        </p>
       </div>
 
-      {/* Chart tabs */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.12)' }}>
-        <div className="flex items-center gap-2 p-4 border-b border-white/[0.05]">
-          {[
-            { id: 'revenue',   label: 'Revenue',          icon: TrendingUp },
-            { id: 'customers', label: 'Customer Growth',  icon: Users },
-            { id: 'services',  label: 'Top Services',     icon: Scissors },
-          ].map(tab => (
-            <button key={tab.id} onClick={() => setActiveChart(tab.id as any)}
-              className="flex items-center gap-2 px-4 h-8 rounded-lg text-xs font-medium transition-all"
-              style={activeChart === tab.id
-                ? { background: 'rgba(212,68,122,0.2)', color: '#D4447A' }
-                : { color: 'rgba(255,255,255,0.4)' }
-              }>
-              <tab.icon size={13} /> {tab.label}
-            </button>
-          ))}
-        </div>
+      <Tabs defaultValue="daily" className="w-full">
+        <TabsList>
+          <TabsTrigger value="daily">Daily Report</TabsTrigger>
+          <TabsTrigger value="weekly">Weekly Report</TabsTrigger>
+          <TabsTrigger value="monthly">Monthly Report</TabsTrigger>
+        </TabsList>
 
-        <div className="p-5">
-          {chartLoading ? (
-            <div className="h-64 flex items-center justify-center">
-              <div className="w-8 h-8 rounded-full border-2 border-[#D4447A] border-t-transparent animate-spin" />
-            </div>
-          ) : (
+        {/* Daily Report */}
+        <TabsContent value="daily" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Daily Report</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-end gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="daily-date">Select Date</Label>
+                  <Input
+                    id="daily-date"
+                    type="date"
+                    value={dailyDate}
+                    onChange={(e) => setDailyDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <Button
+                  onClick={handleGenerateDailyReport}
+                  disabled={loading}
+                  className="bg-amber-500 hover:bg-amber-600"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {loading ? 'Generating...' : 'Generate Report'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {dailyReport && (
             <>
-              {/* Revenue Area Chart */}
-              {activeChart === 'revenue' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <AreaChart data={revenueData?.chart || []}>
-                      <defs>
-                        <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor="#D4447A" stopOpacity={0.35} />
-                          <stop offset="95%" stopColor="#D4447A" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.2)"
-                        tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
-                        tickFormatter={v => v.slice(5)} />
-                      <YAxis stroke="rgba(255,255,255,0.2)"
-                        tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }}
-                        tickFormatter={v => `₹${v}`} />
-                      <Tooltip contentStyle={tooltipStyle}
-                        formatter={(v: number) => [`₹${v.toLocaleString('en-IN')}`, 'Revenue']} />
-                      <Area type="monotone" dataKey="revenue" stroke="#D4447A" strokeWidth={2} fill="url(#revGrad)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                  {/* Payment breakdown */}
-                  {revenueData?.paymentBreakdown && (
-                    <div className="flex flex-wrap gap-3 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] w-full">Payment Methods</p>
-                      {Object.entries(revenueData.paymentBreakdown).map(([method, amount]: any) => (
-                        <div key={method} className="px-3 py-2 rounded-xl"
-                          style={{ background: 'rgba(212,68,122,0.08)', border: '1px solid rgba(212,68,122,0.15)' }}>
-                          <p className="text-[#D4447A] text-sm font-medium">₹{amount.toLocaleString('en-IN')}</p>
-                          <p className="text-white/30 text-[10px] capitalize">{method}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                  Report for {new Date(dailyReport.date).toLocaleDateString()}
+                </h2>
+                <Button onClick={handleExportDailyToExcel} variant="outline">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Export to Excel
+                </Button>
+              </div>
 
-              {/* Customer Growth Bar */}
-              {activeChart === 'customers' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={customerData?.chart || []}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="month" stroke="rgba(255,255,255,0.2)"
-                        tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                      <YAxis stroke="rgba(255,255,255,0.2)"
-                        tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} />
-                      <Tooltip contentStyle={tooltipStyle} />
-                      <Bar dataKey="count" fill="#D4447A" radius={[4, 4, 0, 0]} name="New Customers" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                  {/* Loyalty breakdown */}
-                  {customerData?.loyaltyBreakdown && (
-                    <div className="flex flex-wrap gap-3 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] w-full">Loyalty Distribution (All Time)</p>
-                      {Object.entries(customerData.loyaltyBreakdown).map(([tier, count]: any) => (
-                        <div key={tier} className="px-3 py-2 rounded-xl"
-                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <p className="text-white text-sm font-medium">{count}</p>
-                          <p className="text-white/30 text-[10px]">{tier}</p>
-                        </div>
-                      ))}
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Total Bookings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{dailyReport.totalBookings}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      {dailyReport.completedBookings} completed
                     </div>
-                  )}
-                </motion.div>
-              )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">₹{dailyReport.revenue.toLocaleString()}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      {dailyReport.paymentsCount} payments
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      New Customers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{dailyReport.newCustomers}</div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Pending Bookings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{dailyReport.pendingBookings}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      {dailyReport.cancelledBookings} cancelled
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Top Services */}
-              {activeChart === 'services' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                  {(serviceData?.ranked || []).map((s: any, i: number) => (
-                    <div key={s.name} className="flex items-center gap-4">
-                      <span className="text-white/20 text-sm w-5 text-right shrink-0">{i + 1}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-white/70 text-sm">{s.name}</p>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[#D4447A] text-sm font-medium">₹{(s.revenue || 0).toLocaleString('en-IN')}</span>
-                            <span className="text-white/30 text-xs">{s.count} times</span>
-                          </div>
+              {dailyReport.topServices.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Top Services</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {dailyReport.topServices.map((service, idx) => (
+                        <div key={idx} className="flex items-center justify-between">
+                          <span className="font-medium">{service.service}</span>
+                          <span className="text-amber-600 font-semibold">
+                            {service.count} bookings
+                          </span>
                         </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, (s.count / (serviceData?.ranked?.[0]?.count || 1)) * 100)}%` }}
-                            transition={{ duration: 0.8, delay: i * 0.06 }}
-                            className="h-full rounded-full"
-                            style={{ background: `linear-gradient(90deg, ${COLORS[i % COLORS.length]}, ${COLORS[(i + 1) % COLORS.length]})` }}
-                          />
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                  {(!serviceData?.ranked?.length) && (
-                    <p className="text-white/25 text-sm text-center py-8">No billing data yet</p>
-                  )}
-                </motion.div>
+                  </CardContent>
+                </Card>
               )}
             </>
           )}
-        </div>
-      </div>
+        </TabsContent>
 
-      {/* Export section */}
-      <div>
-        <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold mb-4">
-          <FileDown size={11} className="inline mr-1.5" /> Export Reports
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {EXPORT_TYPES.map((r, i) => (
-            <motion.div key={r.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              className="rounded-2xl p-5"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,68,122,0.1)' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                style={{ background: 'rgba(212,68,122,0.12)' }}>
-                <r.icon size={18} className="text-[#D4447A]" />
+        {/* Weekly Report */}
+        <TabsContent value="weekly" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Generate Weekly Report</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="weekly-start">Start Date</Label>
+                  <Input
+                    id="weekly-start"
+                    type="date"
+                    value={weeklyStartDate}
+                    onChange={(e) => setWeeklyStartDate(e.target.value)}
+                    max={weeklyEndDate}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="weekly-end">End Date</Label>
+                  <Input
+                    id="weekly-end"
+                    type="date"
+                    value={weeklyEndDate}
+                    onChange={(e) => setWeeklyEndDate(e.target.value)}
+                    min={weeklyStartDate}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
               </div>
-              <p className="text-white text-sm font-medium mb-1">{r.label}</p>
-              <p className="text-white/30 text-xs mb-4 leading-relaxed">{r.desc}</p>
-              <button onClick={() => handleExport(r.id)} disabled={exporting === r.id}
-                className="w-full h-9 rounded-xl text-xs font-bold uppercase tracking-wide transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: 'rgba(212,68,122,0.15)', border: '1px solid rgba(212,68,122,0.25)', color: '#D4447A' }}>
-                <FileDown size={12} />
-                {exporting === r.id ? 'Generating...' : 'Export Excel'}
-              </button>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+              <Button
+                onClick={handleGenerateWeeklyReport}
+                disabled={loading}
+                className="bg-amber-500 hover:bg-amber-600 w-full"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                {loading ? 'Generating...' : 'Generate Report'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {weeklyReport && (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                  Report: {new Date(weeklyReport.startDate).toLocaleDateString()} - {new Date(weeklyReport.endDate).toLocaleDateString()}
+                </h2>
+                <Button onClick={handleExportWeeklyToExcel} variant="outline">
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Export to Excel
+                </Button>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Total Bookings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{weeklyReport.totalBookings}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      {weeklyReport.completedBookings} completed
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Total Revenue
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">₹{weeklyReport.revenue.toLocaleString()}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      ₹{Math.round(weeklyReport.revenue / 7).toLocaleString()}/day avg
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      New Customers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{weeklyReport.newCustomers}</div>
+                    <div className="text-xs text-neutral-500 mt-1">
+                      {weeklyReport.repeatCustomers} repeat customers
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-neutral-500">
+                      Retention Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{weeklyReport.customerRetentionRate}%</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Popular Services */}
+              {weeklyReport.popularServices.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Popular Services</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {weeklyReport.popularServices.map((service, idx) => (
+                        <div key={idx} className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">{service.service}</p>
+                            <p className="text-sm text-neutral-500">{service.count} bookings</p>
+                          </div>
+                          <span className="text-amber-600 font-semibold">
+                            ₹{service.revenue.toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+        </TabsContent>
+
+        {/* Monthly Report */}
+        <TabsContent value="monthly" className="space-y-6">
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center text-neutral-500">
+                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Monthly reports coming soon...</p>
+                <p className="text-sm mt-2">Use Weekly Report with 30-day range for now</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
-  );
+  )
 }

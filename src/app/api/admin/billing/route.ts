@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       .orderBy('createdAt', 'desc')
       .get();
 
-    let bills = snap.docs.map(d => ({
+    let bills = snap.docs.map((d: any) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt,
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     if (search) {
       const q = search.toLowerCase();
-      bills = bills.filter(b =>
+      bills = bills.filter((b: any) =>
         (b as any).customerName?.toLowerCase().includes(q) ||
         (b as any).customerPhone?.includes(q) ||
         (b as any).invoiceNumber?.toLowerCase().includes(q)
@@ -79,7 +79,6 @@ export async function POST(req: NextRequest) {
       name: customerName,
       phone: customerPhone,
       email: customerEmail,
-      visitAmount: total,
       services: items.filter((i: any) => i.type === 'service').map((i: any) => i.name),
     });
 
@@ -94,7 +93,7 @@ export async function POST(req: NextRequest) {
     await adminDb.collection(Collections.CUSTOMERS).doc(customerId).update({ loyaltyStatus });
 
     // Create bill
-    const ref = await adminDb.collection(Collections.BILLING).add({
+    const docRef = await adminDb.collection(Collections.BILLING).add({
       invoiceNumber,
       customerId,
       customerName,
@@ -111,8 +110,13 @@ export async function POST(req: NextRequest) {
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    await logActivity('billing_create', `Bill created: ${invoiceNumber} for ${customerName}`, {
-      invoiceNumber, total, customerId
+    await logActivity('billing_create', {
+      message: `Bill created: ${invoiceNumber} for ${customerName}`,
+      invoiceNumber, 
+      total, 
+      customerId,
+      entityType: 'billing',
+      entityId: docRef.id
     });
 
     // Send invoice email if customer email exists and setting is on
@@ -154,7 +158,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      id: ref.id,
+      id: docRef.id,
       invoiceNumber,
       total,
       customerId,
