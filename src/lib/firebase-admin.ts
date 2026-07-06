@@ -7,27 +7,75 @@ import { getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
 
-// Initialize Firebase Admin SDK
-if (!getApps().length) {
+// Initialize Firebase Admin SDK only if environment variables are available
+// This prevents build-time errors when env vars aren't available
+function initializeFirebaseAdmin() {
+  if (getApps().length > 0) {
+    return getApps()[0];
+  }
+
+  // Check if required environment variables are present
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.warn('⚠️ Firebase Admin environment variables not available - skipping initialization');
+    return null;
+  }
+
   try {
-    admin.initializeApp({
+    const app = admin.initializeApp({
       credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        projectId,
+        clientEmail,
+        // Handle both escaped and unescaped newlines
+        privateKey: privateKey.replace(/\\n/g, '\n'),
       }),
-      projectId: process.env.FIREBASE_PROJECT_ID,
+      projectId,
     });
     console.log('✅ Firebase Admin SDK initialized successfully');
+    return app;
   } catch (error) {
     console.error('❌ Firebase Admin SDK initialization error:', error);
+    return null;
   }
 }
 
-// Export Firestore instance
-export const adminDb = getFirestore();
-export const adminMsg = getMessaging();
-export const getAdminDb = () => adminDb;
+// Lazy initialization - only initialize when actually used
+let _adminDb: ReturnType<typeof getFirestore> | null = null;
+let _adminMsg: ReturnType<typeof getMessaging> | null = null;
+
+export const getAdminDb = () => {
+  if (!_adminDb) {
+    initializeFirebaseAdmin();
+    _adminDb = getFirestore();
+  }
+  return _adminDb;
+};
+
+export const getAdminMessaging = () => {
+  if (!_adminMsg) {
+    initializeFirebaseAdmin();
+    _adminMsg = getMessaging();
+  }
+  return _adminMsg;
+};
+
+// Export for backward compatibility
+export const adminDb = new Proxy({} as ReturnType<typeof getFirestore>, {
+  get: (target, prop) => {
+    const db = getAdminDb();
+    return (db as any)[prop];
+  }
+});
+
+export const adminMsg = new Proxy({} as ReturnType<typeof getMessaging>, {
+  get: (target, prop) => {
+    const msg = getAdminMessaging();
+    return (msg as any)[prop];
+  }
+});
 
 // Export Firestore utilities
 export { FieldValue, Timestamp };
