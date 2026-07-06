@@ -20,10 +20,35 @@ export async function GET(request: NextRequest) {
 
     const customers = await getUpcomingBirthdays(days);
 
+    // Transform data to match frontend expectations
+    const birthdays = customers.map(customer => {
+      const dob = new Date(customer.dateOfBirth);
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      const birthdayThisYear = new Date(thisYear, dob.getMonth(), dob.getDate());
+
+      if (birthdayThisYear < today) {
+        birthdayThisYear.setFullYear(thisYear + 1);
+      }
+
+      const daysUntilBirthday = Math.ceil((birthdayThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      return {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        email: customer.email,
+        dateOfBirth: customer.dateOfBirth,
+        whatsappNumber: customer.whatsappNumber,
+        daysUntilBirthday,
+        birthdayDate: birthdayThisYear.toISOString().split('T')[0],
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      count: customers.length,
-      data: customers,
+      count: birthdays.length,
+      birthdays: birthdays,
     });
   } catch (error) {
     console.error('Upcoming birthdays API error:', error);

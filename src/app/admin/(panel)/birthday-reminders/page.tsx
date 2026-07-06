@@ -53,8 +53,12 @@ export default function BirthdayRemindersPage() {
   const sendReminders = async () => {
     setSending(true);
     try {
+      // Call the cron endpoint with proper authorization
       const response = await fetch('/api/cron/birthday-reminders', {
-        method: 'POST',
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'lakshana-birthday-cron-2025-secure-key-change-in-production'}`,
+        },
       });
       
       const data = await response.json();
@@ -62,7 +66,7 @@ export default function BirthdayRemindersPage() {
       if (data.success) {
         toast({
           title: 'Success!',
-          description: `Sent ${data.sent} birthday reminders`,
+          description: `Sent ${data.sent} birthday reminder${data.sent !== 1 ? 's' : ''} successfully`,
         });
         loadUpcomingBirthdays();
       } else {
@@ -72,7 +76,7 @@ export default function BirthdayRemindersPage() {
       console.error('Error sending reminders:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send reminders',
+        description: error instanceof Error ? error.message : 'Failed to send reminders',
         variant: 'destructive',
       });
     } finally {

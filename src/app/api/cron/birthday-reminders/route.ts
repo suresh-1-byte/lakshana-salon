@@ -87,7 +87,12 @@ Let us make your birthday extra special! 💄💅`;
     // Send WhatsApp message
     const phone = customer.whatsappNumber || customer.phone;
     
-    await fetch('/api/whatsapp/send', {
+    // Use absolute URL for internal API call
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    
+    const response = await fetch(`${baseUrl}/api/whatsapp/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -100,6 +105,8 @@ Let us make your birthday extra special! 💄💅`;
       }),
     });
 
+    const result = await response.json();
+
     // Log the reminder
     await adminDb.collection(Collections.WHATSAPP_MESSAGES).add({
       customerId: customer.id,
@@ -107,15 +114,33 @@ Let us make your birthday extra special! 💄💅`;
       customerPhone: phone,
       messageType: 'birthday_reminder',
       content: message,
-      status: 'sent',
+      status: result.success ? 'sent' : 'failed',
       sentAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
+      errorMessage: result.error || null,
     });
 
     console.log(`✅ Birthday reminder sent to ${customer.name}`);
-    return { success: true, customer: customer.name };
+    return { success: result.success, customer: customer.name };
   } catch (error) {
     console.error(`❌ Failed to send reminder to ${customer.name}:`, error);
+    
+    // Log failed attempt
+    try {
+      await adminDb.collection(Collections.WHATSAPP_MESSAGES).add({
+        customerId: customer.id,
+        customerName: customer.name,
+        customerPhone: customer.whatsappNumber || customer.phone,
+        messageType: 'birthday_reminder',
+        content: message,
+        status: 'failed',
+        createdAt: new Date().toISOString(),
+        errorMessage: String(error),
+      });
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
+    
     return { success: false, customer: customer.name, error: String(error) };
   }
 }
