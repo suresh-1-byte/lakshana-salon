@@ -6,6 +6,11 @@ import { NextResponse } from 'next/server';
 import { getAdminDb, Timestamp } from '@/lib/firebase-admin';
 import { Collections } from '@/lib/firebase-collections';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   const db = getAdminDb();
   

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { signAdminToken, COOKIE_NAME } from '@/lib/admin-auth';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();

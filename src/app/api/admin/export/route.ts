@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 import * as XLSX from 'xlsx';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);

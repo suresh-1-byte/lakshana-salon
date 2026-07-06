@@ -2,6 +2,11 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function DELETE() {
   try {
     const tokensSnap = await adminDb.collection('fcm_tokens').get();

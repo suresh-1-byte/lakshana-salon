@@ -11,6 +11,11 @@ import {
   deleteConsultation,
 } from '@/lib/api/consultations';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/admin/consultations
  * Get all consultations with optional filters

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue, logActivity } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     const snap = await adminDb.collection(Collections.SERVICES).orderBy('categoryName').get();

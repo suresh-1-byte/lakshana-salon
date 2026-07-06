@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * POST /api/admin/coupons/validate
  * Validates a coupon code and returns discount details.

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * POST /api/public/reviews
  * Public endpoint for customers to submit reviews via QR code

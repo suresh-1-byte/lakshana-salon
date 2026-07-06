@@ -7,6 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 import { sendWhatsAppMessage } from '@/lib/api/whatsapp';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * Get customers with birthdays in the next 7 days
  */

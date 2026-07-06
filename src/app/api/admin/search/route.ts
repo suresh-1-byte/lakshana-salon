@@ -5,6 +5,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { globalSearch } from '@/lib/api/search';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

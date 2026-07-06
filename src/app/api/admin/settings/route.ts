@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, logActivity } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 const DEFAULT_SETTINGS = {
   salonName: 'Lakshana Premier Beauty Salon',
   tagline: "Nolambur's Finest Sanctuary",

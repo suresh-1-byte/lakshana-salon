@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminMsg, Collections, FieldValue, upsertCustomer } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 // ── Themed email HTML ─────────────────────────────────────────────
 function buildConfirmationEmail(data: {
   customerName: string;

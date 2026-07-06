@@ -2,6 +2,11 @@
 import { NextResponse } from 'next/server';
 import { adminDb, adminMsg } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function POST() {
   try {
     const tokensSnap = await adminDb.collection('fcm_tokens').get();

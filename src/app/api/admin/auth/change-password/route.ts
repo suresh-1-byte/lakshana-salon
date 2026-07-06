@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/admin-auth';
 import { adminDb, Collections, logActivity } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function POST(req: NextRequest) {
   try {
     await requireAdminSession();

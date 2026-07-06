@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function DELETE() {
   try {
     const snap = await adminDb.collection(Collections.NOTIFICATIONS).get();

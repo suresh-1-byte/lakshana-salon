@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue, logActivity, upsertCustomer } from '@/lib/firebase-admin';
 import { invoiceEmail } from '@/lib/email-templates';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 function generateInvoiceNumber(): string {
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);

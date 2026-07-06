@@ -4,6 +4,11 @@ import type { DashboardStats } from '@/types/admin';
 import { getTodaysBirthdays } from '@/lib/api/birthdays';
 import { getTodaysAppointments } from '@/lib/api/appointments';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     const now = new Date();

@@ -5,6 +5,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateDailyReport, exportDailyReportToExcel } from '@/lib/api/reports';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/reports/daily?date=2025-01-07
  * Generate daily report

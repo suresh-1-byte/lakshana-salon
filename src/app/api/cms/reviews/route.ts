@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/cms/reviews
  * Public endpoint — returns approved reviews for website testimonials section.

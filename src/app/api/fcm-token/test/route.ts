@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { getApp, getApps } from 'firebase-admin/app';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 // Diagnostic endpoint to check Firebase connection and FCM tokens
 export async function GET() {
   try {

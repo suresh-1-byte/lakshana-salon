@@ -5,6 +5,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { notifyNewBooking } from '@/lib/api/notifications';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

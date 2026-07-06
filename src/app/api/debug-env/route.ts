@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 // Debug endpoint to check environment variables (remove after fixing!)
 export async function GET() {
   const projectId = process.env.FIREBASE_PROJECT_ID;

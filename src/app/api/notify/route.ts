@@ -2,6 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminMsg } from '@/lib/firebase-admin';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+
 export async function POST(req: NextRequest) {
   try {
     const { title, body, url } = await req.json();
