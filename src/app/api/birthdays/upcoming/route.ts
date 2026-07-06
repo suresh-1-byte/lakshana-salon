@@ -5,6 +5,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUpcomingBirthdays } from '@/lib/api/birthdays';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/birthdays/upcoming?days=7
  * Get upcoming birthdays in the next N days

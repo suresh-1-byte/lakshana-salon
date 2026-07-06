@@ -9,6 +9,10 @@ import {
   sendBirthdayOffer,
 } from '@/lib/api/birthday-automation';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

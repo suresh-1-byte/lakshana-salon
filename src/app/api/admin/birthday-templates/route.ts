@@ -9,6 +9,10 @@ import {
   deleteBirthdayTemplate,
 } from '@/lib/api/birthday-automation';
 
+// Force dynamic rendering - don't try to prerender this API route
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const templates = await getBirthdayTemplates();

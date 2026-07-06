@@ -8,6 +8,10 @@ import {
   sendTodaysBirthdayWishes,
 } from '@/lib/api/birthdays';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 /**
  * GET /api/birthdays/today
  * Get customers with birthday today
