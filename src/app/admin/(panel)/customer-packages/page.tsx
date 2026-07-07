@@ -172,23 +172,23 @@ export default function CustomerPackagesPage() {
       <div className="flex items-center justify-between">
         <div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <p className="text-[#D4447A] text-[9px] tracking-[0.4em] uppercase font-bold">
+            <p className="text-[#D4447A] text-[10px] tracking-[0.4em] uppercase font-bold">
               Customer Packages
             </p>
             <h1
-              className="text-white text-3xl font-light mt-1"
+              className="text-white text-4xl font-light mt-1"
               style={{ fontFamily: "'Cormorant Garamond', serif" }}
             >
               Package Management
             </h1>
-            <p className="text-white/40 text-sm mt-2">
+            <p className="text-white/70 text-base mt-2">
               Manage prepaid service packages and track usage
             </p>
           </motion.div>
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={loadData} variant="outline" disabled={loading}>
+          <Button onClick={loadData} variant="outline" disabled={loading} className="border-[#D4447A]/30 text-white hover:bg-[#D4447A]/10">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             Refresh
           </Button>
@@ -200,22 +200,22 @@ export default function CustomerPackagesPage() {
                 Create Package
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#1A0D15] border-white/10">
+            <DialogContent className="bg-[#0D0A14] border-[#D4447A]/30">
               <DialogHeader>
-                <DialogTitle className="text-white">Create New Package</DialogTitle>
+                <DialogTitle className="text-white text-xl font-semibold">Create New Package</DialogTitle>
               </DialogHeader>
               
               <div className="space-y-4 mt-4">
                 <div>
-                  <Label className="text-white/70">Select Customer</Label>
+                  <Label className="text-white font-medium mb-2 block">Select Customer</Label>
                   <select
                     value={selectedCustomerId}
                     onChange={(e) => setSelectedCustomerId(e.target.value)}
-                    className="w-full mt-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white"
+                    className="w-full mt-1 bg-[#1A0D15] border border-[#D4447A]/30 rounded-lg px-3 py-2.5 text-white focus:border-[#D4447A] focus:ring-1 focus:ring-[#D4447A] outline-none"
                   >
-                    <option value="">Choose customer...</option>
+                    <option value="" className="bg-[#1A0D15] text-white/70">Choose customer...</option>
                     {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
+                      <option key={customer.id} value={customer.id} className="bg-[#1A0D15] text-white">
                         {customer.name} ({customer.phone})
                       </option>
                     ))}
@@ -223,23 +223,23 @@ export default function CustomerPackagesPage() {
                 </div>
 
                 <div>
-                  <Label className="text-white/70">Package Amount (₹)</Label>
+                  <Label className="text-white font-medium mb-2 block">Package Amount (₹)</Label>
                   <Input
                     type="number"
                     value={packageAmount}
                     onChange={(e) => setPackageAmount(e.target.value)}
                     placeholder="15000"
-                    className="mt-1 bg-white/5 border-white/10 text-white"
+                    className="mt-1 bg-[#1A0D15] border-[#D4447A]/30 text-white placeholder:text-white/50 focus:border-[#D4447A] focus:ring-1 focus:ring-[#D4447A]"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-white/70">Notes (Optional)</Label>
+                  <Label className="text-white font-medium mb-2 block">Notes (Optional)</Label>
                   <Textarea
                     value={packageNotes}
                     onChange={(e) => setPackageNotes(e.target.value)}
                     placeholder="Package details or special terms..."
-                    className="mt-1 bg-white/5 border-white/10 text-white"
+                    className="mt-1 bg-[#1A0D15] border-[#D4447A]/30 text-white placeholder:text-white/50 focus:border-[#D4447A] focus:ring-1 focus:ring-[#D4447A]"
                     rows={3}
                   />
                 </div>
