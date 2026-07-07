@@ -192,6 +192,7 @@ export default function CustomersPage() {
               <TableHead>Name</TableHead>
               <TableHead>Mobile</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Date of Birth</TableHead>
               <TableHead>Total Visits</TableHead>
               <TableHead>Total Spent</TableHead>
               <TableHead>Member Since</TableHead>
@@ -202,13 +203,13 @@ export default function CustomersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
+                <TableCell colSpan={10} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-gray-400">
+                <TableCell colSpan={10} className="text-center py-8 text-gray-400">
                   No customers found
                 </TableCell>
               </TableRow>
@@ -217,8 +218,40 @@ export default function CustomersPage() {
                 <TableRow key={customer.id} className="border-gray-800">
                   <TableCell className="font-medium">{customer.customer_id}</TableCell>
                   <TableCell>{customer.full_name}</TableCell>
-                  <TableCell>{customer.mobile_number}</TableCell>
+                  <TableCell>
+                    <a 
+                      href={`https://wa.me/${customer.mobile_number.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-400 hover:text-green-300 underline"
+                    >
+                      {customer.mobile_number}
+                    </a>
+                  </TableCell>
                   <TableCell>{customer.email || '-'}</TableCell>
+                  <TableCell>
+                    {customer.date_of_birth ? (
+                      <div className="flex items-center gap-2">
+                        <span>{new Date(customer.date_of_birth).toLocaleDateString('en-IN')}</span>
+                        {(() => {
+                          const today = new Date();
+                          const dob = new Date(customer.date_of_birth);
+                          const thisYear = today.getFullYear();
+                          let nextBirthday = new Date(thisYear, dob.getMonth(), dob.getDate());
+                          if (nextBirthday < today) {
+                            nextBirthday = new Date(thisYear + 1, dob.getMonth(), dob.getDate());
+                          }
+                          const daysUntil = Math.ceil((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                          if (daysUntil >= 0 && daysUntil <= 7) {
+                            return <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">🎂 {daysUntil === 0 ? 'Today!' : `In ${daysUntil}d`}</Badge>;
+                          }
+                          return null;
+                        })()}
+                      </div>
+                    ) : (
+                      <span className="text-gray-500">Not provided</span>
+                    )}
+                  </TableCell>
                   <TableCell>{customer.total_visits}</TableCell>
                   <TableCell>₹{customer.total_spent.toFixed(2)}</TableCell>
                   <TableCell>

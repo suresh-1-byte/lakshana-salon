@@ -213,10 +213,16 @@ Thank you ❤️`;
                             <div className="flex-1 min-w-0">
                               <h3 className="text-white font-medium text-lg truncate">{customer.name}</h3>
                               <div className="flex items-center gap-3 text-white/60 text-sm mt-1 flex-wrap">
-                                <span className="flex items-center gap-1">
+                                <a 
+                                  href={`https://wa.me/${(customer.whatsappNumber || customer.phone).replace(/[^0-9]/g, '')}?text=${generateWhatsAppMessage(customer)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 hover:text-green-400 transition-colors cursor-pointer"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <Phone size={12} />
-                                  {customer.phone}
-                                </span>
+                                  <span className="underline">{customer.phone}</span>
+                                </a>
                                 {customer.email && (
                                   <span className="text-white/40 text-xs truncate">{customer.email}</span>
                                 )}
@@ -268,10 +274,16 @@ Thank you ❤️`;
                             <div className="flex-1 min-w-0">
                               <h3 className="text-white font-medium truncate">{customer.name}</h3>
                               <div className="flex items-center gap-3 text-white/60 text-sm mt-1 flex-wrap">
-                                <span className="flex items-center gap-1">
+                                <a 
+                                  href={`https://wa.me/${(customer.whatsappNumber || customer.phone).replace(/[^0-9]/g, '')}?text=${generateWhatsAppMessage(customer)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1 hover:text-green-400 transition-colors cursor-pointer"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   <Phone size={12} />
-                                  {customer.phone}
-                                </span>
+                                  <span className="underline">{customer.phone}</span>
+                                </a>
                                 {customer.email && (
                                   <span className="text-white/40 text-xs truncate">{customer.email}</span>
                                 )}
