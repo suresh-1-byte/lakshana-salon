@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/admin/bookings',         label: 'Bookings',       icon: CalendarCheck },
   { href: '/admin/bookings/calendar',label: 'Calendar',       icon: Sparkles },
   { href: '/admin/customers',        label: 'Customers',      icon: Users },
+  { href: '/admin/customer-packages', label: 'Customer Packages', icon: Tag },
   { href: '/admin/consultations',    label: 'Consultations',  icon: Clipboard },
   { href: '/admin/billing',          label: 'Billing',        icon: Receipt },
   { href: '/admin/services',         label: 'Services',       icon: Scissors },
