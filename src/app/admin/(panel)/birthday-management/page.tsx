@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Gift, Cake, Phone, MessageCircle, RefreshCw, Search } from 'lucide-react';
+import { Calendar, Gift, Cake, Phone, MessageCircle, RefreshCw, Search, Mail, MessageSquare, Send } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,6 +83,46 @@ Thank you ❤️`;
     const message = generateWhatsAppMessage(customer);
     const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
+  };
+
+  const sendEmail = (customer: BirthdayCustomer) => {
+    const subject = encodeURIComponent(`🎉 Happy Birthday ${customer.name}! Special Offer Inside`);
+    const body = encodeURIComponent(`Dear ${customer.name},
+
+🎂 Happy Birthday! 🎉
+
+We hope your special day is filled with joy and happiness!
+
+To celebrate your birthday, we have an exclusive offer just for you:
+
+🎁 BIRTHDAY SPECIAL OFFER:
+✨ 20% OFF on all services
+🌸 Complimentary hair spa
+💅 Free nail art design
+
+This offer is valid for 2 weeks from your birthday!
+
+Visit us at:
+Lakshana Premier Beauty Salon
+📍 Nolambur, Chennai
+
+To book your appointment, reply to this email or call us.
+
+Warm wishes,
+Lakshana Beauty Salon Team
+
+---
+This is a personalized birthday offer. Not valid with other promotions.`);
+    
+    const mailtoUrl = `mailto:${customer.email}?subject=${subject}&body=${body}`;
+    window.location.href = mailtoUrl;
+  };
+
+  const sendSMS = (customer: BirthdayCustomer) => {
+    const phone = customer.phone.replace(/[^0-9]/g, '');
+    const message = encodeURIComponent(`Hi ${customer.name}! 🎉 Happy Birthday! Celebrate with us - Get 20% OFF + Complimentary services. Valid 2 weeks. Visit Lakshana Beauty Salon, Nolambur. Book now!`);
+    const smsUrl = `sms:${phone}${navigator.userAgent.includes('iPhone') ? '&' : '?'}body=${message}`;
+    window.location.href = smsUrl;
   };
 
   const filteredCustomers = customers.filter((customer) =>
@@ -233,13 +273,36 @@ Thank you ❤️`;
                             </div>
                           </div>
 
-                          <Button
-                            onClick={() => sendWhatsApp(customer)}
-                            className="bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90 flex items-center gap-2"
-                          >
-                            <MessageCircle size={16} />
-                            Send WhatsApp Offer
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              onClick={() => sendWhatsApp(customer)}
+                              size="sm"
+                              className="bg-gradient-to-r from-green-500 to-green-600 hover:opacity-90 flex items-center gap-1"
+                            >
+                              <MessageCircle size={14} />
+                              WhatsApp
+                            </Button>
+                            {customer.email && (
+                              <Button
+                                onClick={() => sendEmail(customer)}
+                                size="sm"
+                                variant="outline"
+                                className="flex items-center gap-1 hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400"
+                              >
+                                <Mail size={14} />
+                                Email
+                              </Button>
+                            )}
+                            <Button
+                              onClick={() => sendSMS(customer)}
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-1 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400"
+                            >
+                              <MessageSquare size={14} />
+                              SMS
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -302,14 +365,37 @@ Thank you ❤️`;
                             </div>
                           </div>
 
-                          <Button
-                            onClick={() => sendWhatsApp(customer)}
-                            variant="outline"
-                            className="flex items-center gap-2 hover:bg-green-500/10 hover:border-green-500/30 hover:text-green-400"
-                          >
-                            <MessageCircle size={16} />
-                            Send Offer
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              onClick={() => sendWhatsApp(customer)}
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-1 hover:bg-green-500/10 hover:border-green-500/30 hover:text-green-400"
+                            >
+                              <MessageCircle size={14} />
+                              WhatsApp
+                            </Button>
+                            {customer.email && (
+                              <Button
+                                onClick={() => sendEmail(customer)}
+                                size="sm"
+                                variant="outline"
+                                className="flex items-center gap-1 hover:bg-blue-500/10 hover:border-blue-500/30 hover:text-blue-400"
+                              >
+                                <Mail size={14} />
+                                Email
+                              </Button>
+                            )}
+                            <Button
+                              onClick={() => sendSMS(customer)}
+                              size="sm"
+                              variant="outline"
+                              className="flex items-center gap-1 hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-400"
+                            >
+                              <MessageSquare size={14} />
+                              SMS
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -325,14 +411,23 @@ Thank you ❤️`;
       <Card className="bg-gradient-to-r from-green-500/10 to-transparent border-green-500/30">
         <CardContent className="p-5">
           <div className="flex items-start gap-3">
-            <MessageCircle size={20} className="text-green-400 shrink-0 mt-0.5" />
+            <Send size={20} className="text-green-400 shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-white font-medium mb-2">🆓 Free WhatsApp Integration - No API Needed!</h3>
-              <p className="text-white/60 text-sm leading-relaxed">
-                Click <strong className="text-green-400">"Send WhatsApp Offer"</strong> to open WhatsApp with a pre-filled
-                birthday message. The message includes a <strong className="text-amber-400">20% discount offer</strong> and
-                complimentary services. No API keys or automation setup required - works instantly on mobile and desktop!
-              </p>
+              <h3 className="text-white font-medium mb-2">🆓 FREE Communication Options - No APIs Needed!</h3>
+              <div className="space-y-2 text-white/60 text-sm leading-relaxed">
+                <p>
+                  <strong className="text-green-400">WhatsApp:</strong> Opens WhatsApp with pre-filled birthday message including 20% discount offer.
+                </p>
+                <p>
+                  <strong className="text-blue-400">Email:</strong> Opens your email app with pre-filled subject and birthday offer message.
+                </p>
+                <p>
+                  <strong className="text-purple-400">SMS:</strong> Opens SMS app with pre-filled birthday text message.
+                </p>
+                <p className="text-amber-400 text-xs mt-3">
+                  All methods are completely FREE - no API keys, subscriptions, or automation setup required. Works on mobile and desktop!
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
