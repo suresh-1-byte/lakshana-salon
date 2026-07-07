@@ -7,26 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface BirthdayCustomer {
   id: string;
-  full_name: string;
-  mobile_number: string;
-  whatsapp_number: string | null;
+  name: string;
+  phone: string;
+  whatsappNumber: string | null;
   email: string | null;
-  date_of_birth: string;
+  dateOfBirth: string;
   daysUntilBirthday: number;
   birthdayDate: string;
   isToday: boolean;
 }
 
-export default function BirthdayOffersPage() {
+export default function BirthdayManagementPage() {
   const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState<BirthdayCustomer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,55 +35,15 @@ export default function BirthdayOffersPage() {
   const loadBirthdayCustomers = async () => {
     setLoading(true);
     try {
-      // Get all customers with DOB
-      const { data: allCustomers, error: allError } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('status', 'active')
-        .not('date_of_birth', 'is', null);
+      const response = await fetch('/api/admin/birthday-management');
+      const data = await response.json();
 
-      if (allError) throw allError;
-
-      setTotalCustomers(allCustomers?.length || 0);
-
-      // Filter for upcoming birthdays (next 7 days)
-      const today = new Date();
-      const birthdayCustomers: BirthdayCustomer[] = [];
-
-      allCustomers?.forEach((customer) => {
-        const dob = new Date(customer.date_of_birth);
-        const thisYear = today.getFullYear();
-        const birthdayThisYear = new Date(thisYear, dob.getMonth(), dob.getDate());
-
-        if (birthdayThisYear < today) {
-          birthdayThisYear.setFullYear(thisYear + 1);
-        }
-
-        const daysUntil = Math.ceil(
-          (birthdayThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (daysUntil >= 0 && daysUntil <= 7) {
-          birthdayCustomers.push({
-            id: customer.id,
-            full_name: customer.full_name,
-            mobile_number: customer.mobile_number,
-            whatsapp_number: customer.whatsapp_number,
-            email: customer.email,
-            date_of_birth: customer.date_of_birth,
-            daysUntilBirthday: daysUntil,
-            birthdayDate: birthdayThisYear.toISOString().split('T')[0],
-            isToday: daysUntil === 0,
-          });
-        }
-      });
-
-      // Sort by nearest birthday first
-      birthdayCustomers.sort((a, b) => a.daysUntilBirthday - b.daysUntilBirthday);
-
-      setCustomers(birthdayCustomers);
-      setTodayCount(birthdayCustomers.filter((c) => c.isToday).length);
-      setUpcomingCount(birthdayCustomers.length);
+      if (data.success) {
+        setCustomers(data.customers || []);
+        setTotalCustomers(data.stats.totalCustomers || 0);
+        setTodayCount(data.stats.todayCount || 0);
+        setUpcomingCount(data.stats.upcomingCount || 0);
+      }
     } catch (error) {
       console.error('Error loading customers:', error);
     } finally {
@@ -98,7 +52,7 @@ export default function BirthdayOffersPage() {
   };
 
   const generateWhatsAppMessage = (customer: BirthdayCustomer) => {
-    const message = `Hi ${customer.full_name} 🎉🎂
+    const message = `Hi ${customer.name} 🎉🎂
 
 Your birthday is ${customer.isToday ? 'today' : `coming ${customer.daysUntilBirthday === 1 ? 'tomorrow' : `in ${customer.daysUntilBirthday} days`}`}! 🥳
 
@@ -125,15 +79,15 @@ Thank you ❤️`;
   };
 
   const sendWhatsApp = (customer: BirthdayCustomer) => {
-    const phone = (customer.whatsapp_number || customer.mobile_number).replace(/[^0-9]/g, '');
+    const phone = (customer.whatsappNumber || customer.phone).replace(/[^0-9]/g, '');
     const message = generateWhatsAppMessage(customer);
     const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
   const filteredCustomers = customers.filter((customer) =>
-    customer.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.mobile_number.includes(searchQuery)
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.phone.includes(searchQuery)
   );
 
   const todayCustomers = filteredCustomers.filter((c) => c.isToday);
@@ -155,7 +109,7 @@ Thank you ❤️`;
               Upcoming Birthdays & WhatsApp Offers
             </h1>
             <p className="text-white/40 text-sm mt-2">
-              Send personalized birthday offers via WhatsApp - No API needed!
+              Send personalized birthday offers via WhatsApp - No API needed! 🎂
             </p>
           </motion.div>
         </div>
@@ -251,20 +205,20 @@ Thank you ❤️`;
                   >
                     <Card className="bg-gradient-to-r from-[rgba(212,68,122,0.2)] to-transparent border-[rgba(212,68,122,0.4)]">
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-12 h-12 rounded-full bg-[#D4447A]/30 flex items-center justify-center">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="w-12 h-12 rounded-full bg-[#D4447A]/30 flex items-center justify-center shrink-0">
                               <Cake size={24} className="text-[#D4447A]" />
                             </div>
-                            <div className="flex-1">
-                              <h3 className="text-white font-medium text-lg">{customer.full_name}</h3>
-                              <div className="flex items-center gap-3 text-white/60 text-sm mt-1">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-white font-medium text-lg truncate">{customer.name}</h3>
+                              <div className="flex items-center gap-3 text-white/60 text-sm mt-1 flex-wrap">
                                 <span className="flex items-center gap-1">
                                   <Phone size={12} />
-                                  {customer.mobile_number}
+                                  {customer.phone}
                                 </span>
                                 {customer.email && (
-                                  <span className="text-white/40 text-xs">{customer.email}</span>
+                                  <span className="text-white/40 text-xs truncate">{customer.email}</span>
                                 )}
                               </div>
                               <Badge className="bg-[#D4447A]/20 text-[#D4447A] border-[#D4447A]/30 mt-2">
@@ -291,7 +245,7 @@ Thank you ❤️`;
 
           {/* Upcoming Birthdays */}
           {upcomingCustomers.length > 0 && (
-            <div className="mt-6">
+            <div className={todayCustomers.length > 0 ? 'mt-6' : ''}>
               <h2 className="text-white text-lg font-medium mb-3 flex items-center gap-2">
                 <Calendar size={18} className="text-amber-400" />
                 Upcoming Birthdays (Next 7 Days)
@@ -306,23 +260,23 @@ Thank you ❤️`;
                   >
                     <Card className="bg-white/[0.02] border-white/10 hover:border-white/20 transition-all">
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                        <div className="flex items-center justify-between flex-wrap gap-4">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                               <Cake size={20} className="text-white/60" />
                             </div>
-                            <div className="flex-1">
-                              <h3 className="text-white font-medium">{customer.full_name}</h3>
-                              <div className="flex items-center gap-3 text-white/60 text-sm mt-1">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-white font-medium truncate">{customer.name}</h3>
+                              <div className="flex items-center gap-3 text-white/60 text-sm mt-1 flex-wrap">
                                 <span className="flex items-center gap-1">
                                   <Phone size={12} />
-                                  {customer.mobile_number}
+                                  {customer.phone}
                                 </span>
                                 {customer.email && (
-                                  <span className="text-white/40 text-xs">{customer.email}</span>
+                                  <span className="text-white/40 text-xs truncate">{customer.email}</span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 mt-2">
+                              <div className="flex items-center gap-2 mt-2 flex-wrap">
                                 <Badge variant="outline" className="text-amber-400 border-amber-400/30">
                                   📅 {new Date(customer.birthdayDate).toLocaleDateString('en-IN', {
                                     day: 'numeric',

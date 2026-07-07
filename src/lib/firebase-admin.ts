@@ -116,6 +116,8 @@ export async function upsertCustomer(data: {
   phone: string;
   whatsappNumber?: string;
   email?: string;
+  dateOfBirth?: string | null;
+  services?: string[];
 }) {
   try {
     // Check if customer exists
@@ -123,9 +125,31 @@ export async function upsertCustomer(data: {
     const snapshot = await customersRef.where('phone', '==', data.phone).limit(1).get();
 
     if (!snapshot.empty) {
-      // Customer exists, return existing
+      // Customer exists, update with new data (including DOB if provided)
       const doc = snapshot.docs[0];
-      return { id: doc.id, ...doc.data() };
+      const updateData: any = {
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      
+      // Update name if provided
+      if (data.name) updateData.name = data.name;
+      
+      // Update email if provided
+      if (data.email) updateData.email = data.email;
+      
+      // Update WhatsApp number if provided
+      if (data.whatsappNumber) updateData.whatsappNumber = data.whatsappNumber;
+      
+      // Update DOB if provided (only if not already set or if new value provided)
+      if (data.dateOfBirth) {
+        updateData.dateOfBirth = data.dateOfBirth;
+      }
+      
+      // Increment total visits
+      updateData.totalVisits = FieldValue.increment(1);
+      
+      await doc.ref.update(updateData);
+      return { id: doc.id, ...doc.data(), ...updateData };
     }
 
     // Create new customer
@@ -134,8 +158,9 @@ export async function upsertCustomer(data: {
       phone: data.phone,
       whatsappNumber: data.whatsappNumber || data.phone,
       email: data.email || null,
+      dateOfBirth: data.dateOfBirth || null,
       status: 'active',
-      totalVisits: 0,
+      totalVisits: 1,
       totalSpent: 0,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),

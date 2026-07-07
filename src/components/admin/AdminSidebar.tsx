@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { href: '/admin/gallery',          label: 'Gallery',        icon: ImageIcon },
   { href: '/admin/reviews',          label: 'Reviews',        icon: Star },
   { href: '/admin/notifications',    label: 'Notifications',  icon: Bell },
-  { href: '/admin/birthday-offers',  label: 'Birthday Offers', icon: Cake },
+  { href: '/admin/birthday-management', label: 'Birthday Management', icon: Cake },
   { href: '/admin/coupons',          label: 'Coupons',        icon: Tag },
   { href: '/admin/reports',          label: 'Reports',        icon: FileDown },
   { href: '/admin/activity',         label: 'Activity',       icon: ActivitySquare },
