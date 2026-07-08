@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Wallet, Search, Plus, RefreshCw, Eye, Gift, TrendingUp, 
   TrendingDown, DollarSign, User, Phone, Mail, Calendar, 
-  History, AlertCircle, CheckCircle, CreditCard, Ban
+  History, AlertCircle, CheckCircle, CreditCard, Ban, Trash2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -167,6 +167,50 @@ export default function MembershipWalletPage() {
       alert('❌ Network error. Please check your connection and try again.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteMembership = async (membership: MembershipWallet) => {
+    const usagePercent = ((membership.usedAmount / membership.totalAmount) * 100).toFixed(0);
+    
+    let confirmMessage = `⚠️ Are you sure you want to delete this membership?\n\n`;
+    confirmMessage += `Customer: ${membership.customer?.name}\n`;
+    confirmMessage += `Membership ID: ${membership.membershipId}\n`;
+    confirmMessage += `Total Amount: ${formatCurrency(membership.totalAmount)}\n`;
+    confirmMessage += `Used: ${formatCurrency(membership.usedAmount)} (${usagePercent}%)\n`;
+    confirmMessage += `Available Balance: ${formatCurrency(membership.availableBalance)}\n\n`;
+    
+    if (membership.usedAmount > 0) {
+      confirmMessage += `⚠️ This membership has been partially used.\n`;
+      confirmMessage += `Available balance will be refunded.\n\n`;
+    }
+    
+    confirmMessage += `This action cannot be undone!`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/membership-wallets/${membership.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        let successMessage = `✅ Membership deleted successfully!\n\n`;
+        if (data.refundAmount > 0) {
+          successMessage += `Refunded amount: ${formatCurrency(data.refundAmount)}\n`;
+        }
+        alert(successMessage);
+        loadData();
+      } else {
+        alert(`❌ Failed to delete membership\n\n${data.error || 'Unknown error occurred'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting membership:', error);
+      alert('❌ Network error. Please check your connection and try again.');
     }
   };
 
@@ -522,6 +566,15 @@ export default function MembershipWalletPage() {
                     >
                       <Eye size={14} />
                       View Details
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteMembership(membership)}
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400"
+                    >
+                      <Trash2 size={14} />
+                      Delete
                     </Button>
                     <p className="text-white/30 text-xs text-center">
                       Created {formatDate(membership.createdAt)}

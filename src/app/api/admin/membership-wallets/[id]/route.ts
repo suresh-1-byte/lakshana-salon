@@ -241,7 +241,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/admin/membership-wallets/[id]
- * Deactivate membership wallet
+ * Delete membership wallet with refund tracking
  */
 export async function DELETE(
   req: NextRequest,
@@ -260,19 +260,42 @@ export async function DELETE(
       );
     }
 
-    await docRef.update({
-      status: 'inactive',
-      updatedAt: FieldValue.serverTimestamp(),
+    const data = doc.data()!;
+
+    // If membership has been used, create a refund transaction
+    if (data.usedAmount && data.usedAmount > 0 && data.availableBalance > 0) {
+      // Log refund transaction before deletion
+      await docRef.collection('transactions').add({
+        type: 'refund',
+        amount: data.availableBalance,
+        balanceBefore: data.availableBalance,
+        balanceAfter: 0,
+        description: 'Membership deleted - balance refunded',
+        notes: `Membership deleted. Used amount: ₹${data.usedAmount}, Refunded: ₹${data.availableBalance}`,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Delete all transactions
+    const transactionsSnap = await docRef.collection('transactions').get();
+    const batch = adminDb.batch();
+    transactionsSnap.docs.forEach((txnDoc: any) => {
+      batch.delete(txnDoc.ref);
     });
+    await batch.commit();
+
+    // Delete the membership wallet
+    await docRef.delete();
 
     return NextResponse.json({
       success: true,
-      message: 'Membership wallet deactivated successfully',
+      message: 'Membership deleted successfully',
+      refundAmount: data.availableBalance || 0,
     });
   } catch (error) {
-    console.error('Error deactivating membership wallet:', error);
+    console.error('Error deleting membership wallet:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to deactivate membership wallet' },
+      { success: false, error: 'Failed to delete membership wallet' },
       { status: 500 }
     );
   }
