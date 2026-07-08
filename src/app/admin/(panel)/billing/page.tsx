@@ -51,8 +51,18 @@ interface MembershipData {
 }
 
 function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon' }: { bill: Bill; salonName?: string }) {
+  if (!bill) return null;
+  
   return (
-    <div style={{ fontFamily: 'Georgia, serif', color: '#2D1B25', padding: '32px', maxWidth: '680px', margin: '0 auto' }}>
+    <div id="invoice-content" style={{ 
+      fontFamily: 'Georgia, serif', 
+      color: '#2D1B25', 
+      padding: '32px', 
+      maxWidth: '680px', 
+      margin: '0 auto',
+      background: 'white',
+      minHeight: '100vh'
+    }}>
       {/* Header */}
       <div style={{ textAlign: 'center', borderBottom: '3px solid #D4447A', paddingBottom: '20px', marginBottom: '28px' }}>
         <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 300, color: '#D4447A', letterSpacing: '0.05em' }}>{salonName}</h1>
@@ -1322,7 +1332,11 @@ export default function BillingPage() {
 
       {/* Print invoice (hidden, shows on window.print()) */}
       {printBill && (
-        <div id="print-content" className="print:block hidden fixed inset-0 z-[200] bg-white overflow-auto">
+        <div 
+          id="print-content" 
+          className="print:block hidden fixed inset-0 z-[9999] bg-white overflow-auto"
+          style={{ display: 'none' }}
+        >
           <InvoicePrintContent bill={printBill} />
         </div>
       )}

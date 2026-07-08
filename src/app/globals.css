@@ -611,46 +611,69 @@
   color: #F5F0FF;
 }
 
-/* Print styles for billing invoices */
-@media print {
-  body > * { display: none !important; }
-  .print-only { display: block !important; }
-  @page { margin: 0.5cm; }
-}
-
-
-
 /* Print Invoice Styles */
 @media print {
-  /* Hide everything by default */
-  body > *:not(#print-content) {
+  /* Reset everything first */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Hide all body children except print-content */
+  body > * {
     display: none !important;
   }
   
-  /* Show only the print content */
+  /* Force show print content */
+  body > #print-content,
   #print-content {
     display: block !important;
     visibility: visible !important;
     position: static !important;
     width: 100% !important;
     height: auto !important;
-    z-index: auto !important;
     background: white !important;
     overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
+  /* Show all children of print content */
+  #print-content,
   #print-content * {
     visibility: visible !important;
+    opacity: 1 !important;
   }
   
-  /* Ensure proper display for elements */
-  #print-content div {
+  /* Ensure invoice content displays */
+  #print-content #invoice-content,
+  #invoice-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Display block elements correctly */
+  #print-content div,
+  #print-content p,
+  #print-content h1,
+  #print-content h2,
+  #print-content h3,
+  #print-content span {
     display: block !important;
   }
   
+  /* Inline elements */
+  #print-content span {
+    display: inline !important;
+  }
+  
+  /* Table elements must have correct display */
   #print-content table {
     display: table !important;
     width: 100% !important;
+    border-collapse: collapse !important;
   }
   
   #print-content thead {
@@ -670,32 +693,23 @@
     display: table-cell !important;
   }
   
-  #print-content p {
-    display: block !important;
-  }
-  
-  #print-content h1,
-  #print-content h2,
-  #print-content h3 {
-    display: block !important;
-  }
-  
-  /* Remove margins for print */
-  @page {
-    margin: 0.5cm;
-    size: A4 portrait;
-  }
-  
-  /* Ensure colors print correctly */
-  * {
+  /* Ensure colors and backgrounds print */
+  #print-content * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
   
-  /* Typography for print */
+  /* Page setup */
+  @page {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+  
+  /* Body setup for print */
   body {
-    font-size: 11pt !important;
+    background: white !important;
+    font-size: 12pt !important;
     line-height: 1.4 !important;
   }
   
