@@ -94,6 +94,7 @@ export const Collections = {
   BILLING: 'payments',
   PACKAGES: 'packages',
   MEMBERSHIPS: 'memberships',
+  MEMBERSHIP_WALLETS: 'membership_wallets',
   CONSULTATIONS: 'consultations',
   CUSTOMER_PACKAGES: 'customer_packages',
   ENQUIRIES: 'enquiries',
@@ -118,7 +119,7 @@ export async function upsertCustomer(data: {
   email?: string;
   dateOfBirth?: string | null;
   services?: string[];
-}) {
+}): Promise<string> {
   try {
     // Check if customer exists
     const customersRef = adminDb.collection(Collections.CUSTOMERS);
@@ -149,7 +150,7 @@ export async function upsertCustomer(data: {
       updateData.totalVisits = FieldValue.increment(1);
       
       await doc.ref.update(updateData);
-      return { id: doc.id, ...doc.data(), ...updateData };
+      return doc.id;
     }
 
     // Create new customer
@@ -167,7 +168,7 @@ export async function upsertCustomer(data: {
     };
 
     const docRef = await customersRef.add(newCustomer);
-    return { id: docRef.id, ...newCustomer };
+    return docRef.id;
   } catch (error) {
     console.error('Error in upsertCustomer:', error);
     throw error;

@@ -102,6 +102,9 @@ export interface Consultation {
   beforeImages: string[];
   notes: string | null;
   nextVisit: string | null;
+  reminderDate: string | null;
+  reminderNotes: string | null;
+  reminderSent: boolean;
   status: ConsultationStatus;
   createdAt: string;
   updatedAt: string;
@@ -236,9 +239,12 @@ export interface Bill {
   discount: number;
   tax: number;
   total: number;
-  paymentMethod: 'cash' | 'card' | 'upi' | 'other';
+  paymentMethod: 'cash' | 'card' | 'upi' | 'membership' | 'other';
   status: 'paid' | 'unpaid' | 'partial';
   notes?: string;
+  paidViaMembership?: boolean;
+  membershipWalletId?: string;
+  membershipAmount?: number;
   createdAt: string;
 }
 

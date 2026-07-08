@@ -28,6 +28,7 @@ export function BookingSection() {
   const [phone,     setPhone]     = useState('');
   const [email,     setEmail]     = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [anniversary, setAnniversary] = useState('');
   const [search,    setSearch]    = useState('');
   const [dropOpen,  setDropOpen]  = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -64,7 +65,7 @@ export function BookingSection() {
       const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, dateOfBirth, services: cart }),
+        body: JSON.stringify({ name, phone, email, dateOfBirth, anniversary, services: cart }),
       });
       if (!res.ok) throw new Error('Booking failed');
       setConfirmed(true);
@@ -77,7 +78,7 @@ export function BookingSection() {
   };
 
   const resetForm = () => {
-    setName(''); setPhone(''); setEmail(''); setDateOfBirth('');
+    setName(''); setPhone(''); setEmail(''); setDateOfBirth(''); setAnniversary('');
     setConfirmed(false);
   };
 
@@ -154,6 +155,17 @@ export function BookingSection() {
                 <span className="text-[8px] font-normal text-[#B89BAA] tracking-normal">Get special birthday offers! 🎂</span>
               </label>
               <Input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)}
+                placeholder="YYYY-MM-DD" className={inputClass} 
+                max={new Date().toISOString().split('T')[0]} />
+            </div>
+
+            {/* Anniversary (NEW) */}
+            <div className="space-y-2">
+              <label className="text-[10px] uppercase tracking-[0.38em] font-bold text-[#D4447A] flex items-center gap-2">
+                Anniversary (Optional)
+                <span className="text-[8px] font-normal text-[#B89BAA] tracking-normal">Get exclusive anniversary wishes! 💕</span>
+              </label>
+              <Input type="date" value={anniversary} onChange={(e) => setAnniversary(e.target.value)}
                 placeholder="YYYY-MM-DD" className={inputClass} 
                 max={new Date().toISOString().split('T')[0]} />
             </div>

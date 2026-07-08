@@ -10,6 +10,7 @@ import { Testimonials } from '@/components/Testimonials';
 import { BookingSection } from '@/components/BookingSection';
 import { ContactSection } from '@/components/ContactSection';
 import { Footer } from '@/components/Footer';
+import { WhatsAppFloat } from '@/components/WhatsAppFloat';
 
 export default function Home() {
   return (
@@ -32,6 +33,9 @@ export default function Home() {
       
       {/* Footer */}
       <Footer />
+
+      {/* WhatsApp Float Button */}
+      <WhatsAppFloat />
     </main>
   );
 }

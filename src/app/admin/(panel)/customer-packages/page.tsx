@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Package, Search, Plus, RefreshCw, Eye, Gift, TrendingUp, 
   TrendingDown, DollarSign, User, Phone, Mail, Calendar, 
-  History, AlertCircle, CheckCircle
+  History, AlertCircle, CheckCircle, Trash2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -97,13 +97,28 @@ export default function CustomerPackagesPage() {
   };
 
   const handleCreatePackage = async () => {
-    if (!selectedCustomerId || !packageAmount || Number(packageAmount) <= 0) {
-      alert('Please select a customer and enter a valid package amount');
+    // Validation with user-friendly messages
+    if (!selectedCustomerId) {
+      alert('⚠️ Please select a customer from the dropdown');
+      return;
+    }
+    
+    if (!packageAmount || Number(packageAmount) <= 0) {
+      alert('⚠️ Please enter a valid package amount greater than ₹0');
       return;
     }
 
+    if (Number(packageAmount) < 1000) {
+      if (!confirm('The package amount is less than ₹1,000. Are you sure you want to continue?')) {
+        return;
+      }
+    }
+
     const customer = customers.find(c => c.id === selectedCustomerId);
-    if (!customer) return;
+    if (!customer) {
+      alert('❌ Customer not found. Please refresh the page and try again.');
+      return;
+    }
 
     setCreating(true);
     try {
@@ -122,20 +137,63 @@ export default function CustomerPackagesPage() {
       const data = await response.json();
 
       if (data.success) {
-        alert('Package created successfully!');
+        alert(`✅ Package created successfully!\n\nCustomer: ${customer.name}\nAmount: ₹${Number(packageAmount).toLocaleString('en-IN')}\n\nThe package is now active and can be used for bookings.`);
         setShowCreateDialog(false);
         setSelectedCustomerId('');
         setPackageAmount('');
         setPackageNotes('');
         loadData();
       } else {
-        alert(data.error || 'Failed to create package');
+        alert(`❌ Failed to create package\n\n${data.error || 'Unknown error occurred'}`);
       }
     } catch (error) {
       console.error('Error creating package:', error);
-      alert('Failed to create package');
+      alert('❌ Network error. Please check your connection and try again.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeletePackage = async (pkg: CustomerPackage) => {
+    const usagePercent = ((pkg.usedAmount / pkg.totalAmount) * 100).toFixed(0);
+    
+    let confirmMessage = `⚠️ Are you sure you want to delete this package?\n\n`;
+    confirmMessage += `Customer: ${pkg.customer.name}\n`;
+    confirmMessage += `Total Package: ${formatCurrency(pkg.totalAmount)}\n`;
+    confirmMessage += `Used: ${formatCurrency(pkg.usedAmount)} (${usagePercent}%)\n`;
+    confirmMessage += `Available Balance: ${formatCurrency(pkg.availableBalance)}\n\n`;
+    
+    if (pkg.usedAmount > 0) {
+      confirmMessage += `⚠️ This package has been partially used.\n`;
+      confirmMessage += `Available balance will be refunded.\n\n`;
+    }
+    
+    confirmMessage += `This action cannot be undone!`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/customer-packages?id=${pkg.id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        let successMessage = `✅ Package deleted successfully!\n\n`;
+        if (data.refundAmount > 0) {
+          successMessage += `Refunded amount: ${formatCurrency(data.refundAmount)}\n`;
+        }
+        alert(successMessage);
+        loadData();
+      } else {
+        alert(`❌ Failed to delete package\n\n${data.error || 'Unknown error occurred'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting package:', error);
+      alert('❌ Network error. Please check your connection and try again.');
     }
   };
 
@@ -327,9 +385,27 @@ export default function CustomerPackagesPage() {
         </div>
       ) : filteredPackages.length === 0 ? (
         <Card className="bg-white/[0.02] border-white/10">
-          <CardContent className="py-12 text-center">
-            <Package size={48} className="text-white/20 mx-auto mb-3" />
-            <p className="text-white/40">No packages found</p>
+          <CardContent className="py-16 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#D4447A]/20 to-[#B03060]/10 flex items-center justify-center mx-auto mb-4">
+                <Package size={40} className="text-[#D4447A]" />
+              </div>
+              <h3 className="text-white text-xl font-medium mb-2">No Customer Packages Found</h3>
+              <p className="text-white/50 mb-6">
+                {searchQuery 
+                  ? 'No packages match your search. Try a different customer name or phone number.'
+                  : 'Create prepaid service packages for your customers and track their usage automatically.'}
+              </p>
+              {!searchQuery && (
+                <Button
+                  onClick={() => setShowCreateDialog(true)}
+                  className="bg-gradient-to-r from-[#D4447A] to-[#B03060] hover:opacity-90"
+                >
+                  <Plus size={16} className="mr-2" />
+                  Create Your First Package
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -409,6 +485,15 @@ export default function CustomerPackagesPage() {
                     >
                       <Eye size={14} />
                       View Details
+                    </Button>
+                    <Button
+                      onClick={() => handleDeletePackage(pkg)}
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400"
+                    >
+                      <Trash2 size={14} />
+                      Delete
                     </Button>
                     <p className="text-white/40 text-xs text-center">
                       Created {formatDate(pkg.createdAt)}

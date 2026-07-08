@@ -60,6 +60,7 @@ export default function ConsultationsPage() {
   const [showForm, setShowForm] = useState(false)
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [filterReminders, setFilterReminders] = useState<'all' | 'pending' | 'overdue'>('all')
 
   useEffect(() => {
     loadConsultations()
@@ -120,6 +121,44 @@ export default function ConsultationsPage() {
     )
   }
 
+  const getReminderStatus = (consultation: Consultation) => {
+    if (!consultation.reminderDate) return null;
+    
+    const reminderDate = new Date(consultation.reminderDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    reminderDate.setHours(0, 0, 0, 0);
+    
+    if (reminderDate < today && !consultation.reminderSent) {
+      return { status: 'overdue', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' };
+    } else if (reminderDate <= today && !consultation.reminderSent) {
+      return { status: 'due', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' };
+    } else if (!consultation.reminderSent) {
+      return { status: 'pending', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' };
+    }
+    return { status: 'sent', color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' };
+  }
+
+  const filteredConsultations = consultations.filter(c => {
+    if (filterReminders === 'all') return true;
+    
+    const reminderStatus = getReminderStatus(c);
+    if (filterReminders === 'pending' && reminderStatus && !c.reminderSent) return true;
+    if (filterReminders === 'overdue' && reminderStatus?.status === 'overdue') return true;
+    
+    return false;
+  });
+
+  const pendingRemindersCount = consultations.filter(c => {
+    const status = getReminderStatus(c);
+    return status && !c.reminderSent;
+  }).length;
+
+  const overdueRemindersCount = consultations.filter(c => {
+    const status = getReminderStatus(c);
+    return status?.status === 'overdue';
+  }).length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -138,16 +177,85 @@ export default function ConsultationsPage() {
         </Button>
       </div>
 
+      {/* Reminder Stats */}
+      {(pendingRemindersCount > 0 || overdueRemindersCount > 0) && (
+        <div className="grid grid-cols-2 gap-4">
+          {overdueRemindersCount > 0 && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-red-500" />
+                <div>
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                    {overdueRemindersCount} Overdue Reminder{overdueRemindersCount > 1 ? 's' : ''}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-500">
+                    Follow up needed
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {pendingRemindersCount > 0 && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-amber-500" />
+                <div>
+                  <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+                    {pendingRemindersCount} Pending Reminder{pendingRemindersCount > 1 ? 's' : ''}
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500">
+                    Scheduled for follow up
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Filter Buttons */}
+      <div className="flex gap-2">
+        <Button
+          variant={filterReminders === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterReminders('all')}
+        >
+          All ({consultations.length})
+        </Button>
+        <Button
+          variant={filterReminders === 'pending' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterReminders('pending')}
+        >
+          <Calendar className="w-3 h-3 mr-1" />
+          Pending Reminders ({pendingRemindersCount})
+        </Button>
+        <Button
+          variant={filterReminders === 'overdue' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setFilterReminders('overdue')}
+          className={overdueRemindersCount > 0 ? 'bg-red-500 hover:bg-red-600 text-white' : ''}
+        >
+          Overdue ({overdueRemindersCount})
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>All Consultations ({consultations.length})</CardTitle>
+          <CardTitle>
+            {filterReminders === 'all' && `All Consultations (${filteredConsultations.length})`}
+            {filterReminders === 'pending' && `Pending Reminders (${filteredConsultations.length})`}
+            {filterReminders === 'overdue' && `Overdue Reminders (${filteredConsultations.length})`}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="text-center py-8">Loading consultations...</div>
-          ) : consultations.length === 0 ? (
+          ) : filteredConsultations.length === 0 ? (
             <div className="text-center py-8 text-neutral-500">
-              No consultations found. Create your first one!
+              {filterReminders === 'all' && 'No consultations found. Create your first one!'}
+              {filterReminders === 'pending' && 'No pending reminders'}
+              {filterReminders === 'overdue' && 'No overdue reminders'}
             </div>
           ) : (
             <Table>
@@ -159,42 +267,68 @@ export default function ConsultationsPage() {
                   <TableHead>Hair Type</TableHead>
                   <TableHead>Skin Type</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Reminder</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {consultations.map((consultation) => (
-                  <TableRow key={consultation.id}>
-                    <TableCell>
-                      {new Date(consultation.consultationDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {consultation.customerName || 'N/A'}
-                    </TableCell>
-                    <TableCell>{consultation.consultantName || 'N/A'}</TableCell>
-                    <TableCell>{consultation.hairType || '-'}</TableCell>
-                    <TableCell>{consultation.skinType || '-'}</TableCell>
-                    <TableCell>{getStatusBadge(consultation.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleView(consultation)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(consultation.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {filteredConsultations.map((consultation) => {
+                  const reminderStatus = getReminderStatus(consultation);
+                  return (
+                    <TableRow key={consultation.id}>
+                      <TableCell>
+                        {new Date(consultation.consultationDate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {consultation.customerName || 'N/A'}
+                      </TableCell>
+                      <TableCell>{consultation.consultantName || 'N/A'}</TableCell>
+                      <TableCell>{consultation.hairType || '-'}</TableCell>
+                      <TableCell>{consultation.skinType || '-'}</TableCell>
+                      <TableCell>{getStatusBadge(consultation.status)}</TableCell>
+                      <TableCell>
+                        {reminderStatus && consultation.reminderDate ? (
+                          <div className={`flex items-center gap-1 text-xs ${reminderStatus.color}`}>
+                            <Calendar className="w-3 h-3" />
+                            <span>
+                              {new Date(consultation.reminderDate).toLocaleDateString()}
+                            </span>
+                            {reminderStatus.status === 'overdue' && (
+                              <Badge variant="destructive" className="ml-1 text-[10px] py-0 px-1">
+                                Overdue
+                              </Badge>
+                            )}
+                            {reminderStatus.status === 'sent' && (
+                              <Badge variant="default" className="ml-1 text-[10px] py-0 px-1 bg-green-500">
+                                Sent
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-neutral-400 text-xs">No reminder</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleView(consultation)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(consultation.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -295,6 +429,33 @@ export default function ConsultationsPage() {
                       <p className="text-sm">
                         {new Date(selectedConsultation.nextVisit).toLocaleDateString()}
                       </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedConsultation.reminderDate && (
+                <div className={`p-4 rounded-lg ${getReminderStatus(selectedConsultation)?.bg || 'bg-neutral-100 dark:bg-neutral-800'}`}>
+                  <div className={`flex items-center gap-2 ${getReminderStatus(selectedConsultation)?.color || 'text-neutral-700 dark:text-neutral-400'}`}>
+                    <Calendar className="w-5 h-5" />
+                    <div className="flex-1">
+                      <p className="font-medium flex items-center gap-2">
+                        Follow-up Reminder
+                        {getReminderStatus(selectedConsultation)?.status === 'overdue' && (
+                          <Badge variant="destructive" className="text-[10px]">Overdue</Badge>
+                        )}
+                        {selectedConsultation.reminderSent && (
+                          <Badge variant="default" className="text-[10px] bg-green-500">Sent</Badge>
+                        )}
+                      </p>
+                      <p className="text-sm">
+                        {new Date(selectedConsultation.reminderDate).toLocaleDateString()}
+                      </p>
+                      {selectedConsultation.reminderNotes && (
+                        <p className="text-xs mt-1 opacity-80">
+                          {selectedConsultation.reminderNotes}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

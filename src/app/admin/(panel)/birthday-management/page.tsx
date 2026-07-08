@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Gift, Cake, Phone, MessageCircle, RefreshCw, Search, Mail, MessageSquare, Send } from 'lucide-react';
+import { Calendar, Gift, Cake, Phone, MessageCircle, RefreshCw, Search, Mail, MessageSquare, Send, Plus, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface BirthdayCustomer {
   id: string;
@@ -20,17 +22,43 @@ interface BirthdayCustomer {
   isToday: boolean;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  dateOfBirth?: string | null;
+}
+
 export default function BirthdayManagementPage() {
   const [loading, setLoading] = useState(true);
   const [customers, setCustomers] = useState<BirthdayCustomer[]>([]);
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [upcomingCount, setUpcomingCount] = useState(0);
+  const [showAddBirthdayDialog, setShowAddBirthdayDialog] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [birthdayDate, setBirthdayDate] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     loadBirthdayCustomers();
+    loadAllCustomers();
   }, []);
+
+  const loadAllCustomers = async () => {
+    try {
+      const response = await fetch('/api/admin/customers?limit=1000');
+      const data = await response.json();
+      
+      if (data.success) {
+        setAllCustomers(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
 
   const loadBirthdayCustomers = async () => {
     setLoading(true);
@@ -48,6 +76,48 @@ export default function BirthdayManagementPage() {
       console.error('Error loading customers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddBirthday = async () => {
+    if (!selectedCustomerId) {
+      alert('⚠️ Please select a customer');
+      return;
+    }
+
+    if (!birthdayDate) {
+      alert('⚠️ Please enter a date of birth');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch('/api/admin/customers/update-birthday', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: selectedCustomerId,
+          dateOfBirth: birthdayDate,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert(`✅ Birthday added successfully!\n\nCustomer: ${data.customer.name}\nDate of Birth: ${new Date(birthdayDate).toLocaleDateString('en-IN')}`);
+        setShowAddBirthdayDialog(false);
+        setSelectedCustomerId('');
+        setBirthdayDate('');
+        loadBirthdayCustomers();
+        loadAllCustomers();
+      } else {
+        alert(`❌ Failed to add birthday\n\n${data.error || 'Unknown error occurred'}`);
+      }
+    } catch (error) {
+      console.error('Error adding birthday:', error);
+      alert('❌ Network error. Please check your connection and try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -154,10 +224,20 @@ This is a personalized birthday offer. Not valid with other promotions.`);
           </motion.div>
         </div>
 
-        <Button onClick={loadBirthdayCustomers} variant="outline" disabled={loading}>
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={loadBirthdayCustomers} variant="outline" disabled={loading}>
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </Button>
+          
+          <Button
+            onClick={() => setShowAddBirthdayDialog(true)}
+            className="bg-gradient-to-r from-[#D4447A] to-[#B03060] hover:opacity-90"
+          >
+            <UserPlus size={14} />
+            Add Birthday
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -221,9 +301,23 @@ This is a personalized birthday offer. Not valid with other promotions.`);
         </div>
       ) : filteredCustomers.length === 0 ? (
         <Card className="bg-white/[0.02] border-white/10">
-          <CardContent className="py-12 text-center">
-            <Cake size={48} className="text-white/20 mx-auto mb-3" />
-            <p className="text-white/40">No upcoming birthdays in the next 7 days</p>
+          <CardContent className="py-16 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#D4447A]/20 to-[#B03060]/10 flex items-center justify-center mx-auto mb-4">
+                <Cake size={40} className="text-[#D4447A]" />
+              </div>
+              <h3 className="text-white text-xl font-medium mb-2">
+                {searchQuery ? 'No Matching Birthdays' : 'No Upcoming Birthdays'}
+              </h3>
+              <p className="text-white/50 mb-2">
+                {searchQuery 
+                  ? 'No customers found matching your search in the next 7 days.'
+                  : 'There are no customer birthdays in the next 7 days.'}
+              </p>
+              <p className="text-white/40 text-sm">
+                {!searchQuery && 'Customer birthdays will appear here when they are within the next week.'}
+              </p>
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -432,6 +526,56 @@ This is a personalized birthday offer. Not valid with other promotions.`);
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Birthday Dialog */}
+      <Dialog open={showAddBirthdayDialog} onOpenChange={setShowAddBirthdayDialog}>
+        <DialogContent className="bg-[#0D0A14] border-[#D4447A]/30">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl font-semibold">Add Customer Birthday</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-white font-medium mb-2 block">Select Customer</Label>
+              <select
+                value={selectedCustomerId}
+                onChange={(e) => setSelectedCustomerId(e.target.value)}
+                className="w-full mt-1 bg-[#1A0D15] border border-[#D4447A]/30 rounded-lg px-3 py-2.5 text-white focus:border-[#D4447A] focus:ring-1 focus:ring-[#D4447A] outline-none"
+              >
+                <option value="" className="bg-[#1A0D15] text-white/70">Choose customer...</option>
+                {allCustomers
+                  .filter(c => !c.dateOfBirth) // Only show customers without birthday
+                  .map((customer) => (
+                    <option key={customer.id} value={customer.id} className="bg-[#1A0D15] text-white">
+                      {customer.name} ({customer.phone})
+                    </option>
+                  ))}
+              </select>
+              <p className="text-white/40 text-xs mt-1">
+                Only showing customers without birthday data
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-white font-medium mb-2 block">Date of Birth</Label>
+              <Input
+                type="date"
+                value={birthdayDate}
+                onChange={(e) => setBirthdayDate(e.target.value)}
+                className="mt-1 bg-[#1A0D15] border-[#D4447A]/30 text-white focus:border-[#D4447A] focus:ring-1 focus:ring-[#D4447A]"
+              />
+            </div>
+
+            <Button
+              onClick={handleAddBirthday}
+              disabled={saving}
+              className="w-full bg-gradient-to-r from-[#D4447A] to-[#B03060] hover:opacity-90"
+            >
+              {saving ? 'Saving...' : 'Add Birthday'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

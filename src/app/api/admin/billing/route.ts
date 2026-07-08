@@ -62,7 +62,9 @@ export async function POST(req: NextRequest) {
     const {
       customerName, customerPhone, customerEmail,
       items, discount = 0, tax = 0, paymentMethod = 'cash',
-      notes = '',
+      notes = '', membershipWalletId, useMembershipWallet = false,
+      membershipDiscountAmount = 0, membershipDiscountPercentage = 0,
+      membershipType = '', membershipId = '',
     } = body;
 
     if (!customerName || !customerPhone || !items?.length) {
@@ -76,8 +78,79 @@ export async function POST(req: NextRequest) {
       return sum + itemTotal;
     }, 0);
 
-    const total = subtotal - discount + tax;
+    // Total discount includes membership discount + additional discount
+    const totalDiscount = membershipDiscountAmount + discount;
+    const total = subtotal - totalDiscount + tax;
     const invoiceNumber = generateInvoiceNumber();
+
+    // Handle membership wallet payment
+    let membershipDeducted = false;
+    let membershipAmount = 0;
+    let finalPaymentMethod = paymentMethod;
+
+    if (useMembershipWallet && membershipWalletId) {
+      // Deduct directly from membership wallet using admin SDK
+      try {
+        const membershipRef = adminDb.collection(Collections.MEMBERSHIP_WALLETS).doc(membershipWalletId);
+        const membershipDoc = await membershipRef.get();
+
+        if (!membershipDoc.exists) {
+          return NextResponse.json({ 
+            success: false,
+            error: 'Membership wallet not found' 
+          }, { status: 404 });
+        }
+
+        const membershipData = membershipDoc.data()!;
+
+        // Validate balance
+        if (membershipData.availableBalance < total) {
+          const shortfall = total - membershipData.availableBalance;
+          return NextResponse.json({
+            success: false,
+            error: 'Insufficient Membership Balance',
+            message: `Required: ₹${total.toLocaleString('en-IN')}\nAvailable: ₹${membershipData.availableBalance.toLocaleString('en-IN')}\nShortfall: ₹${shortfall.toLocaleString('en-IN')}`,
+            required: total,
+            available: membershipData.availableBalance,
+            shortfall: shortfall,
+          }, { status: 400 });
+        }
+
+        // Deduct balance
+        const balanceBefore = membershipData.availableBalance;
+        const balanceAfter = balanceBefore - total;
+
+        await membershipRef.update({
+          availableBalance: balanceAfter,
+          usedAmount: membershipData.usedAmount + total,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+
+        // Create transaction record
+        await membershipRef.collection('transactions').add({
+          type: 'debit',
+          amount: total,
+          balanceBefore,
+          balanceAfter,
+          description: `Service payment: ${items.map((i: any) => i.name).join(', ')}`,
+          invoiceNumber,
+          serviceName: items.map((i: any) => i.name).join(', '),
+          notes: notes || `Bill payment via membership wallet`,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+
+        membershipDeducted = true;
+        membershipAmount = total;
+        finalPaymentMethod = 'membership';
+      } catch (walletError) {
+        console.error('Membership wallet deduction error:', walletError);
+        return NextResponse.json({ 
+          success: false,
+          error: 'Failed to deduct from membership wallet',
+          details: walletError instanceof Error ? walletError.message : 'Unknown error'
+        }, { status: 500 });
+      }
+    }
 
     // Upsert customer profile
     const customerId = await upsertCustomer({
@@ -98,7 +171,7 @@ export async function POST(req: NextRequest) {
     await adminDb.collection(Collections.CUSTOMERS).doc(customerId).update({ loyaltyStatus });
 
     // Create bill
-    const docRef = await adminDb.collection(Collections.BILLING).add({
+    const billData: any = {
       invoiceNumber,
       customerId,
       customerName,
@@ -106,17 +179,34 @@ export async function POST(req: NextRequest) {
       customerEmail: customerEmail || '',
       items,
       subtotal,
-      discount,
+      discount: totalDiscount, // Include both membership and additional discount
       tax,
       total,
-      paymentMethod,
+      paymentMethod: finalPaymentMethod,
       status: 'paid',
       notes,
       createdAt: FieldValue.serverTimestamp(),
-    });
+    };
+
+    // Add membership metadata if applicable
+    if (membershipId || membershipWalletId) {
+      billData.membershipId = membershipId;
+      billData.membershipWalletId = membershipWalletId;
+      billData.membershipType = membershipType;
+      billData.membershipDiscountPercentage = membershipDiscountPercentage;
+      billData.membershipDiscountAmount = membershipDiscountAmount;
+    }
+
+    // Add membership payment details if used
+    if (membershipDeducted) {
+      billData.membershipAmount = membershipAmount;
+      billData.paidViaMembership = true;
+    }
+
+    const docRef = await adminDb.collection(Collections.BILLING).add(billData);
 
     await logActivity('billing_create', {
-      message: `Bill created: ${invoiceNumber} for ${customerName}`,
+      message: `Bill created: ${invoiceNumber} for ${customerName}${membershipDeducted ? ' (Membership Wallet Payment)' : ''}`,
       invoiceNumber, 
       total, 
       customerId,
@@ -147,7 +237,7 @@ export async function POST(req: NextRequest) {
                 discount,
                 tax,
                 total,
-                paymentMethod,
+                paymentMethod: finalPaymentMethod,
                 salonName,
                 salonPhone: settings.phone,
                 salonEmail: settings.email,
@@ -167,6 +257,89 @@ export async function POST(req: NextRequest) {
       invoiceNumber,
       total,
       customerId,
+      membershipDeducted,
+      message: membershipDeducted 
+        ? `✅ Bill created and ₹${total.toLocaleString('en-IN')} deducted from membership wallet!`
+        : '✅ Bill created successfully!',
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Bill ID required' }, { status: 400 });
+    }
+
+    // Get bill details before deleting
+    const billDoc = await adminDb.collection(Collections.BILLING).doc(id).get();
+    
+    if (!billDoc.exists) {
+      return NextResponse.json({ error: 'Bill not found' }, { status: 404 });
+    }
+
+    const billData = billDoc.data()!;
+
+    // If payment was made via membership wallet, refund the amount
+    if (billData.paidViaMembership && billData.membershipWalletId) {
+      try {
+        const membershipRef = adminDb.collection(Collections.MEMBERSHIP_WALLETS).doc(billData.membershipWalletId);
+        const membershipDoc = await membershipRef.get();
+
+        if (membershipDoc.exists) {
+          const membershipData = membershipDoc.data()!;
+          const refundAmount = billData.membershipAmount || billData.total;
+
+          // Refund balance
+          const balanceBefore = membershipData.availableBalance;
+          const balanceAfter = balanceBefore + refundAmount;
+
+          await membershipRef.update({
+            availableBalance: balanceAfter,
+            usedAmount: Math.max(0, membershipData.usedAmount - refundAmount),
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+
+          // Create refund transaction record
+          await membershipRef.collection('transactions').add({
+            type: 'credit',
+            amount: refundAmount,
+            balanceBefore,
+            balanceAfter,
+            description: `Refund for deleted bill: ${billData.invoiceNumber}`,
+            invoiceNumber: billData.invoiceNumber,
+            notes: 'Bill deleted - amount refunded to wallet',
+            createdAt: FieldValue.serverTimestamp(),
+          });
+        }
+      } catch (refundError) {
+        console.error('Refund error:', refundError);
+        // Continue with deletion even if refund fails
+      }
+    }
+
+    // Delete the bill
+    await adminDb.collection(Collections.BILLING).doc(id).delete();
+
+    await logActivity('billing_delete', {
+      message: `Bill deleted: ${billData.invoiceNumber} for ${billData.customerName}`,
+      invoiceNumber: billData.invoiceNumber,
+      total: billData.total,
+      entityType: 'billing',
+      entityId: id,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: billData.paidViaMembership 
+        ? '✅ Bill deleted and amount refunded to membership wallet'
+        : '✅ Bill deleted successfully',
     });
   } catch (err) {
     console.error(err);

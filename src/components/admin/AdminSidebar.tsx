@@ -9,6 +9,7 @@ import {
   LayoutDashboard, Users, CalendarCheck, Receipt, Image as ImageIcon,
   Scissors, Star, Bell, Tag, Settings, FileDown, LogOut,
   ChevronLeft, ChevronRight, Sparkles, ActivitySquare, Clipboard, Cake,
+  CreditCard,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { href: '/admin/customer-packages', label: 'Customer Packages', icon: Tag },
   { href: '/admin/consultations',    label: 'Consultations',  icon: Clipboard },
   { href: '/admin/billing',          label: 'Billing',        icon: Receipt },
+  { href: '/admin/membership',       label: 'Membership',     icon: CreditCard },
   { href: '/admin/services',         label: 'Services',       icon: Scissors },
   { href: '/admin/service-addons',   label: 'Add-ons',        icon: Sparkles },
   { href: '/admin/gallery',          label: 'Gallery',        icon: ImageIcon },
