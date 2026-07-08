@@ -1322,7 +1322,7 @@ export default function BillingPage() {
 
       {/* Print invoice (hidden, shows on window.print()) */}
       {printBill && (
-        <div className="print:block hidden fixed inset-0 z-[200] bg-white overflow-auto">
+        <div id="print-content" className="print:block hidden fixed inset-0 z-[200] bg-white overflow-auto">
           <InvoicePrintContent bill={printBill} />
         </div>
       )}

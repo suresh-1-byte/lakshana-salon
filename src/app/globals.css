@@ -623,43 +623,61 @@
 /* Print Invoice Styles */
 @media print {
   /* Hide everything by default */
-  body * {
-    visibility: hidden !important;
+  body > *:not(#print-content) {
+    display: none !important;
   }
   
   /* Show only the print content */
-  .print\:block,
-  .print\:block *,
-  .print-invoice,
-  .print-invoice *,
-  #print-content,
+  #print-content {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    z-index: auto !important;
+    background: white !important;
+    overflow: visible !important;
+  }
+  
   #print-content * {
     visibility: visible !important;
   }
   
-  /* Position print content at top left */
-  .print\:block,
-  .print-invoice,
-  #print-content {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  /* Ensure proper display for elements */
+  #print-content div {
     display: block !important;
+  }
+  
+  #print-content table {
+    display: table !important;
     width: 100% !important;
   }
   
-  /* Hide all UI elements */
-  button,
-  nav,
-  aside,
-  header:not(.print-invoice header),
-  footer:not(.print-invoice footer),
-  [class*="sidebar"],
-  [class*="nav"],
-  [role="button"],
-  .no-print {
-    display: none !important;
-    visibility: hidden !important;
+  #print-content thead {
+    display: table-header-group !important;
+  }
+  
+  #print-content tbody {
+    display: table-row-group !important;
+  }
+  
+  #print-content tr {
+    display: table-row !important;
+  }
+  
+  #print-content th,
+  #print-content td {
+    display: table-cell !important;
+  }
+  
+  #print-content p {
+    display: block !important;
+  }
+  
+  #print-content h1,
+  #print-content h2,
+  #print-content h3 {
+    display: block !important;
   }
   
   /* Remove margins for print */
@@ -672,6 +690,7 @@
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
   
   /* Typography for print */
