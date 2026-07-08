@@ -1,43 +1,43 @@
 // ═══════════════════════════════════════════════════════
-//  Customer DOB Statistics API Route
+//  Customer DOB Statistics API Route - Firebase Implementation
 // ═══════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { adminDb, Collections } from '@/lib/firebase-admin';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     // Get all active customers
-    const { data: customers, error } = await supabase
-      .from('customers')
-      .select('id, full_name, mobile_number, email, date_of_birth')
-      .eq('status', 'active')
-      .order('full_name');
+    const customersSnapshot = await adminDb
+      .collection(Collections.CUSTOMERS)
+      .where('status', '==', 'active')
+      .get();
 
-    if (error) throw error;
+    const customers: any[] = [];
+    customersSnapshot.forEach(doc => {
+      customers.push({
+        id: doc.id,
+        ...doc.data(),
+      });
+    });
 
-    const total = customers?.length || 0;
-    const withDOB = customers?.filter(c => c.date_of_birth).length || 0;
+    const total = customers.length;
+    const withDOB = customers.filter(c => c.dateOfBirth).length;
     const withoutDOB = total - withDOB;
     const percentage = total > 0 ? (withDOB / total) * 100 : 0;
 
     const customersWithoutDOB = customers
-      ?.filter(c => !c.date_of_birth)
+      .filter(c => !c.dateOfBirth)
       .map(c => ({
         id: c.id,
-        name: c.full_name,
-        phone: c.mobile_number,
+        name: c.name,
+        phone: c.phone,
         email: c.email,
-      })) || [];
+      }));
 
     return NextResponse.json({
       success: true,
