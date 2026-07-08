@@ -1,12 +1,8 @@
 // ═══════════════════════════════════════════════════════
-//  Global Search API - Supabase Implementation
+//  Global Search API - Firebase Implementation
 // ═══════════════════════════════════════════════════════
 
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { adminDb, Collections } from '@/lib/firebase-admin';
 
 export interface SearchResult {
   type: 'customer' | 'booking' | 'payment' | 'appointment' | 'membership';
@@ -28,129 +24,100 @@ export async function globalSearch(query: string, limit = 20): Promise<SearchRes
 
   try {
     // Search customers by name, phone, email
-    const { data: customers } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('status', 'active');
+    const customersSnapshot = await adminDb
+      .collection(Collections.CUSTOMERS)
+      .where('status', '==', 'active')
+      .get();
 
-    if (customers) {
-      customers.forEach(customer => {
-        if (
-          customer.full_name?.toLowerCase().includes(searchTerm) ||
-          customer.mobile_number?.includes(searchTerm) ||
-          customer.email?.toLowerCase().includes(searchTerm)
-        ) {
-          results.push({
-            type: 'customer',
-            id: customer.id,
-            title: customer.full_name,
-            subtitle: customer.mobile_number,
-            metadata: customer.email,
-            url: `/admin/customers/${customer.id}`,
-          });
-        }
-      });
-    }
+    customersSnapshot.forEach(doc => {
+      const customer = doc.data();
+      if (
+        customer.name?.toLowerCase().includes(searchTerm) ||
+        customer.phone?.includes(searchTerm) ||
+        customer.email?.toLowerCase().includes(searchTerm)
+      ) {
+        results.push({
+          type: 'customer',
+          id: doc.id,
+          title: customer.name,
+          subtitle: customer.phone,
+          metadata: customer.email,
+          url: `/admin/customers/${doc.id}`,
+        });
+      }
+    });
 
-    // Search appointments
-    const { data: appointments } = await supabase
-      .from('appointments')
-      .select(`
-        *,
-        customers (
-          full_name,
-          mobile_number
-        )
-      `);
+    // Search bookings
+    const bookingsSnapshot = await adminDb
+      .collection(Collections.BOOKINGS)
+      .get();
 
-    if (appointments) {
-      appointments.forEach(appointment => {
-        const customerName = appointment.customers?.full_name || '';
-        const customerPhone = appointment.customers?.mobile_number || '';
-        
-        if (
-          appointment.id.toLowerCase().includes(searchTerm) ||
-          appointment.booking_id?.toLowerCase().includes(searchTerm) ||
-          customerName.toLowerCase().includes(searchTerm) ||
-          customerPhone.includes(searchTerm)
-        ) {
-          results.push({
-            type: 'appointment',
-            id: appointment.id,
-            title: `Appointment: ${customerName}`,
-            subtitle: `${appointment.appointment_date} - ${appointment.booking_status}`,
-            metadata: customerPhone,
-            url: `/admin/appointments/${appointment.id}`,
-          });
-        }
-      });
-    }
+    bookingsSnapshot.forEach(doc => {
+      const booking = doc.data();
+      if (
+        doc.id.toLowerCase().includes(searchTerm) ||
+        booking.customerName?.toLowerCase().includes(searchTerm) ||
+        booking.customerPhone?.includes(searchTerm)
+      ) {
+        results.push({
+          type: 'booking',
+          id: doc.id,
+          title: `Booking: ${booking.customerName}`,
+          subtitle: `${booking.date} - ${booking.status}`,
+          metadata: booking.customerPhone,
+          url: `/admin/bookings/${doc.id}`,
+        });
+      }
+    });
 
-    // Search payments by invoice number
-    const { data: payments } = await supabase
-      .from('payments')
-      .select(`
-        *,
-        customers (
-          full_name,
-          mobile_number
-        )
-      `);
+    // Search payments/billing by invoice number
+    const paymentsSnapshot = await adminDb
+      .collection(Collections.BILLING)
+      .get();
 
-    if (payments) {
-      payments.forEach(payment => {
-        const customerName = payment.customers?.full_name || '';
-        const customerPhone = payment.customers?.mobile_number || '';
-        
-        if (
-          payment.invoice_number?.toLowerCase().includes(searchTerm) ||
-          customerName.toLowerCase().includes(searchTerm) ||
-          customerPhone.includes(searchTerm)
-        ) {
-          results.push({
-            type: 'payment',
-            id: payment.id,
-            title: `Invoice #${payment.invoice_number}`,
-            subtitle: customerName,
-            metadata: `₹${payment.amount?.toLocaleString()}`,
-            url: `/admin/billing/${payment.id}`,
-          });
-        }
-      });
-    }
+    paymentsSnapshot.forEach(doc => {
+      const payment = doc.data();
+      if (
+        payment.invoiceNumber?.toLowerCase().includes(searchTerm) ||
+        payment.customerName?.toLowerCase().includes(searchTerm) ||
+        payment.customerPhone?.includes(searchTerm)
+      ) {
+        results.push({
+          type: 'payment',
+          id: doc.id,
+          title: `Invoice #${payment.invoiceNumber}`,
+          subtitle: payment.customerName,
+          metadata: `₹${payment.totalAmount?.toLocaleString()}`,
+          url: `/admin/billing/${doc.id}`,
+        });
+      }
+    });
 
     // Search memberships
-    const { data: memberships } = await supabase
-      .from('memberships')
-      .select(`
-        *,
-        customers (
-          full_name,
-          mobile_number
-        )
-      `);
+    const membershipsSnapshot = await adminDb
+      .collection(Collections.MEMBERSHIP_WALLETS)
+      .get();
 
-    if (memberships) {
-      memberships.forEach(membership => {
-        const customerName = membership.customers?.full_name || '';
-        const customerPhone = membership.customers?.mobile_number || '';
-        
-        if (
-          customerName.toLowerCase().includes(searchTerm) ||
-          membership.member_card_number?.includes(searchTerm) ||
-          customerPhone.includes(searchTerm)
-        ) {
-          results.push({
-            type: 'membership',
-            id: membership.id,
-            title: `${membership.membership_type} Membership: ${customerName}`,
-            subtitle: `Expires: ${new Date(membership.expiry_date).toLocaleDateString()}`,
-            metadata: membership.status,
-            url: `/admin/memberships/${membership.id}`,
-          });
-        }
-      });
-    }
+    membershipsSnapshot.forEach(doc => {
+      const membership = doc.data();
+      const customerName = membership.customerName || '';
+      const customerPhone = membership.customerPhone || '';
+      
+      if (
+        customerName.toLowerCase().includes(searchTerm) ||
+        membership.membershipId?.includes(searchTerm) ||
+        customerPhone.includes(searchTerm)
+      ) {
+        results.push({
+          type: 'membership',
+          id: doc.id,
+          title: `${membership.packageName}: ${customerName}`,
+          subtitle: `Status: ${membership.status}`,
+          metadata: `Balance: ₹${membership.availableBalance?.toLocaleString()}`,
+          url: `/admin/membership`,
+        });
+      }
+    });
 
     // Sort by relevance (exact matches first) and limit
     return results
