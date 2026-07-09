@@ -52,7 +52,8 @@ export function usePushNotifications() {
           }
         });
       } catch (err) {
-        console.error('Push notification setup failed:', err);
+        // Silent fail - push notifications are optional
+        // Don't log errors to avoid console pollution
       }
     };
 

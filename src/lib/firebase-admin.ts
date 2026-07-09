@@ -25,7 +25,6 @@ function initializeFirebaseAdmin() {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
   if (!projectId || !clientEmail || !privateKey) {
-    console.warn('⚠️ Firebase Admin environment variables not available - skipping initialization');
     return null;
   }
 
@@ -39,10 +38,8 @@ function initializeFirebaseAdmin() {
       }),
       projectId,
     });
-    console.log('✅ Firebase Admin SDK initialized successfully');
     return app;
   } catch (error) {
-    console.error('❌ Firebase Admin SDK initialization error:', error);
     return null;
   }
 }
@@ -170,7 +167,6 @@ export async function upsertCustomer(data: {
     const docRef = await customersRef.add(newCustomer);
     return docRef.id;
   } catch (error) {
-    console.error('Error in upsertCustomer:', error);
     throw error;
   }
 }
@@ -186,6 +182,6 @@ export async function logActivity(action: string, details: any = {}) {
       timestamp: FieldValue.serverTimestamp(),
     });
   } catch (error) {
-    console.error('Error logging activity:', error);
+    // Log activity failed - non-critical, continue
   }
 }
