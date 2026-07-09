@@ -11,6 +11,7 @@ import { BookingSection } from '@/components/BookingSection';
 import { ContactSection } from '@/components/ContactSection';
 import { Footer } from '@/components/Footer';
 import { WhatsAppFloat } from '@/components/WhatsAppFloat';
+import { FAQ } from '@/components/FAQ';
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
       
       <Gallery />
       <Testimonials />
+      <FAQ />
       <BookingSection />
       <ContactSection />
       
