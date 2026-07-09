@@ -613,13 +613,6 @@
 
 /* Print Invoice Styles */
 @media print {
-  /* Reset everything first */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
   /* Hide all body children except print-content */
   body > * {
     display: none !important;
@@ -641,60 +634,72 @@
   
   /* Show all children of print content */
   #print-content,
-  #print-content * {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Ensure invoice content displays */
-  #print-content #invoice-content,
-  #invoice-content {
-    display: block !important;
+  #print-content *,
+  #invoice-content,
+  #invoice-content * {
     visibility: visible !important;
     opacity: 1 !important;
   }
   
   /* Display block elements correctly */
   #print-content div,
+  #invoice-content div,
   #print-content p,
+  #invoice-content p,
   #print-content h1,
+  #invoice-content h1,
   #print-content h2,
+  #invoice-content h2,
   #print-content h3,
-  #print-content span {
+  #invoice-content h3 {
     display: block !important;
   }
   
   /* Inline elements */
-  #print-content span {
+  #print-content span,
+  #invoice-content span {
     display: inline !important;
   }
   
-  /* Table elements must have correct display */
-  #print-content table {
+  /* CRITICAL: Table elements MUST have correct display */
+  #print-content table,
+  #invoice-content table {
     display: table !important;
     width: 100% !important;
     border-collapse: collapse !important;
+    visibility: visible !important;
   }
   
-  #print-content thead {
+  #print-content thead,
+  #invoice-content thead {
     display: table-header-group !important;
+    visibility: visible !important;
   }
   
-  #print-content tbody {
+  #print-content tbody,
+  #invoice-content tbody {
     display: table-row-group !important;
+    visibility: visible !important;
   }
   
-  #print-content tr {
+  #print-content tr,
+  #invoice-content tr {
     display: table-row !important;
+    visibility: visible !important;
   }
   
   #print-content th,
-  #print-content td {
+  #invoice-content th,
+  #print-content td,
+  #invoice-content td {
     display: table-cell !important;
+    visibility: visible !important;
+    padding: 10px 14px !important;
   }
   
   /* Ensure colors and backgrounds print */
-  #print-content * {
+  #print-content *,
+  #invoice-content * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;

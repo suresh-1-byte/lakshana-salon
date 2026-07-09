@@ -51,7 +51,18 @@ interface MembershipData {
 }
 
 function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon' }: { bill: Bill; salonName?: string }) {
-  if (!bill) return null;
+  if (!bill) {
+    console.error('InvoicePrintContent: No bill data provided');
+    return null;
+  }
+  
+  // Debug log
+  console.log('InvoicePrintContent rendering:', {
+    invoiceNumber: bill.invoiceNumber,
+    itemsCount: bill.items?.length || 0,
+    total: bill.total,
+    items: bill.items
+  });
   
   return (
     <div id="invoice-content" style={{ 
@@ -94,26 +105,49 @@ function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon'
       </div>
 
       {/* Items table */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '24px', fontSize: '13px' }}>
-        <thead>
-          <tr style={{ background: '#D4447A', color: 'white' }}>
-            <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 400, letterSpacing: '0.1em' }}>Service / Product</th>
-            <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 400 }}>Qty</th>
-            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400 }}>Unit Price</th>
-            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400 }}>Discount</th>
-            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400 }}>Total</th>
+      <table style={{ 
+        width: '100%', 
+        borderCollapse: 'collapse', 
+        marginBottom: '24px', 
+        fontSize: '13px',
+        display: 'table',
+        tableLayout: 'fixed'
+      }}>
+        <thead style={{ display: 'table-header-group' }}>
+          <tr style={{ 
+            background: '#D4447A', 
+            color: 'white',
+            display: 'table-row'
+          }}>
+            <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 400, letterSpacing: '0.1em', display: 'table-cell' }}>Service / Product</th>
+            <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 400, display: 'table-cell' }}>Qty</th>
+            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400, display: 'table-cell' }}>Unit Price</th>
+            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400, display: 'table-cell' }}>Discount</th>
+            <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 400, display: 'table-cell' }}>Total</th>
           </tr>
         </thead>
-        <tbody>
-          {bill.items?.map((item, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid #FCE4EC', background: i % 2 ? '#FFF8FC' : '#fff' }}>
-              <td style={{ padding: '10px 14px', color: '#2D1B25' }}>{item.name}</td>
-              <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7B4F62' }}>{item.quantity}</td>
-              <td style={{ padding: '10px 14px', textAlign: 'right', color: '#2D1B25' }}>₹{item.unitPrice.toLocaleString('en-IN')}</td>
-              <td style={{ padding: '10px 14px', textAlign: 'right', color: '#22C55E' }}>{item.discount ? `-₹${item.discount}` : '—'}</td>
-              <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: '#2D1B25' }}>₹{item.total.toLocaleString('en-IN')}</td>
+        <tbody style={{ display: 'table-row-group' }}>
+          {bill.items && bill.items.length > 0 ? (
+            bill.items.map((item, i) => (
+              <tr key={i} style={{ 
+                borderBottom: '1px solid #FCE4EC', 
+                background: i % 2 ? '#FFF8FC' : '#fff',
+                display: 'table-row'
+              }}>
+                <td style={{ padding: '10px 14px', color: '#2D1B25', display: 'table-cell' }}>{item.name}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7B4F62', display: 'table-cell' }}>{item.quantity}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', color: '#2D1B25', display: 'table-cell' }}>₹{item.unitPrice.toLocaleString('en-IN')}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', color: '#22C55E', display: 'table-cell' }}>{item.discount ? `-₹${item.discount}` : '—'}</td>
+                <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, color: '#2D1B25', display: 'table-cell' }}>₹{item.total.toLocaleString('en-IN')}</td>
+              </tr>
+            ))
+          ) : (
+            <tr style={{ display: 'table-row' }}>
+              <td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: '#B89BAA', display: 'table-cell' }}>
+                No items in this invoice
+              </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
