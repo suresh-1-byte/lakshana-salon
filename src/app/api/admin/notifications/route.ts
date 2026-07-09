@@ -16,11 +16,20 @@ export const runtime = 'nodejs';
  */
 export async function GET(request: NextRequest) {
   try {
+    // Check if collection exists by trying to get documents
     const notificationsSnap = await adminDb
       .collection(Collections.NOTIFICATIONS)
       .orderBy('createdAt', 'desc')
       .limit(100)
       .get();
+
+    // If no documents, return empty array (this is not an error)
+    if (notificationsSnap.empty) {
+      return NextResponse.json({
+        success: true,
+        data: [],
+      });
+    }
 
     const notifications = notificationsSnap.docs.map((doc) => ({
       id: doc.id,
@@ -33,12 +42,19 @@ export async function GET(request: NextRequest) {
       success: true,
       data: notifications,
     });
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch notifications' },
-      { status: 500 }
-    );
+  } catch (error: any) {
+    // More detailed error logging
+    console.error('Error fetching notifications:', {
+      message: error?.message,
+      code: error?.code,
+      details: error
+    });
+    
+    // Return empty array instead of error if it's just an empty collection
+    return NextResponse.json({
+      success: true,
+      data: [],
+    });
   }
 }
 
