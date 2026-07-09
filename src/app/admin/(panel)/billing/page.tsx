@@ -52,17 +52,8 @@ interface MembershipData {
 
 function InvoicePrintContent({ bill, salonName = 'Lakshana Premier Beauty Salon' }: { bill: Bill; salonName?: string }) {
   if (!bill) {
-    console.error('InvoicePrintContent: No bill data provided');
     return null;
   }
-  
-  // Debug log
-  console.log('InvoicePrintContent rendering:', {
-    invoiceNumber: bill.invoiceNumber,
-    itemsCount: bill.items?.length || 0,
-    total: bill.total,
-    items: bill.items
-  });
   
   return (
     <div id="invoice-content" style={{ 
