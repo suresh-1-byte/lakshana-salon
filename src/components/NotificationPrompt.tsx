@@ -6,14 +6,10 @@ import { Bell, X, Sparkles } from 'lucide-react';
 
 async function registerAndGetToken(): Promise<string | null> {
   try {
-    console.log('[FCM] Starting token registration...');
-    
     // 0. FORCE unregister ALL old service workers (fixes stale cache issue)
     const existingRegs = await navigator.serviceWorker.getRegistrations();
-    console.log('[FCM] Found', existingRegs.length, 'existing service worker(s)');
     
     for (const reg of existingRegs) {
-      console.log('[FCM] Unregistering old service worker:', reg.scope);
       await reg.unregister();
     }
 
@@ -22,7 +18,6 @@ async function registerAndGetToken(): Promise<string | null> {
 
     // 1. Register NEW service worker with cache-busting and no cache
     const swUrl = '/firebase-messaging-sw.js?v=' + Date.now();
-    console.log('[FCM] Registering new service worker:', swUrl);
     
     const swReg = await navigator.serviceWorker.register(swUrl, { 
       scope: '/',
