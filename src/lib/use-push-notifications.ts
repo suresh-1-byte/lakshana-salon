@@ -33,11 +33,16 @@ export function usePushNotifications() {
         });
 
         if (token) {
-          await fetch('/api/fcm-token', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ token }),
-          });
+          // Try to save token, but don't fail if it doesn't work
+          try {
+            await fetch('/api/fcm-token', {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({ token }),
+            });
+          } catch {
+            // Token save failed - not critical, continue anyway
+          }
         }
 
         // Foreground message handler
