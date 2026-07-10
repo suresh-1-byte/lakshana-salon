@@ -115,6 +115,7 @@ export async function upsertCustomer(data: {
   whatsappNumber?: string;
   email?: string;
   dateOfBirth?: string | null;
+  anniversary?: string | null;
   services?: string[];
 }): Promise<string> {
   try {
@@ -123,7 +124,7 @@ export async function upsertCustomer(data: {
     const snapshot = await customersRef.where('phone', '==', data.phone).limit(1).get();
 
     if (!snapshot.empty) {
-      // Customer exists, update with new data (including DOB if provided)
+      // Customer exists, update with new data (including DOB and anniversary if provided)
       const doc = snapshot.docs[0];
       const updateData: any = {
         updatedAt: FieldValue.serverTimestamp(),
@@ -143,6 +144,11 @@ export async function upsertCustomer(data: {
         updateData.dateOfBirth = data.dateOfBirth;
       }
       
+      // Update anniversary if provided
+      if (data.anniversary) {
+        updateData.anniversary = data.anniversary;
+      }
+      
       // Increment total visits
       updateData.totalVisits = FieldValue.increment(1);
       
@@ -157,6 +163,7 @@ export async function upsertCustomer(data: {
       whatsappNumber: data.whatsappNumber || data.phone,
       email: data.email || null,
       dateOfBirth: data.dateOfBirth || null,
+      anniversary: data.anniversary || null,
       status: 'active',
       totalVisits: 1,
       totalSpent: 0,

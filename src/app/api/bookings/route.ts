@@ -116,7 +116,7 @@ async function sendTelegram(botToken: string, chatId: string, text: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, dateOfBirth, services } = body;
+    const { name, phone, email, dateOfBirth, anniversary, services } = body;
 
     if (!name || !phone || !email || !services?.length) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -126,16 +126,18 @@ export async function POST(req: NextRequest) {
     const docRef = await adminDb.collection('bookings').add({
       name, phone, email, services,
       dateOfBirth: dateOfBirth || null,
+      anniversary: anniversary || null,
       status: 'pending',
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    // Upsert customer profile with DOB
+    // Upsert customer profile with DOB and anniversary
     await upsertCustomer({ 
       name, 
       phone, 
       email, 
       dateOfBirth: dateOfBirth || null,
+      anniversary: anniversary || null,
       services: services.map((s: any) => s.name) 
     });
 
@@ -281,6 +283,8 @@ export async function GET() {
         name: data.name,
         phone: data.phone,
         email: data.email,
+        dateOfBirth: data.dateOfBirth || null,
+        anniversary: data.anniversary || null,
         services: data.services || [],
         status: data.status || 'pending',
         createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
@@ -288,7 +292,9 @@ export async function GET() {
     });
 
     return NextResponse.json({ 
-      bookings 
+      success: true,
+      data: bookings,
+      bookings  // backward compatibility
     }, {
       headers: {
         'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=20',
