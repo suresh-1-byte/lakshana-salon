@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Search, Calendar, Clock, User, DollarSign } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -20,49 +20,56 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { getAppointments, getTodaysAppointments } from '@/lib/api/appointments'
 import BookingForm from '@/components/admin/BookingForm'
 import { toast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 
 export default function BookingsPage() {
-  const [appointments, setAppointments] = useState<any[]>([])
-  const [filteredAppointments, setFilteredAppointments] = useState<any[]>([])
+  const [bookings, setBookings] = useState<any[]>([])
+  const [filteredBookings, setFilteredBookings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showForm, setShowForm] = useState(false)
-  const [filterType, setFilterType] = useState<'all' | 'today'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'pending' | 'confirmed'>('all')
 
   useEffect(() => {
-    loadAppointments()
+    loadBookings()
   }, [filterType])
 
   useEffect(() => {
     if (searchQuery) {
-      const filtered = appointments.filter(
-        (apt) =>
-          apt.booking_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          apt.customers?.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          apt.customers?.mobile_number.includes(searchQuery)
+      const filtered = bookings.filter(
+        (booking) =>
+          booking.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          booking.phone?.includes(searchQuery) ||
+          booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-      setFilteredAppointments(filtered)
+      setFilteredBookings(filtered)
     } else {
-      setFilteredAppointments(appointments)
+      setFilteredBookings(bookings)
     }
-  }, [searchQuery, appointments])
+  }, [searchQuery, bookings])
 
-  const loadAppointments = async () => {
+  const loadBookings = async () => {
     try {
       setLoading(true)
-      const data =
-        filterType === 'today' ? await getTodaysAppointments() : await getAppointments()
-      setAppointments(data)
-      setFilteredAppointments(data)
+      const res = await fetch('/api/bookings')
+      const data = await res.json()
+      
+      let bookingsData = data.bookings || []
+      
+      // Filter by status if needed
+      if (filterType !== 'all') {
+        bookingsData = bookingsData.filter((b: any) => b.status === filterType)
+      }
+      
+      setBookings(bookingsData)
+      setFilteredBookings(bookingsData)
     } catch (error) {
-      console.error('Error loading appointments:', error)
+      console.error('Error loading bookings:', error)
       toast({
         title: 'Error',
-        description: 'Failed to load appointments',
+        description: 'Failed to load bookings',
         variant: 'destructive',
       })
     } finally {
@@ -72,21 +79,12 @@ export default function BookingsPage() {
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
+      pending: 'bg-yellow-500',
       confirmed: 'bg-blue-500',
       completed: 'bg-green-500',
       cancelled: 'bg-red-500',
       'no-show': 'bg-gray-500',
-      rescheduled: 'bg-yellow-500',
-    }
-    return colors[status] || 'bg-gray-500'
-  }
-
-  const getPaymentStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      paid: 'bg-green-500',
-      partial: 'bg-yellow-500',
-      pending: 'bg-orange-500',
-      refunded: 'bg-red-500',
+      rescheduled: 'bg-purple-500',
     }
     return colors[status] || 'bg-gray-500'
   }
@@ -95,8 +93,8 @@ export default function BookingsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-amber-400">Appointment Bookings</h1>
-          <p className="text-gray-400 mt-1">Manage salon appointments</p>
+          <h1 className="text-3xl font-bold text-amber-400">Customer Bookings</h1>
+          <p className="text-gray-400 mt-1">Manage website booking requests</p>
         </div>
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogTrigger asChild>
@@ -112,7 +110,7 @@ export default function BookingsPage() {
             <BookingForm
               onSuccess={() => {
                 setShowForm(false)
-                loadAppointments()
+                loadBookings()
               }}
               onCancel={() => setShowForm(false)}
             />
@@ -124,7 +122,7 @@ export default function BookingsPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
-            placeholder="Search by booking ID, customer name, or mobile..."
+            placeholder="Search by customer name, phone, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-gray-800 border-gray-700"
@@ -138,10 +136,16 @@ export default function BookingsPage() {
             All Bookings
           </Button>
           <Button
-            variant={filterType === 'today' ? 'default' : 'outline'}
-            onClick={() => setFilterType('today')}
+            variant={filterType === 'pending' ? 'default' : 'outline'}
+            onClick={() => setFilterType('pending')}
           >
-            Today's Bookings
+            Pending
+          </Button>
+          <Button
+            variant={filterType === 'confirmed' ? 'default' : 'outline'}
+            onClick={() => setFilterType('confirmed')}
+          >
+            Confirmed
           </Button>
         </div>
       </div>
@@ -152,81 +156,54 @@ export default function BookingsPage() {
             <TableRow className="border-gray-800">
               <TableHead>Booking ID</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Service</TableHead>
-              <TableHead>Date & Time</TableHead>
-              <TableHead>Stylist</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Booking Status</TableHead>
-              <TableHead>Payment Status</TableHead>
+              <TableHead>Services</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={5} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : filteredAppointments.length === 0 ? (
+            ) : filteredBookings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-400">
-                  No appointments found
+                <TableCell colSpan={5} className="text-center py-8 text-gray-400">
+                  No bookings found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAppointments.map((appointment) => (
-                <TableRow key={appointment.id} className="border-gray-800">
-                  <TableCell className="font-medium">{appointment.booking_id}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{appointment.customers?.full_name}</div>
-                      <div className="text-sm text-gray-400">
-                        {appointment.customers?.mobile_number}
-                      </div>
-                    </div>
+              filteredBookings.map((booking) => (
+                <TableRow key={booking.id} className="border-gray-800">
+                  <TableCell className="font-medium font-mono">
+                    #{booking.id?.slice(-6).toUpperCase()}
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div>{appointment.services?.name || '-'}</div>
-                      {appointment.addons && appointment.addons.length > 0 && (
-                        <div className="text-xs text-amber-400 mt-1">
-                          +{appointment.addons.length} add-on{appointment.addons.length > 1 ? 's' : ''}
+                      <div className="font-medium">{booking.name}</div>
+                      <div className="text-sm text-gray-400">{booking.phone}</div>
+                      <div className="text-xs text-gray-500">{booking.email}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {booking.services?.map((service: any, idx: number) => (
+                        <div key={idx} className="text-sm">
+                          {service.name}
                         </div>
-                      )}
+                      ))}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span>
-                        {format(new Date(appointment.appointment_date), 'dd MMM yyyy')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm">{appointment.appointment_time}</span>
-                    </div>
+                    {booking.createdAt
+                      ? format(new Date(booking.createdAt), 'MMM dd, yyyy h:mm a')
+                      : '-'}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      {appointment.staff?.staff_name || '-'}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
-                      ₹{appointment.total_amount}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(appointment.booking_status)}>
-                      {appointment.booking_status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getPaymentStatusColor(appointment.payment_status)}>
-                      {appointment.payment_status}
+                    <Badge className={getStatusColor(booking.status)}>
+                      {booking.status}
                     </Badge>
                   </TableCell>
                 </TableRow>
