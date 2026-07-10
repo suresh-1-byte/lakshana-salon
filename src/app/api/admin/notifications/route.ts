@@ -78,8 +78,10 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     });
 
-    // Send notification
-    await notifyNewBooking(body);
+    // Send notification (if booking notification)
+    if (body.bookingId && body.customerName) {
+      await notifyNewBooking(body.bookingId, body.customerName);
+    }
 
     return NextResponse.json({
       success: true,

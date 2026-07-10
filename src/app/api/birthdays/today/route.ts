@@ -42,10 +42,7 @@ export async function POST(request: NextRequest) {
   try {
     const result = await sendTodaysBirthdayWishes();
 
-    return NextResponse.json({
-      success: true,
-      ...result,
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Send birthday wishes API error:', error);
     return NextResponse.json(
