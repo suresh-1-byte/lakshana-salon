@@ -1,92 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { adminDb, Collections } from '@/lib/firebase-admin';
+// ═══════════════════════════════════════════════════════
+//  Birthday Management API - Admin Dashboard
+// ═══════════════════════════════════════════════════════
 
+import { NextResponse } from 'next/server';
+import { getUpcomingBirthdays, getTodaysBirthdays } from '@/lib/api/birthdays';
+
+// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Calculate days until next birthday
-function calculateDaysUntilBirthday(dateOfBirth: string): { daysUntil: number; nextBirthday: string } {
-  const today = new Date();
-  const dob = new Date(dateOfBirth);
-  
-  // Get this year's birthday
-  const thisYear = today.getFullYear();
-  let nextBirthday = new Date(thisYear, dob.getMonth(), dob.getDate());
-  
-  // If birthday already passed this year, use next year
-  if (nextBirthday < today) {
-    nextBirthday = new Date(thisYear + 1, dob.getMonth(), dob.getDate());
-  }
-  
-  // Calculate days difference
-  const diffTime = nextBirthday.getTime() - today.getTime();
-  const daysUntil = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  return {
-    daysUntil,
-    nextBirthday: nextBirthday.toISOString().split('T')[0],
-  };
-}
-
-export async function GET(req: NextRequest) {
+/**
+ * GET /api/admin/birthday-management
+ * Returns upcoming birthdays with calculated days until birthday
+ */
+export async function GET() {
   try {
-    // Fetch all active customers with date of birth
-    const customersRef = adminDb.collection(Collections.CUSTOMERS);
-    const snapshot = await customersRef
-      .where('status', '==', 'active')
-      .get();
-
+    // Get birthdays in next 7 days
+    const customers = await getUpcomingBirthdays(7);
+    
     const today = new Date();
-    const allCustomers: any[] = [];
-    const upcomingBirthdays: any[] = [];
-    let todayCount = 0;
+    today.setHours(0, 0, 0, 0);
 
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      
-      // Only process customers with DOB
-      if (data.dateOfBirth) {
-        allCustomers.push({ id: doc.id, ...data });
-        
-        const { daysUntil, nextBirthday } = calculateDaysUntilBirthday(data.dateOfBirth);
-        
-        // Check if birthday is in next 7 days
-        if (daysUntil >= 0 && daysUntil <= 7) {
-          upcomingBirthdays.push({
-            id: doc.id,
-            name: data.name,
-            phone: data.phone,
-            whatsappNumber: data.whatsappNumber || data.phone,
-            email: data.email || null,
-            dateOfBirth: data.dateOfBirth,
-            daysUntilBirthday: daysUntil,
-            birthdayDate: nextBirthday,
-            isToday: daysUntil === 0,
-          });
-          
-          if (daysUntil === 0) {
-            todayCount++;
-          }
-        }
+    // Transform data with daysUntil calculation
+    const birthdays = customers.map(customer => {
+      const dob = new Date(customer.dateOfBirth!);
+      const thisYear = today.getFullYear();
+      const birthdayThisYear = new Date(thisYear, dob.getMonth(), dob.getDate());
+
+      if (birthdayThisYear < today) {
+        birthdayThisYear.setFullYear(thisYear + 1);
       }
+
+      const daysUntil = Math.ceil((birthdayThisYear.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      return {
+        id: customer.id,
+        name: customer.name,
+        phone: customer.phone,
+        whatsappNumber: customer.whatsappNumber,
+        dateOfBirth: customer.dateOfBirth,
+        daysUntil,
+        birthdayDate: birthdayThisYear.toISOString().split('T')[0],
+      };
     });
 
-    // Sort by nearest birthday first
-    upcomingBirthdays.sort((a, b) => a.daysUntilBirthday - b.daysUntilBirthday);
-
-    return NextResponse.json({
-      success: true,
-      customers: upcomingBirthdays,
-      stats: {
-        totalCustomers: allCustomers.length,
-        todayCount,
-        upcomingCount: upcomingBirthdays.length,
+    return NextResponse.json(
+      {
+        success: true,
+        data: birthdays,
+        count: birthdays.length,
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+        },
+      }
+    );
   } catch (error) {
     console.error('Birthday management API error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch birthday data' },
+      {
+        success: false,
+        error: 'Failed to fetch birthdays',
+        data: [],
+      },
       { status: 500 }
     );
   }
