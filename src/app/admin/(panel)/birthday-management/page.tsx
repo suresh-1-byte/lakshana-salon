@@ -17,9 +17,13 @@ interface BirthdayCustomer {
   whatsappNumber: string | null;
   email: string | null;
   dateOfBirth: string;
+  anniversary?: string;
   daysUntilBirthday: number;
+  daysUntilAnniversary?: number;
   birthdayDate: string;
+  anniversaryDate?: string;
   isToday: boolean;
+  eventType: 'birthday' | 'anniversary' | 'both';
 }
 
 interface Customer {
@@ -122,20 +126,50 @@ export default function BirthdayManagementPage() {
   };
 
   const generateWhatsAppMessage = (customer: BirthdayCustomer) => {
-    const message = `Hi ${customer.name} 🎉🎂
+    const isBirthday = customer.eventType === 'birthday' || customer.eventType === 'both';
+    const isAnniversary = customer.eventType === 'anniversary' || customer.eventType === 'both';
+    
+    let greeting = '';
+    let occasion = '';
+    
+    if (customer.eventType === 'both') {
+      greeting = `Hi ${customer.name} 🎉🎂💐`;
+      occasion = 'Your birthday AND anniversary are';
+    } else if (isBirthday) {
+      greeting = `Hi ${customer.name} 🎉🎂`;
+      occasion = 'Your birthday is';
+    } else {
+      greeting = `Hi ${customer.name} 💐🎉`;
+      occasion = 'Your anniversary is';
+    }
+    
+    const daysText = customer.isToday 
+      ? 'today' 
+      : customer.daysUntilBirthday === 1 || customer.daysUntilAnniversary === 1
+        ? 'tomorrow'
+        : `in ${customer.daysUntilBirthday || customer.daysUntilAnniversary} days`;
 
-Your birthday is ${customer.isToday ? 'today' : `coming ${customer.daysUntilBirthday === 1 ? 'tomorrow' : `in ${customer.daysUntilBirthday} days`}`}! 🥳
+    const offerTitle = customer.eventType === 'both' 
+      ? '*🎁 Birthday & Anniversary Special:*'
+      : isBirthday 
+        ? '*🎁 Birthday Special Offer:*'
+        : '*💐 Anniversary Special Offer:*';
 
-We have a special birthday offer exclusively for you 🎁✨
+    const message = `${greeting}
 
-*🎁 Birthday Special Offer:*
+${occasion} ${daysText}! 🥳
+
+We have a special offer exclusively for you 🎁✨
+
+${offerTitle}
 ✨ 20% OFF on all services
 🌸 Complimentary hair spa
 💅 Free nail art design
+${isAnniversary ? '💑 Couple\'s package available' : ''}
 
-Celebrate your special day with us and enjoy our exclusive birthday offer.
+Celebrate your special day with us and enjoy our exclusive offer.
 
-Valid for 2 weeks from your birthday! 💖
+Valid for 2 weeks from your ${customer.eventType === 'both' ? 'special day' : (isBirthday ? 'birthday' : 'anniversary')}! 💖
 
 Contact us to book your appointment.
 
@@ -216,10 +250,10 @@ This is a personalized birthday offer. Not valid with other promotions.`);
               className="text-white text-3xl font-light mt-1"
               style={{ fontFamily: "'Cormorant Garamond', serif" }}
             >
-              Upcoming Birthdays & WhatsApp Offers
+              Birthdays & Anniversaries - Send Special Offers
             </h1>
             <p className="text-white/40 text-sm mt-2">
-              Send personalized birthday offers via WhatsApp - No API needed! 🎂
+              Send personalized birthday & anniversary offers via WhatsApp - No API needed! 🎂💐
             </p>
           </motion.div>
         </div>
@@ -259,12 +293,12 @@ This is a personalized birthday offer. Not valid with other promotions.`);
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
               <Gift size={16} className="text-[#D4447A]" />
-              Birthdays Today
+              Today's Events
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-[#D4447A]">{todayCount}</div>
-            <p className="text-xs text-white/40 mt-1">Send wishes now!</p>
+            <p className="text-xs text-white/40 mt-1">Birthdays & Anniversaries</p>
           </CardContent>
         </Card>
 
@@ -272,12 +306,12 @@ This is a personalized birthday offer. Not valid with other promotions.`);
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
               <Calendar size={16} className="text-amber-400" />
-              Next 7 Days
+              Upcoming Events
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-amber-400">{upcomingCount}</div>
-            <p className="text-xs text-white/40 mt-1">Upcoming birthdays</p>
+            <p className="text-xs text-white/40 mt-1">Next 7 days</p>
           </CardContent>
         </Card>
       </div>
@@ -307,15 +341,15 @@ This is a personalized birthday offer. Not valid with other promotions.`);
                 <Cake size={40} className="text-[#D4447A]" />
               </div>
               <h3 className="text-white text-xl font-medium mb-2">
-                {searchQuery ? 'No Matching Birthdays' : 'No Upcoming Birthdays'}
+                {searchQuery ? 'No Matching Events' : 'No Upcoming Events'}
               </h3>
               <p className="text-white/50 mb-2">
                 {searchQuery 
                   ? 'No customers found matching your search in the next 7 days.'
-                  : 'There are no customer birthdays in the next 7 days.'}
+                  : 'There are no birthdays or anniversaries in the next 7 days.'}
               </p>
               <p className="text-white/40 text-sm">
-                {!searchQuery && 'Customer birthdays will appear here when they are within the next week.'}
+                {!searchQuery && 'Customer birthdays and anniversaries will appear here when they are within the next week.'}
               </p>
             </div>
           </CardContent>
@@ -327,7 +361,7 @@ This is a personalized birthday offer. Not valid with other promotions.`);
             <div>
               <h2 className="text-white text-lg font-medium mb-3 flex items-center gap-2">
                 <Gift size={18} className="text-[#D4447A]" />
-                Birthdays Today 🎉
+                Today's Special Days 🎉
               </h2>
               <div className="grid gap-3">
                 {todayCustomers.map((customer, idx) => (
@@ -362,7 +396,9 @@ This is a personalized birthday offer. Not valid with other promotions.`);
                                 )}
                               </div>
                               <Badge className="bg-[#D4447A]/20 text-[#D4447A] border-[#D4447A]/30 mt-2">
-                                🎂 Birthday Today!
+                                {customer.eventType === 'both' ? '🎂💐 Birthday & Anniversary Today!' : 
+                                 customer.eventType === 'anniversary' ? '💐 Anniversary Today!' : 
+                                 '🎂 Birthday Today!'}
                               </Badge>
                             </div>
                           </div>
@@ -411,7 +447,7 @@ This is a personalized birthday offer. Not valid with other promotions.`);
             <div className={todayCustomers.length > 0 ? 'mt-6' : ''}>
               <h2 className="text-white text-lg font-medium mb-3 flex items-center gap-2">
                 <Calendar size={18} className="text-amber-400" />
-                Upcoming Birthdays (Next 7 Days)
+                Upcoming Events (Next 7 Days)
               </h2>
               <div className="grid gap-3">
                 {upcomingCustomers.map((customer, idx) => (
@@ -446,15 +482,32 @@ This is a personalized birthday offer. Not valid with other promotions.`);
                                 )}
                               </div>
                               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                <Badge variant="outline" className="text-amber-400 border-amber-400/30">
-                                  📅 {new Date(customer.birthdayDate).toLocaleDateString('en-IN', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                  })}
-                                </Badge>
-                                <Badge variant="outline" className="text-blue-400 border-blue-400/30">
-                                  {customer.daysUntilBirthday === 1 ? 'Tomorrow' : `In ${customer.daysUntilBirthday} days`}
-                                </Badge>
+                                {customer.birthdayDate && (
+                                  <>
+                                    <Badge variant="outline" className="text-amber-400 border-amber-400/30">
+                                      🎂 {new Date(customer.birthdayDate).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                      })}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-blue-400 border-blue-400/30">
+                                      {customer.daysUntilBirthday === 1 ? 'Tomorrow' : `In ${customer.daysUntilBirthday} days`}
+                                    </Badge>
+                                  </>
+                                )}
+                                {customer.anniversaryDate && (
+                                  <>
+                                    <Badge variant="outline" className="text-pink-400 border-pink-400/30">
+                                      💐 {new Date(customer.anniversaryDate).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                      })}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-purple-400 border-purple-400/30">
+                                      {customer.daysUntilAnniversary === 1 ? 'Tomorrow' : `In ${customer.daysUntilAnniversary} days`}
+                                    </Badge>
+                                  </>
+                                )}
                               </div>
                             </div>
                           </div>
