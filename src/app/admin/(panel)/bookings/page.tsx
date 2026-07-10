@@ -32,23 +32,28 @@ export default function BookingsPage() {
   const [showForm, setShowForm] = useState(false)
   const [filterType, setFilterType] = useState<'all' | 'pending' | 'confirmed'>('all')
 
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        const filtered = bookings.filter(
+          (booking) =>
+            booking.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            booking.phone?.includes(searchQuery) ||
+            booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        setFilteredBookings(filtered)
+      } else {
+        setFilteredBookings(bookings)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, bookings])
+
   useEffect(() => {
     loadBookings()
   }, [filterType])
-
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = bookings.filter(
-        (booking) =>
-          booking.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          booking.phone?.includes(searchQuery) ||
-          booking.email?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      setFilteredBookings(filtered)
-    } else {
-      setFilteredBookings(bookings)
-    }
-  }, [searchQuery, bookings])
 
   const loadBookings = async () => {
     try {
@@ -163,11 +168,16 @@ export default function BookingsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              // Loading skeleton
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-gray-800">
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-20"></div></TableCell>
+                  <TableCell><div className="h-12 bg-gray-800 rounded animate-pulse w-32"></div></TableCell>
+                  <TableCell><div className="h-8 bg-gray-800 rounded animate-pulse w-40"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-32"></div></TableCell>
+                  <TableCell><div className="h-6 bg-gray-800 rounded animate-pulse w-20"></div></TableCell>
+                </TableRow>
+              ))
             ) : filteredBookings.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-8 text-gray-400">

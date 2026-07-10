@@ -11,36 +11,54 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = parseInt(searchParams.get('limit') || '50'); // Increased from 20 to 50
 
-    let query = adminDb.collection(Collections.CUSTOMERS).orderBy('createdAt', 'desc');
+    // Use index on createdAt for faster queries
+    let query = adminDb
+      .collection(Collections.CUSTOMERS)
+      .orderBy('createdAt', 'desc')
+      .limit(limit);
 
     const snap = await query.get();
-    let customers = snap.docs.map((d: any) => ({
-      id: d.id,
-      ...d.data(),
-      createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? d.data().createdAt,
-      lastVisit: d.data().lastVisit?.toDate?.()?.toISOString() ?? d.data().lastVisit,
-      updatedAt: d.data().updatedAt?.toDate?.()?.toISOString() ?? d.data().updatedAt,
-    }));
+    
+    let customers = snap.docs.map((d: any) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name,
+        phone: data.phone,
+        email: data.email || '',
+        dateOfBirth: data.dateOfBirth || '',
+        totalVisits: data.totalVisits || 0,
+        totalSpent: data.totalSpent || 0,
+        loyaltyStatus: data.loyaltyStatus || 'Bronze',
+        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt,
+      };
+    });
 
-    // Client-side search filter
+    // Client-side search filter (faster for small datasets)
     if (search) {
       const q = search.toLowerCase();
       customers = customers.filter((c: any) =>
-        (c as any).name?.toLowerCase().includes(q) ||
-        (c as any).phone?.includes(q) ||
-        (c as any).email?.toLowerCase().includes(q)
+        c.name?.toLowerCase().includes(q) ||
+        c.phone?.includes(q) ||
+        c.email?.toLowerCase().includes(q)
       );
     }
 
-    const total = customers.length;
-    const paginated = customers.slice((page - 1) * limit, page * limit);
-
     return NextResponse.json({
       success: true,
-      data: paginated,
-      pagination: { total, page, limit, hasMore: page * limit < total },
+      data: customers,
+      pagination: { 
+        total: customers.length, 
+        page, 
+        limit, 
+        hasMore: customers.length === limit 
+      },
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+      },
     });
   } catch (err) {
     console.error(err);

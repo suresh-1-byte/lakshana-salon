@@ -34,17 +34,22 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
   const [showForm, setShowForm] = useState(false)
 
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        handleSearch()
+      } else {
+        setFilteredCustomers(customers)
+      }
+    }, 300) // Wait 300ms after user stops typing
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, customers])
+
   useEffect(() => {
     loadCustomers()
   }, [])
-
-  useEffect(() => {
-    if (searchQuery) {
-      handleSearch()
-    } else {
-      setFilteredCustomers(customers)
-    }
-  }, [searchQuery, customers])
 
   const loadCustomers = async () => {
     try {
@@ -216,11 +221,20 @@ export default function CustomersPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              // Loading skeleton - faster perceived load time
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-gray-800">
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-20"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-32"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-24"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-40"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-24"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-16"></div></TableCell>
+                  <TableCell><div className="h-4 bg-gray-800 rounded animate-pulse w-20"></div></TableCell>
+                  <TableCell><div className="h-6 bg-gray-800 rounded animate-pulse w-16"></div></TableCell>
+                  <TableCell><div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div></TableCell>
+                </TableRow>
+              ))
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center py-8 text-gray-400">

@@ -274,13 +274,26 @@ export async function GET() {
       .limit(100)
       .get();
 
-    const bookings = snap.docs.map((d: any) => ({
-      id: d.id,
-      ...d.data(),
-      createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
-    }));
+    const bookings = snap.docs.map((d: any) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        services: data.services || [],
+        status: data.status || 'pending',
+        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
+      };
+    });
 
-    return NextResponse.json({ bookings });
+    return NextResponse.json({ 
+      bookings 
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=20',
+      },
+    });
   } catch (err) {
     console.error('Fetch bookings error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
