@@ -21,19 +21,17 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { getAllCustomers, searchCustomers, deleteCustomer } from '@/lib/api/customers'
-import { Customer } from '@/types/database.types'
 import CustomerForm from '@/components/admin/CustomerForm'
 import { utils, writeFile } from 'xlsx'
 import { toast } from '@/hooks/use-toast'
 
 export default function CustomersPage() {
   const router = useRouter()
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
+  const [customers, setCustomers] = useState<any[]>([])
+  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
@@ -51,9 +49,15 @@ export default function CustomersPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true)
-      const data = await getAllCustomers()
-      setCustomers(data)
-      setFilteredCustomers(data)
+      const res = await fetch('/api/admin/customers')
+      const data = await res.json()
+      
+      if (data.success) {
+        setCustomers(data.data || [])
+        setFilteredCustomers(data.data || [])
+      } else {
+        throw new Error(data.error || 'Failed to load customers')
+      }
     } catch (error) {
       console.error('Error loading customers:', error)
       toast({
@@ -73,8 +77,12 @@ export default function CustomersPage() {
     }
 
     try {
-      const results = await searchCustomers(searchQuery)
-      setFilteredCustomers(results)
+      const res = await fetch(`/api/admin/customers?search=${encodeURIComponent(searchQuery)}`)
+      const data = await res.json()
+      
+      if (data.success) {
+        setFilteredCustomers(data.data || [])
+      }
     } catch (error) {
       console.error('Search error:', error)
     }
@@ -84,12 +92,21 @@ export default function CustomersPage() {
     if (!confirm('Are you sure you want to delete this customer?')) return
 
     try {
-      await deleteCustomer(id)
-      toast({
-        title: 'Success',
-        description: 'Customer deleted successfully',
+      const res = await fetch(`/api/admin/customers/${id}`, {
+        method: 'DELETE',
       })
-      loadCustomers()
+      
+      const data = await res.json()
+      
+      if (res.ok && data.success) {
+        toast({
+          title: 'Success',
+          description: 'Customer deleted successfully',
+        })
+        loadCustomers()
+      } else {
+        throw new Error(data.error || 'Failed to delete')
+      }
     } catch (error) {
       console.error('Delete error:', error)
       toast({
@@ -102,17 +119,15 @@ export default function CustomersPage() {
 
   const handleExport = () => {
     const exportData = filteredCustomers.map(customer => ({
-      'Customer ID': customer.customer_id,
-      'Full Name': customer.full_name,
-      'Mobile': customer.mobile_number,
+      'Customer ID': customer.id?.slice(-6).toUpperCase() || '',
+      'Name': customer.name,
+      'Phone': customer.phone,
       'Email': customer.email || '',
-      'Date of Birth': customer.date_of_birth || '',
-      'Gender': customer.gender || '',
-      'City': customer.city || '',
-      'Total Visits': customer.total_visits,
-      'Total Spent': customer.total_spent,
-      'Member Since': new Date(customer.member_since).toLocaleDateString(),
-      'Status': customer.status,
+      'Date of Birth': customer.dateOfBirth || '',
+      'Total Visits': customer.totalVisits || 0,
+      'Total Spent': customer.totalSpent || 0,
+      'Created At': customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : '',
+      'Loyalty Status': customer.loyaltyStatus || 'Bronze',
     }))
 
     const ws = utils.json_to_sheet(exportData)
@@ -190,78 +205,56 @@ export default function CustomersPage() {
             <TableRow className="border-gray-800">
               <TableHead>Customer ID</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Mobile</TableHead>
+              <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Date of Birth</TableHead>
               <TableHead>Total Visits</TableHead>
               <TableHead>Total Spent</TableHead>
-              <TableHead>Member Since</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Loyalty Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-gray-400">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-400">
                   No customers found
                 </TableCell>
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
                 <TableRow key={customer.id} className="border-gray-800">
-                  <TableCell className="font-medium">{customer.customer_id}</TableCell>
-                  <TableCell>{customer.full_name}</TableCell>
+                  <TableCell className="font-medium font-mono">
+                    #{customer.id?.slice(-6).toUpperCase()}
+                  </TableCell>
+                  <TableCell>{customer.name}</TableCell>
                   <TableCell>
                     <a 
-                      href={`https://wa.me/${customer.mobile_number.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${customer.phone?.replace(/[^0-9]/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-green-400 hover:text-green-300 underline"
                     >
-                      {customer.mobile_number}
+                      {customer.phone}
                     </a>
                   </TableCell>
                   <TableCell>{customer.email || '-'}</TableCell>
                   <TableCell>
-                    {customer.date_of_birth ? (
-                      <div className="flex items-center gap-2">
-                        <span>{new Date(customer.date_of_birth).toLocaleDateString('en-IN')}</span>
-                        {(() => {
-                          const today = new Date();
-                          const dob = new Date(customer.date_of_birth);
-                          const thisYear = today.getFullYear();
-                          let nextBirthday = new Date(thisYear, dob.getMonth(), dob.getDate());
-                          if (nextBirthday < today) {
-                            nextBirthday = new Date(thisYear + 1, dob.getMonth(), dob.getDate());
-                          }
-                          const daysUntil = Math.ceil((nextBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                          if (daysUntil >= 0 && daysUntil <= 7) {
-                            return <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">🎂 {daysUntil === 0 ? 'Today!' : `In ${daysUntil}d`}</Badge>;
-                          }
-                          return null;
-                        })()}
-                      </div>
-                    ) : (
-                      <span className="text-gray-500">Not provided</span>
-                    )}
+                    {customer.dateOfBirth ? (
+                      new Date(customer.dateOfBirth).toLocaleDateString()
+                    ) : '-'}
                   </TableCell>
-                  <TableCell>{customer.total_visits}</TableCell>
-                  <TableCell>₹{customer.total_spent.toFixed(2)}</TableCell>
+                  <TableCell>{customer.totalVisits || 0}</TableCell>
+                  <TableCell>₹{(customer.totalSpent || 0).toLocaleString('en-IN')}</TableCell>
                   <TableCell>
-                    {new Date(customer.member_since).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={customer.status === 'active' ? 'default' : 'secondary'}
-                    >
-                      {customer.status}
+                    <Badge variant={customer.loyaltyStatus === 'Gold' ? 'default' : 'secondary'}>
+                      {customer.loyaltyStatus || 'Bronze'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
