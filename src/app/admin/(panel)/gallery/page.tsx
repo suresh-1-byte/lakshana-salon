@@ -2,18 +2,22 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit2, Star, StarOff, Upload, X, RefreshCw, Grid3X3, List, Image as ImgIcon } from 'lucide-react';
+import { Plus, Trash2, Edit2, Star, StarOff, Upload, X, RefreshCw, Grid3X3, List, Image as ImgIcon, Loader2 } from 'lucide-react';
 import { AdminModal } from '@/components/admin/AdminModal';
 import { AdminInput, AdminSelect } from '@/components/admin/AdminInput';
 import type { GalleryImage, GalleryCategory } from '@/types/admin';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const CATEGORIES: GalleryCategory[] = ['Hair','Skin','Nails','Hair Spa','Bridal','Interiors','Other','Before/After'];
 const CAT_OPTS = CATEGORIES.map(c => ({ value: c, label: c }));
 
 export default function GalleryPage() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [images, setImages]         = useState<GalleryImage[]>([]);
   const [loading, setLoading]       = useState(true);
   const [filter, setFilter]         = useState('');
@@ -22,7 +26,11 @@ export default function GalleryPage() {
   const [editImage, setEditImage]   = useState<GalleryImage | null>(null);
   const [deleting, setDeleting]     = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading]   = useState(false);
   const [dragOver, setDragOver]     = useState(false);
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('file');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const [form, setForm] = useState({
     url: '', caption: '', category: 'Hair' as GalleryCategory, isFeatured: false,
@@ -39,20 +47,96 @@ export default function GalleryPage() {
 
   useEffect(() => { fetchImages(); }, [fetchImages]);
 
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Please select an image file', variant: 'destructive' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image too large (max 5MB)', variant: 'destructive' });
+      return;
+    }
+
+    setSelectedFile(file);
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload file to Firebase Storage
+  const uploadFileToStorage = async (file: File): Promise<string> => {
+    try {
+      const timestamp = Date.now();
+      const fileName = `gallery/${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const storageRef = ref(storage, fileName);
+      
+      setUploading(true);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      setUploading(false);
+      
+      return downloadURL;
+    } catch (error) {
+      setUploading(false);
+      console.error('Upload error:', error);
+      throw new Error('Failed to upload image');
+    }
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.url) { toast({ title: 'Image URL required', variant: 'destructive' }); return; }
+    
+    let imageUrl = form.url;
+
+    // If file upload method, upload file first
+    if (uploadMethod === 'file') {
+      if (!selectedFile) {
+        toast({ title: 'Please select an image', variant: 'destructive' });
+        return;
+      }
+      
+      try {
+        imageUrl = await uploadFileToStorage(selectedFile);
+      } catch (error) {
+        toast({ title: 'Upload failed', variant: 'destructive' });
+        return;
+      }
+    } else {
+      // URL method
+      if (!imageUrl) {
+        toast({ title: 'Image URL required', variant: 'destructive' });
+        return;
+      }
+    }
+
     setSubmitting(true);
     const res = await fetch('/api/admin/gallery', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, url: imageUrl }),
     });
     const data = await res.json();
+    
     if (res.ok && data.success) {
       toast({ title: 'Image added to gallery!' });
       setAddOpen(false);
       setForm({ url: '', caption: '', category: 'Hair', isFeatured: false });
+      setSelectedFile(null);
+      setPreviewUrl('');
       fetchImages();
-    } else { toast({ title: data.error || 'Failed', variant: 'destructive' }); }
+    } else {
+      toast({ title: data.error || 'Failed', variant: 'destructive' });
+    }
     setSubmitting(false);
   };
 
@@ -94,11 +178,38 @@ export default function GalleryPage() {
     setForm({ url: img.url, caption: img.caption || '', category: img.category, isFeatured: img.isFeatured });
   };
 
-  // Drag-and-drop URL paste
+  // Drag-and-drop for both URLs and files
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragOver(false);
-    const url = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('URL');
-    if (url) { setForm(p => ({ ...p, url })); setAddOpen(true); }
+    e.preventDefault();
+    setDragOver(false);
+
+    // Check if it's a file
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        if (file.size > 5 * 1024 * 1024) {
+          toast({ title: 'Image too large (max 5MB)', variant: 'destructive' });
+          return;
+        }
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreviewUrl(e.target?.result as string);
+        };
+        reader.readAsDataURL(file);
+        setUploadMethod('file');
+        setAddOpen(true);
+      }
+    } else {
+      // Check if it's a URL
+      const url = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('URL');
+      if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+        setForm(p => ({ ...p, url }));
+        setUploadMethod('url');
+        setAddOpen(true);
+      }
+    }
   };
 
   const featured = images.filter(i => i.isFeatured).length;
@@ -176,7 +287,7 @@ export default function GalleryPage() {
       >
         <Upload size={16} className="text-[#D4447A] opacity-60" />
         <p className="text-white/30 text-sm">
-          {dragOver ? 'Drop image URL here' : 'Click to add image or drag & drop an image URL'}
+          {dragOver ? 'Drop image here' : 'Click to add image, drag & drop files, or paste image URL'}
         </p>
       </div>
 
@@ -296,16 +407,104 @@ export default function GalleryPage() {
       )}
 
       {/* Add Modal */}
-      <AdminModal open={addOpen} onClose={() => { setAddOpen(false); setForm({ url:'', caption:'', category:'Hair', isFeatured:false }); }}
-        title="Add Image to Gallery" size="md">
+      <AdminModal open={addOpen} onClose={() => {
+        setAddOpen(false);
+        setForm({ url:'', caption:'', category:'Hair', isFeatured:false });
+        setSelectedFile(null);
+        setPreviewUrl('');
+        setUploadMethod('file');
+      }} title="Add Image to Gallery" size="md">
         <form onSubmit={handleAdd} className="space-y-4">
-          <AdminInput label="Image URL *" value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))}
-            required placeholder="https://firebasestorage.googleapis.com/..." hint="Paste a direct image URL from Firebase Storage, Cloudinary, etc." />
+          {/* Upload Method Toggle */}
+          <div className="flex gap-2 p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
+            <button
+              type="button"
+              onClick={() => setUploadMethod('file')}
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all"
+              style={uploadMethod === 'file'
+                ? { background: 'linear-gradient(135deg, #D4447A, #B03060)', color: 'white' }
+                : { color: 'rgba(255,255,255,0.4)' }
+              }>
+              📱 Upload from Device
+            </button>
+            <button
+              type="button"
+              onClick={() => setUploadMethod('url')}
+              className="flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all"
+              style={uploadMethod === 'url'
+                ? { background: 'linear-gradient(135deg, #D4447A, #B03060)', color: 'white' }
+                : { color: 'rgba(255,255,255,0.4)' }
+              }>
+              🔗 Paste URL
+            </button>
+          </div>
 
-          {form.url && (
-            <div className="relative w-full h-48 rounded-xl overflow-hidden bg-white/5">
-              <Image src={form.url} alt="Preview" fill className="object-cover" sizes="400px" unoptimized />
-            </div>
+          {/* File Upload Method */}
+          {uploadMethod === 'file' && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              {!selectedFile ? (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-48 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-3 transition-all hover:border-[#D4447A] hover:bg-[rgba(212,68,122,0.05)]"
+                  style={{ borderColor: 'rgba(212,68,122,0.3)', background: 'rgba(255,255,255,0.02)' }}
+                >
+                  <Upload size={32} className="text-[#D4447A] opacity-60" />
+                  <div className="text-center">
+                    <p className="text-white/70 text-sm font-medium">Click to select image</p>
+                    <p className="text-white/30 text-xs mt-1">or drag and drop</p>
+                    <p className="text-white/20 text-xs mt-2">JPG, PNG, GIF (max 5MB)</p>
+                  </div>
+                </button>
+              ) : (
+                <div className="relative">
+                  <div className="relative w-full h-48 rounded-xl overflow-hidden bg-white/5">
+                    {previewUrl && (
+                      <Image src={previewUrl} alt="Preview" fill className="object-cover" sizes="400px" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFile(null);
+                      setPreviewUrl('');
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center transition-all"
+                  >
+                    <X size={16} />
+                  </button>
+                  <p className="text-white/50 text-xs mt-2 truncate">{selectedFile.name}</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* URL Method */}
+          {uploadMethod === 'url' && (
+            <>
+              <AdminInput
+                label="Image URL *"
+                value={form.url}
+                onChange={e => setForm(p => ({ ...p, url: e.target.value }))}
+                required
+                placeholder="https://firebasestorage.googleapis.com/..."
+                hint="Paste a direct image URL from Firebase Storage, Cloudinary, etc."
+              />
+
+              {form.url && (
+                <div className="relative w-full h-48 rounded-xl overflow-hidden bg-white/5">
+                  <Image src={form.url} alt="Preview" fill className="object-cover" sizes="400px" unoptimized />
+                </div>
+              )}
+            </>
           )}
 
           <AdminInput label="Caption (optional)" value={form.caption} onChange={e => setForm(p => ({ ...p, caption: e.target.value }))} placeholder="Describe this image..." />
@@ -325,12 +524,27 @@ export default function GalleryPage() {
           </label>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setAddOpen(false)}
-              className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">Cancel</button>
-            <button type="submit" disabled={submitting}
-              className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50"
+            <button type="button" onClick={() => {
+              setAddOpen(false);
+              setSelectedFile(null);
+              setPreviewUrl('');
+            }}
+              className="flex-1 h-10 rounded-xl text-white/50 text-sm border border-white/10 hover:bg-white/5 transition-all">
+              Cancel
+            </button>
+            <button type="submit" disabled={submitting || uploading}
+              className="flex-1 h-10 rounded-xl text-white text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               style={{ background: 'linear-gradient(135deg, #D4447A, #B03060)' }}>
-              {submitting ? 'Adding...' : 'Add to Gallery'}
+              {uploading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Uploading...
+                </>
+              ) : submitting ? (
+                'Adding...'
+              ) : (
+                'Add to Gallery'
+              )}
             </button>
           </div>
         </form>
