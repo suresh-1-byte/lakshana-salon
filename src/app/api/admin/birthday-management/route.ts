@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { NextResponse } from 'next/server';
-import { getUpcomingBirthdays, getTodaysBirthdays } from '@/lib/api/birthdays';
+import { adminDb, Collections } from '@/lib/firebase-admin';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
