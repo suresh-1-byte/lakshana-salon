@@ -215,6 +215,11 @@ export function Hero() {
             preload="metadata"
             poster="/hero bg.png"
           >
+            {/* Desktop/Landscape video */}
+            <source src="/web.mp4" type="video/mp4" media="(min-width: 768px)" />
+            {/* Mobile/Portrait video */}
+            <source src="/mobile-portrait.mp4" type="video/mp4" media="(max-width: 767px)" />
+            {/* Fallback */}
             <source src="/web.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 pointer-events-none"

@@ -320,6 +320,20 @@
   -webkit-backface-visibility: hidden;
 }
 
+/* Mobile portrait video optimization */
+@media (max-width: 767px) and (orientation: portrait) {
+  .hero-background {
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.02) translateZ(0);
+  }
+  
+  @keyframes hero-drift {
+    0%   { transform: scale(1.02) translateY(0) translateZ(0); }
+    100% { transform: scale(1.05) translateY(-1%) translateZ(0); }
+  }
+}
+
 @keyframes hero-drift {
   0%   { transform: scale(1.05) translateX(0) translateZ(0); }
   100% { transform: scale(1.08) translateX(-1%) translateZ(0); }
