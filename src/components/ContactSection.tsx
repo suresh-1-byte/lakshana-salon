@@ -11,18 +11,24 @@ const contactItems = [
     label: 'Salon Address',
     value: 'Nolambur, Maduravoyal,\nChennai, Tamil Nadu',
     hoverBg: 'group-hover:bg-[#EF4444] group-hover:border-[#EF4444]',
+    link: 'https://www.google.com/maps/dir//Nolambur,+Chennai,+Tamil+Nadu/@13.066699312787864,80.16540647476602,17z',
+    linkText: 'Get Directions →',
   },
   {
     icon: Phone,
     label: 'Phone Number',
     value: '+91 98765 43210',
     hoverBg: 'group-hover:bg-[#22C55E] group-hover:border-[#22C55E]',
+    link: 'tel:+919876543210',
+    linkText: 'Call Now →',
   },
   {
     icon: Mail,
     label: 'Email Address',
     value: 'hello@lakshanasalon.com',
     hoverBg: 'group-hover:bg-[#3B82F6] group-hover:border-[#3B82F6]',
+    link: 'mailto:hello@lakshanasalon.com',
+    linkText: 'Send Email →',
   },
 ];
 
@@ -61,7 +67,7 @@ export function ContactSection() {
 
             {/* Contact items */}
             <div className="space-y-8">
-              {contactItems.map(({ icon: Icon, label, value, hoverBg }, i) => (
+              {contactItems.map(({ icon: Icon, label, value, hoverBg, link, linkText }, i) => (
                 <motion.div
                   key={label}
                   initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
@@ -72,9 +78,19 @@ export function ContactSection() {
                   <div className={`w-12 h-12 border border-[#D4447A]/22 flex items-center justify-center text-[#D4447A] group-hover:text-white transition-all duration-500 shrink-0 ${hoverBg}`}>
                     <Icon size={20} strokeWidth={1.3} />
                   </div>
-                  <div className="space-y-1 pt-1">
+                  <div className="space-y-1 pt-1 flex-1">
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.42em] text-[#D4447A]">{label}</h4>
                     <p className="text-sm text-[#7B4F62] font-light leading-relaxed whitespace-pre-line">{value}</p>
+                    {link && (
+                      <a
+                        href={link}
+                        target={link.startsWith('http') ? '_blank' : undefined}
+                        rel={link.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className="inline-block text-xs text-[#D4447A] hover:text-[#B03060] font-medium mt-2 transition-colors duration-300"
+                      >
+                        {linkText}
+                      </a>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -139,6 +155,21 @@ export function ContactSection() {
                 referrerPolicy="no-referrer-when-downgrade"
                 className="opacity-45 group-hover:opacity-100 transition-opacity duration-700"
               />
+              
+              {/* Get Directions Button */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                <a
+                  href="https://www.google.com/maps/dir//Nolambur,+Chennai,+Tamil+Nadu/@13.066699312787864,80.16540647476602,17z"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#D4447A] hover:bg-[#B03060] text-white text-xs font-semibold uppercase tracking-[0.2em] shadow-lg hover:shadow-xl transition-all duration-300 border border-[#D4447A]/60"
+                  style={{ backdropFilter: 'blur(8px)' }}
+                >
+                  <MapPin size={16} />
+                  Get Directions
+                </a>
+              </div>
+              
               {/* Corner accents */}
               <div className="absolute top-0 left-0 w-6 h-6 border-t border-l border-[#D4447A]/40 z-10 pointer-events-none" />
               <div className="absolute bottom-0 right-0 w-6 h-6 border-b border-r border-[#D4447A]/40 z-10 pointer-events-none" />
