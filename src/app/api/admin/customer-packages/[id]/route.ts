@@ -7,10 +7,10 @@ export const runtime = 'nodejs';
 // GET: Fetch single package with full details
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const packageId = params.id;
+    const { id: packageId } = await params;
     const packageDoc = await adminDb.collection(Collections.CUSTOMER_PACKAGES).doc(packageId).get();
 
     if (!packageDoc.exists) {
@@ -65,10 +65,10 @@ export async function GET(
 // PATCH: Update package (e.g., add balance, change status)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const packageId = params.id;
+    const { id: packageId } = await params;
     const body = await req.json();
     const { action, amount, notes, status } = body;
 
@@ -138,10 +138,10 @@ export async function PATCH(
 // DELETE: Deactivate package
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const packageId = params.id;
+    const { id: packageId } = await params;
     const packageRef = adminDb.collection(Collections.CUSTOMER_PACKAGES).doc(packageId);
     const packageDoc = await packageRef.get();
 

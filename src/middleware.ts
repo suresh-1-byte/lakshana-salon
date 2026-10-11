@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken, COOKIE_NAME } from '@/lib/admin-auth';
+import { isCronRequest } from '@/lib/server/request-auth';
 
 export const runtime = 'nodejs';
 
@@ -10,6 +11,34 @@ const PUBLIC_PATHS = [
   '/api/admin/auth/logout',
 ];
 
+// API routes outside /api/admin that expose or change customer data,
+// send messages or notifications: admin session required.
+const ADMIN_ONLY_API = [
+  '/api/admin',
+  '/api/customers',
+  '/api/birthdays',
+  '/api/reports',
+  '/api/whatsapp',
+  '/api/notify',
+  '/api/fcm-token/list',
+  '/api/fcm-token/cleanup',
+  '/api/fcm-token/delete-all',
+];
+
+// Scheduled jobs: Vercel Cron (Bearer CRON_SECRET) or the admin.
+const CRON_API = ['/api/cron'];
+
+const matches = (pathname: string, prefixes: string[]) =>
+  prefixes.some(p => pathname === p || pathname.startsWith(`${p}/`));
+
+async function hasAdminSession(req: NextRequest) {
+  const token =
+    req.cookies.get(COOKIE_NAME)?.value ||
+    req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
+  if (!token) return false;
+  return !!(await verifyAdminToken(token));
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -18,7 +47,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect /admin panel pages (redirect to login if no token)
+  // Protect /admin panel pages (redirect to login if no valid token)
   if (pathname.startsWith('/admin')) {
     const token = req.cookies.get(COOKIE_NAME)?.value;
     if (!token) {
@@ -33,25 +62,29 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect /api/admin/* (return 401 JSON if no token)
-  if (pathname.startsWith('/api/admin')) {
-    const token =
-      req.cookies.get(COOKIE_NAME)?.value ||
-      req.headers.get('Authorization')?.replace('Bearer ', '');
+  if (matches(pathname, CRON_API)) {
+    if (isCronRequest(req) || (await hasAdminSession(req))) return NextResponse.next();
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const payload = await verifyAdminToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
-    }
-    return NextResponse.next();
+  if (matches(pathname, ADMIN_ONLY_API)) {
+    if (await hasAdminSession(req)) return NextResponse.next();
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/api/admin/:path*',
+    '/api/customers/:path*',
+    '/api/birthdays/:path*',
+    '/api/reports/:path*',
+    '/api/whatsapp/:path*',
+    '/api/notify',
+    '/api/fcm-token/:path*',
+    '/api/cron/:path*',
+  ],
 };

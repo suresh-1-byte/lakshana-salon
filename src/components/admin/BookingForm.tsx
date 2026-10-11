@@ -1,495 +1,469 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { useEffect, useMemo, useState } from 'react'
+import { Loader2, Plus, X, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createAppointment } from '@/lib/api/appointments'
 import { getAllServices } from '@/lib/api/services'
-import { getPackages } from '@/lib/api/packages'
-import { getCustomerByMobile, createCustomer } from '@/lib/api/customers'
 import { getAllAddons } from '@/lib/api/service-addons'
+import { getCustomerByMobile } from '@/lib/api/customers'
 import { toast } from '@/hooks/use-toast'
-import type { Service, Package, ServiceAddon } from '@/types/database.types'
-
-const bookingSchema = z.object({
-  customer_name: z.string().min(2, 'Name is required'),
-  mobile_number: z.string().min(10, 'Valid mobile number required'),
-  service_id: z.string().optional(),
-  package_id: z.string().optional(),
-  appointment_date: z.string().min(1, 'Date is required'),
-  appointment_time: z.string().min(1, 'Time is required'),
-  duration: z.string().min(1, 'Duration is required'),
-  notes: z.string().optional(),
-  advance_amount: z.string().optional(),
-  total_amount: z.string().min(1, 'Amount is required'),
-  addons: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    price: z.number(),
-  })).optional(),
-})
-
-type BookingFormValues = z.infer<typeof bookingSchema>
+import type { Service, ServiceAddon } from '@/types/database.types'
 
 interface BookingFormProps {
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export default function BookingForm({ onSuccess, onCancel }: BookingFormProps) {
-  const [loading, setLoading] = useState(false)
-  const [services, setServices] = useState<Service[]>([])
-  const [packages, setPackages] = useState<Package[]>([])
-  const [addons, setAddons] = useState<ServiceAddon[]>([])
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
-  const [selectedAddons, setSelectedAddons] = useState<ServiceAddon[]>([])
-  const [totalAmount, setTotalAmount] = useState(0)
+/** A prepaid package or membership wallet the booking can be charged to */
+interface PrepaidOption {
+  id: string
+  kind: 'package' | 'membership'
+  label: string
+  customerId?: string
+  customerName: string
+  customerPhone: string
+  balance: number
+}
 
-  const form = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      customer_name: '',
-      mobile_number: '',
-      service_id: '',
-      package_id: '',
-      appointment_date: '',
-      appointment_time: '',
-      duration: '60',
-      notes: '',
-      advance_amount: '0',
-      total_amount: '0',
-      addons: [],
-    },
-  })
+const NONE = 'none'
+
+function formatDuration(minutes: number) {
+  if (!minutes) return ''
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return h ? `${h} hr${m ? ` ${m} min` : ''}` : `${m} min`
+}
+
+export default function BookingForm({ onSuccess, onCancel }: BookingFormProps) {
+  const [loadingData, setLoadingData] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  const [services, setServices] = useState<Service[]>([])
+  const [addons, setAddons] = useState<ServiceAddon[]>([])
+  const [prepaid, setPrepaid] = useState<PrepaidOption[]>([])
+
+  // Form state
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [knownCustomer, setKnownCustomer] = useState<string | null>(null)
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([])
+  const [serviceToAdd, setServiceToAdd] = useState('')
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([])
+  const [prepaidId, setPrepaidId] = useState<string>(NONE)
+  const [memberPricing, setMemberPricing] = useState(false)
+  const [date, setDate] = useState('')
+  const [time, setTime] = useState('')
+  const [notes, setNotes] = useState('')
+  const [advance, setAdvance] = useState('0')
+  const [totalOverride, setTotalOverride] = useState<string | null>(null)
+  const [confirmNow, setConfirmNow] = useState(true)
 
   useEffect(() => {
-    loadServices()
-    loadPackages()
-    loadAddons()
+    let cancelled = false
+    ;(async () => {
+      const [svc, add, pkgRes, memRes] = await Promise.allSettled([
+        getAllServices(true),
+        getAllAddons(true),
+        fetch('/api/admin/customer-packages?status=active', { cache: 'no-store' }).then(r => r.json()),
+        fetch('/api/admin/membership-wallets?status=active', { cache: 'no-store' }).then(r => r.json()),
+      ])
+      if (cancelled) return
+
+      if (svc.status === 'fulfilled') setServices(svc.value)
+      else toast({ title: 'Could not load services', description: String(svc.reason?.message || svc.reason), variant: 'destructive' })
+      if (add.status === 'fulfilled') setAddons(add.value)
+
+      const options: PrepaidOption[] = []
+      if (pkgRes.status === 'fulfilled') {
+        for (const p of pkgRes.value?.packages || []) {
+          if (p.status !== 'active') continue
+          options.push({
+            id: `package:${p.id}`,
+            kind: 'package',
+            label: p.packageName || 'Prepaid Package',
+            customerId: p.customerId,
+            customerName: p.customer?.name || p.customerName || '',
+            customerPhone: p.customer?.phone || p.customerPhone || '',
+            balance: Number(p.availableBalance) || 0,
+          })
+        }
+      }
+      if (memRes.status === 'fulfilled') {
+        for (const m of memRes.value?.memberships || []) {
+          if (m.status !== 'active') continue
+          options.push({
+            id: `membership:${m.id}`,
+            kind: 'membership',
+            label: m.packageName || 'Membership',
+            customerId: m.customerId,
+            customerName: m.customer?.name || m.customerName || '',
+            customerPhone: m.customer?.phone || m.customerPhone || '',
+            balance: Number(m.availableBalance) || 0,
+          })
+        }
+      }
+      setPrepaid(options)
+      setLoadingData(false)
+    })()
+    return () => { cancelled = true }
   }, [])
 
-  const loadServices = async () => {
+  // Services grouped by category for the dropdown
+  const groupedServices = useMemo(() => {
+    const groups = new Map<string, Service[]>()
+    services.forEach(s => {
+      const key = s.category || 'Other'
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(s)
+    })
+    return Array.from(groups.entries())
+  }, [services])
+
+  const selectedServices = selectedServiceIds
+    .map(id => services.find(s => s.id === id))
+    .filter(Boolean) as Service[]
+  const selectedAddons = addons.filter(a => selectedAddonIds.includes(a.id))
+  const selectedPrepaid = prepaid.find(p => p.id === prepaidId) || null
+
+  const priceOf = (s: Service) => (memberPricing && s.offer_price ? s.offer_price : s.price)
+  const servicesTotal = selectedServices.reduce((sum, s) => sum + priceOf(s), 0)
+  const addonsTotal = selectedAddons.reduce((sum, a) => sum + a.price, 0)
+  const computedTotal = servicesTotal + addonsTotal
+  const total = totalOverride !== null ? Number(totalOverride) || 0 : computedTotal
+  const duration =
+    selectedServices.reduce((sum, s) => sum + (s.duration || 0), 0) +
+    selectedAddons.reduce((sum, a) => sum + (a.duration || 0), 0)
+
+  const addService = (id: string) => {
+    if (!id) return
+    setSelectedServiceIds(prev => (prev.includes(id) ? prev : [...prev, id]))
+    setServiceToAdd('')
+    setTotalOverride(null)
+  }
+
+  const removeService = (id: string) => {
+    setSelectedServiceIds(prev => prev.filter(x => x !== id))
+    setTotalOverride(null)
+  }
+
+  const toggleAddon = (id: string) => {
+    setSelectedAddonIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]))
+    setTotalOverride(null)
+  }
+
+  // Look up an existing customer when the mobile number is entered
+  const lookupCustomer = async () => {
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length < 10) {
+      setKnownCustomer(null)
+      return
+    }
     try {
-      const data = await getAllServices()
-      setServices(data)
-    } catch (error) {
-      console.error('Error loading services:', error)
-    }
-  }
-
-  const loadPackages = async () => {
-    try {
-      const data = await getPackages()
-      setPackages(data)
-    } catch (error) {
-      console.error('Error loading packages:', error)
-    }
-  }
-
-  const loadAddons = async () => {
-    try {
-      const data = await getAllAddons()
-      setAddons(data.filter((addon: ServiceAddon) => addon.status === 'active'))
-    } catch (error) {
-      console.error('Error loading addons:', error)
-    }
-  }
-
-  const handleServiceChange = (serviceId: string) => {
-    const service = services.find((s) => s.id === serviceId)
-    if (service) {
-      setSelectedService(service)
-      const baseAmount = service.offer_price || service.price
-      const addonsTotal = selectedAddons.reduce((sum, addon) => sum + addon.price, 0)
-      const total = baseAmount + addonsTotal
-      setTotalAmount(total)
-      form.setValue('total_amount', String(total))
-      form.setValue('duration', String(service.duration))
-    }
-  }
-
-  const handleAddonToggle = (addon: ServiceAddon) => {
-    const isSelected = selectedAddons.some((a) => a.id === addon.id)
-    let newAddons: ServiceAddon[] = []
-    
-    if (isSelected) {
-      // Remove addon
-      newAddons = selectedAddons.filter((a) => a.id !== addon.id)
-    } else {
-      // Add addon
-      newAddons = [...selectedAddons, addon]
-    }
-    
-    setSelectedAddons(newAddons)
-    form.setValue('addons', newAddons as any)
-    
-    // Recalculate total
-    const baseAmount = selectedService ? (selectedService.offer_price || selectedService.price) : 0
-    const addonsTotal = newAddons.reduce((sum, a) => sum + a.price, 0)
-    const total = baseAmount + addonsTotal
-    setTotalAmount(total)
-    form.setValue('total_amount', String(total))
-  }
-
-  const onSubmit = async (data: BookingFormValues) => {
-    try {
-      setLoading(true)
-
-      // Check if customer exists, create if not
-      let customer = await getCustomerByMobile(data.mobile_number)
-      
-      if (!customer) {
-        customer = await createCustomer({
-          full_name: data.customer_name,
-          mobile_number: data.mobile_number,
-          whatsapp_number: data.mobile_number,
-        })
+      const customer = await getCustomerByMobile(phone)
+      if (customer) {
+        setKnownCustomer(customer.full_name)
+        if (!name) setName(customer.full_name)
+        if (!email && customer.email) setEmail(customer.email)
+        // Pre-select this customer's active package / membership
+        const own = prepaid.find(
+          p => p.customerId === customer.id || p.customerPhone.replace(/\D/g, '').endsWith(digits.slice(-10))
+        )
+        if (own && prepaidId === NONE) {
+          setPrepaidId(own.id)
+          if (own.kind === 'membership') setMemberPricing(true)
+        }
+      } else {
+        setKnownCustomer(null)
       }
+    } catch {
+      setKnownCustomer(null)
+    }
+  }
 
-      // Create appointment with add-ons
-      const appointment = await createAppointment({
-        booking_id: `BK${Date.now()}`,
-        customer_id: customer.id,
-        customer_name: data.customer_name,
-        customer_phone: data.mobile_number,
-        service_id: data.service_id || null,
-        package_id: data.package_id || null,
-        staff_id: null,
-        staff_name: null,
-        appointment_date: data.appointment_date,
-        appointment_time: data.appointment_time,
-        duration: Number(data.duration),
-        notes: data.notes || '',
-        advance_amount: Number(data.advance_amount || 0),
-        balance_amount: Number(data.total_amount) - Number(data.advance_amount || 0),
-        total_amount: Number(data.total_amount),
-        booking_status: 'confirmed',
-        payment_status: Number(data.advance_amount || 0) > 0 ? 'partial' : 'pending',
-        addons: selectedAddons,
+  const choosePrepaid = (id: string) => {
+    setPrepaidId(id)
+    const option = prepaid.find(p => p.id === id)
+    if (option) {
+      if (option.customerName) setName(option.customerName)
+      if (option.customerPhone) setPhone(option.customerPhone)
+      setKnownCustomer(option.customerName || null)
+      if (option.kind === 'membership') setMemberPricing(true)
+    }
+    setTotalOverride(null)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (name.trim().length < 2) return toast({ title: 'Customer name is required', variant: 'destructive' })
+    if (phone.replace(/\D/g, '').length < 10) return toast({ title: 'Enter a valid 10-digit mobile number', variant: 'destructive' })
+    if (selectedServices.length === 0) return toast({ title: 'Select at least one service', variant: 'destructive' })
+    if (!date || !time) return toast({ title: 'Choose the appointment date and time', variant: 'destructive' })
+
+    try {
+      setSubmitting(true)
+      const res = await fetch('/api/admin/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          services: selectedServices.map(s => ({
+            id: s.id,
+            name: s.name,
+            category: s.category,
+            duration: (s as any).duration_label || formatDuration(s.duration),
+            member: `₹${priceOf(s).toLocaleString('en-IN')}`,
+            price: priceOf(s),
+          })),
+          addons: selectedAddons.map(a => ({ id: a.id, name: a.name, price: a.price })),
+          scheduledDate: date,
+          scheduledTime: time,
+          duration,
+          notes: [
+            notes.trim(),
+            selectedPrepaid ? `Charge to ${selectedPrepaid.kind}: ${selectedPrepaid.label}` : '',
+          ].filter(Boolean).join('\n'),
+          totalAmount: total,
+          advanceAmount: Number(advance) || 0,
+          membershipId: selectedPrepaid?.kind === 'membership' ? selectedPrepaid.id.split(':')[1] : null,
+          status: confirmNow ? 'confirmed' : 'pending',
+        }),
       })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create booking')
 
-      // Note: Google Sheets sync happens server-side via API
-
-      // Send WhatsApp confirmation
-      try {
-        const template = `✅ Booking Confirmed!\n\nHello ${data.customer_name},\n\nYour booking has been confirmed.\n📅 Date: ${data.appointment_date}\n⏰ Time: ${data.appointment_time}\n💇 Service: ${selectedService?.name || 'Service'}\n\n${selectedAddons.length > 0 ? `Add-ons:\n${selectedAddons.map(a => `• ${a.name} - ₹${a.price}`).join('\n')}\n\n` : ''}💰 Total Amount: ₹${data.total_amount}\n\nThank you for choosing Lakshana Beauty Salon! ✨`
-        
-        await fetch('/api/whatsapp/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            customerId: customer.id,
-            customerName: data.customer_name,
-            customerPhone: data.mobile_number,
-            messageType: 'template',
-            content: template,
-            templateName: 'booking_confirmation',
-          }),
+      if (data.warning) {
+        toast({ title: 'Booking created', description: data.warning })
+      } else {
+        toast({
+          title: 'Booking created',
+          description: `${name} — ${confirmNow ? 'confirmed' : 'pending'} for ${date} at ${time}`,
         })
-      } catch (error) {
-        console.error('WhatsApp send failed:', error)
       }
-
-      // Create notification
-      try {
-        await fetch('/api/admin/notifications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            appointmentId: appointment.id,
-            customerName: data.customer_name,
-          }),
-        })
-      } catch (error) {
-        console.error('Notification failed:', error)
-      }
-
-      toast({
-        title: 'Success',
-        description: 'Booking created successfully',
-      })
-
-      onSuccess()
+      onSuccess?.()
     } catch (error: any) {
       console.error('Booking error:', error)
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to create booking',
-        variant: 'destructive',
-      })
+      toast({ title: 'Error', description: error.message || 'Failed to create booking', variant: 'destructive' })
     } finally {
-      setLoading(false)
+      setSubmitting(false)
     }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="customer_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter customer name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Customer */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="bf-phone">Mobile Number *</Label>
+          <Input
+            id="bf-phone"
+            placeholder="10-digit mobile number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onBlur={lookupCustomer}
+            inputMode="tel"
           />
-
-          <FormField
-            control={form.control}
-            name="mobile_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mobile Number *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter mobile number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="service_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Service</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    handleServiceChange(value)
-                  }}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select service" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {services.map((service) => (
-                      <SelectItem key={service.id} value={service.id}>
-                        {service.name} - ₹{service.offer_price || service.price}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="package_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Package</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select package" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {packages.map((pkg) => (
-                      <SelectItem key={pkg.id} value={pkg.id}>
-                        {pkg.package_name} - ₹{pkg.offer_price || pkg.price}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="appointment_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Appointment Date *</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="appointment_time"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Appointment Time *</FormLabel>
-                <FormControl>
-                  <Input type="time" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration (minutes) *</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="60" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="total_amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Total Amount *</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="advance_amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Advance Amount</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {knownCustomer && (
+            <p className="text-xs text-green-400 flex items-center gap-1">
+              <UserCheck className="w-3 h-3" /> Existing customer: {knownCustomer}
+            </p>
+          )}
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="bf-name">Customer Name *</Label>
+          <Input id="bf-name" placeholder="Enter customer name" value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="bf-email">Email</Label>
+          <Input id="bf-email" type="email" placeholder="Optional" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+      </div>
 
-        {/* Add-ons Section */}
-        <div className="border rounded-lg p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Add-on Options</h3>
-            <span className="text-sm text-neutral-600">
-              {selectedAddons.length} selected
-            </span>
+      {/* Package / membership */}
+      <div className="space-y-2">
+        <Label>Package / Membership</Label>
+        <Select value={prepaidId} onValueChange={choosePrepaid} disabled={loadingData}>
+          <SelectTrigger>
+            <SelectValue placeholder={loadingData ? 'Loading…' : 'Select package'} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE}>No package — pay at salon</SelectItem>
+            {prepaid.length === 0 && !loadingData && (
+              <div className="px-8 py-2 text-xs text-gray-500">No active packages or memberships</div>
+            )}
+            {prepaid.map(p => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.customerName || 'Customer'} — {p.label} (₹{p.balance.toLocaleString('en-IN')} left)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {selectedPrepaid && total > selectedPrepaid.balance && (
+          <p className="text-xs text-red-400">
+            Total ₹{total.toLocaleString('en-IN')} is more than the remaining balance ₹{selectedPrepaid.balance.toLocaleString('en-IN')}.
+          </p>
+        )}
+      </div>
+
+      {/* Services */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>Services *</Label>
+          <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+            <Checkbox checked={memberPricing} onCheckedChange={(v) => { setMemberPricing(!!v); setTotalOverride(null) }} />
+            Use member prices
+          </label>
+        </div>
+        <Select value={serviceToAdd} onValueChange={addService} disabled={loadingData}>
+          <SelectTrigger>
+            <SelectValue placeholder={loadingData ? 'Loading services…' : services.length ? 'Add a service' : 'No services found'} />
+          </SelectTrigger>
+          <SelectContent className="max-h-80">
+            {groupedServices.map(([category, list]) => (
+              <SelectGroup key={category}>
+                <SelectLabel className="text-amber-400">{category}</SelectLabel>
+                {list.map(service => (
+                  <SelectItem key={service.id} value={service.id} disabled={selectedServiceIds.includes(service.id)}>
+                    {service.name} — ₹{priceOf(service).toLocaleString('en-IN')}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedServices.length > 0 && (
+          <div className="rounded-lg border border-gray-800 divide-y divide-gray-800">
+            {selectedServices.map(s => (
+              <div key={s.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                <div>
+                  <span className="font-medium">{s.name}</span>
+                  <span className="text-gray-500 text-xs ml-2">{(s as any).duration_label || formatDuration(s.duration)}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-amber-400">₹{priceOf(s).toLocaleString('en-IN')}</span>
+                  <button type="button" onClick={() => removeService(s.id)} className="text-gray-500 hover:text-red-400" aria-label={`Remove ${s.name}`}>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {addons.map((addon) => {
-              const isSelected = selectedAddons.some((a) => a.id === addon.id)
+        )}
+      </div>
+
+      {/* Add-ons */}
+      {addons.length > 0 && (
+        <div className="space-y-2">
+          <Label>Add-ons</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {addons.map(addon => {
+              const isSelected = selectedAddonIds.includes(addon.id)
               return (
                 <button
                   key={addon.id}
                   type="button"
-                  onClick={() => handleAddonToggle(addon)}
-                  className={`p-3 border rounded-lg text-left transition-all ${
-                    isSelected
-                      ? 'bg-amber-50 border-amber-500 dark:bg-amber-900/20'
-                      : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
+                  onClick={() => toggleAddon(addon.id)}
+                  className={`p-3 border rounded-lg text-left text-sm transition-all ${
+                    isSelected ? 'bg-amber-900/30 border-amber-500' : 'border-gray-800 hover:bg-gray-800'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{addon.name}</p>
-                      <p className="text-sm text-amber-600 font-semibold mt-1">
-                        +₹{addon.price}
-                      </p>
-                    </div>
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                      isSelected ? 'bg-amber-500 border-amber-500' : 'border-neutral-300'
-                    }`}>
-                      {isSelected && (
-                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span>{addon.icon} {addon.name}</span>
+                    <span className="text-amber-400 font-semibold">+₹{addon.price}</span>
                   </div>
                 </button>
               )
             })}
           </div>
+        </div>
+      )}
 
-          {selectedAddons.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-neutral-700 dark:text-neutral-300">Base Service Amount:</span>
-                  <span className="font-medium">₹{selectedService ? (selectedService.offer_price || selectedService.price) : 0}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-neutral-700 dark:text-neutral-300">Add-ons Total:</span>
-                  <span className="font-medium text-amber-600">
-                    +₹{selectedAddons.reduce((sum, addon) => sum + addon.price, 0)}
-                  </span>
-                </div>
-                <div className="border-t pt-2 flex items-center justify-between font-bold">
-                  <span>Total Amount:</span>
-                  <span className="text-lg text-amber-600">₹{totalAmount}</span>
-                </div>
-              </div>
-            </div>
+      {/* Schedule */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="bf-date">Date *</Label>
+          <Input id="bf-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="bf-time">Time *</Label>
+          <Input id="bf-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>Duration</Label>
+          <div className="h-10 flex items-center px-3 rounded-md border border-input text-sm text-gray-400">
+            {duration ? formatDuration(duration) : '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* Amounts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="bf-total">Total Amount (₹)</Label>
+          <Input
+            id="bf-total"
+            type="number"
+            min={0}
+            value={totalOverride ?? String(computedTotal)}
+            onChange={(e) => setTotalOverride(e.target.value)}
+          />
+          {totalOverride !== null && Number(totalOverride) !== computedTotal && (
+            <button type="button" className="text-xs text-amber-400 underline" onClick={() => setTotalOverride(null)}>
+              Reset to ₹{computedTotal.toLocaleString('en-IN')}
+            </button>
           )}
         </div>
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Enter any notes" {...field} rows={3} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={loading} className="bg-amber-500 hover:bg-amber-600">
-            {loading ? 'Creating...' : 'Create Booking'}
-          </Button>
+        <div className="space-y-2">
+          <Label htmlFor="bf-advance">Advance Paid (₹)</Label>
+          <Input id="bf-advance" type="number" min={0} value={advance} onChange={(e) => setAdvance(e.target.value)} />
         </div>
-      </form>
-    </Form>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="bf-notes">Notes</Label>
+        <Textarea id="bf-notes" rows={3} placeholder="Stylist, special requests…" value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <Checkbox checked={confirmNow} onCheckedChange={(v) => setConfirmNow(!!v)} />
+        Mark as confirmed now
+      </label>
+
+      <div className="flex justify-end gap-3">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={submitting || loadingData} className="bg-amber-500 hover:bg-amber-600 text-black">
+          {submitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating…
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Booking
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   )
 }

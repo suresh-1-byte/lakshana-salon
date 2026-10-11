@@ -1,53 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminDb, Collections } from '@/lib/firebase-admin';
+import { clientIp, isAdminRequest } from '@/lib/server/request-auth';
+import { hitRateLimit } from '@/lib/server/rate-limit';
+import { isValidEmail } from '@/lib/server/validation';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Save FCM token from browser
+// Save FCM token from browser. Public (website visitors can subscribe), but a
+// token only gets the `admin` role — and with it booking alerts — when it is
+// registered from a browser that is logged in to the admin panel.
 export async function POST(req: NextRequest) {
   try {
-    const { token, email } = await req.json();
-    
-    if (!token) {
-      // No token - just return success (browser might be testing)
-      return NextResponse.json({ 
-        success: true,
-        message: 'No token provided'
-      });
+    const { token, email } = await req.json().catch(() => ({}));
+
+    if (typeof token !== 'string' || token.length < 20 || token.length > 4096) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 400 });
     }
 
-    // Try to save to Firebase, but if it fails, that's okay
-    try {
-      const { adminDb, getAdminDb } = await import('@/lib/firebase-admin');
-      const db = getAdminDb();
-      
-      if (db) {
-        // Firebase is available - save the token
-        await adminDb.collection('fcm_tokens').doc(token).set({
-          token,
-          email: email || null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-      }
-    } catch (firebaseError) {
-      // Firebase error - doesn't matter, we'll still return success
-      // This makes FCM completely non-blocking
+    const { limited } = await hitRateLimit('fcm-token', clientIp(req), 20, 3600);
+    if (limited) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 });
     }
 
-    // Always return success
-    return NextResponse.json({ 
-      success: true,
-      message: 'Token registered'
-    });
-    
+    const isAdmin = await isAdminRequest(req);
+    const ref = adminDb.collection(Collections.FCM_TOKENS).doc(token);
+    const existing = await ref.get();
+    const now = new Date().toISOString();
+
+    await ref.set(
+      {
+        token,
+        email: isValidEmail(email) ? String(email).trim().toLowerCase() : existing.data()?.email || null,
+        // Never downgrade an admin device; only an admin session can grant the role
+        role: isAdmin || existing.data()?.role === 'admin' ? 'admin' : 'subscriber',
+        createdAt: existing.data()?.createdAt || now,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+
+    return NextResponse.json({ success: true, message: 'Token registered' });
   } catch (err) {
-    // Even if everything fails, return 200 success
-    // FCM is optional, shouldn't break the site
-    return NextResponse.json({ 
-      success: true,
-      message: 'Token registration completed'
-    });
+    // Notifications are optional; never break the site over them
+    console.error('FCM token registration failed:', (err as Error)?.message);
+    return NextResponse.json({ success: false, error: 'Could not register token' }, { status: 500 });
   }
 }

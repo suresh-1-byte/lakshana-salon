@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue, logActivity, upsertCustomer } from '@/lib/firebase-admin';
 import { invoiceEmail } from '@/lib/email-templates';
+import { applyBillToCustomer, billCounts } from '@/lib/server/customer-stats';
+import { cleanString, escapeHtml, isValidEmail, isValidPhone, nonNegativeNumber } from '@/lib/server/validation';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -60,27 +62,61 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      customerName, customerPhone, customerEmail,
-      items, discount = 0, tax = 0, paymentMethod = 'cash',
-      notes = '', membershipWalletId, useMembershipWallet = false,
-      membershipDiscountAmount = 0, membershipDiscountPercentage = 0,
+      paymentMethod = 'cash',
+      membershipWalletId, useMembershipWallet = false,
+      membershipDiscountPercentage = 0,
       membershipType = '', membershipId = '',
     } = body;
 
-    if (!customerName || !customerPhone || !items?.length) {
-      return NextResponse.json({ error: 'Customer details and items required' }, { status: 400 });
+    // ── Validate input ──────────────────────────────────────
+    const customerName = cleanString(body.customerName, 80);
+    const customerPhone = cleanString(body.customerPhone, 20);
+    const customerEmail = isValidEmail(body.customerEmail) ? cleanString(body.customerEmail, 254) : '';
+    const notes = cleanString(body.notes, 1000);
+    const discount = nonNegativeNumber(body.discount);
+    const tax = nonNegativeNumber(body.tax);
+    const membershipDiscountAmount = nonNegativeNumber(body.membershipDiscountAmount);
+
+    if (customerName.length < 2 || !isValidPhone(customerPhone)) {
+      return NextResponse.json({ error: 'Customer name and a valid 10-digit phone number are required' }, { status: 400 });
+    }
+    if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 50) {
+      return NextResponse.json({ error: 'Add between 1 and 50 items to the bill' }, { status: 400 });
+    }
+
+    const items: any[] = [];
+    for (const raw of body.items) {
+      const name = cleanString(raw?.name, 120);
+      const quantity = Number(raw?.quantity);
+      const unitPrice = nonNegativeNumber(raw?.unitPrice, NaN);
+      const itemDiscount = nonNegativeNumber(raw?.discount);
+      if (!name || !Number.isInteger(quantity) || quantity < 1 || quantity > 100 || !Number.isFinite(unitPrice)) {
+        return NextResponse.json({ error: `Invalid bill item: ${name || 'unnamed item'}` }, { status: 400 });
+      }
+      const lineTotal = unitPrice * quantity - itemDiscount;
+      if (lineTotal < 0) {
+        return NextResponse.json({ error: `Discount is larger than the price for ${name}` }, { status: 400 });
+      }
+      items.push({
+        ...raw,
+        name,
+        type: ['service', 'product', 'addon'].includes(raw?.type) ? raw.type : 'service',
+        quantity,
+        unitPrice,
+        discount: itemDiscount,
+        total: lineTotal,
+      });
     }
 
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => {
-      const itemTotal = (item.unitPrice * item.quantity) - (item.discount || 0);
-      item.total = itemTotal;
-      return sum + itemTotal;
-    }, 0);
+    const subtotal = items.reduce((sum: number, item: any) => sum + item.total, 0);
 
     // Total discount includes membership discount + additional discount
     const totalDiscount = membershipDiscountAmount + discount;
     const total = subtotal - totalDiscount + tax;
+    if (total < 0) {
+      return NextResponse.json({ error: 'Discounts cannot exceed the bill amount' }, { status: 400 });
+    }
     const invoiceNumber = generateInvoiceNumber();
 
     // Handle membership wallet payment
@@ -160,16 +196,6 @@ export async function POST(req: NextRequest) {
       services: items.filter((i: any) => i.type === 'service').map((i: any) => i.name),
     });
 
-    // Auto-compute loyalty status
-    const custDoc = await adminDb.collection(Collections.CUSTOMERS).doc(customerId).get();
-    const totalSpent = (custDoc.data()?.totalSpent || 0);
-    let loyaltyStatus = 'Bronze';
-    if (totalSpent >= 50000)     loyaltyStatus = 'Platinum';
-    else if (totalSpent >= 20000) loyaltyStatus = 'Gold';
-    else if (totalSpent >= 5000)  loyaltyStatus = 'Silver';
-
-    await adminDb.collection(Collections.CUSTOMERS).doc(customerId).update({ loyaltyStatus });
-
     // Create bill
     const billData: any = {
       invoiceNumber,
@@ -205,6 +231,9 @@ export async function POST(req: NextRequest) {
 
     const docRef = await adminDb.collection(Collections.BILLING).add(billData);
 
+    // A paid bill is a visit: update the customer's visits, spending & loyalty tier
+    await applyBillToCustomer(customerId, total, 1);
+
     await logActivity('billing_create', {
       message: `Bill created: ${invoiceNumber} for ${customerName}${membershipDeducted ? ' (Membership Wallet Payment)' : ''}`,
       invoiceNumber, 
@@ -230,9 +259,9 @@ export async function POST(req: NextRequest) {
               to: [customerEmail],
               subject: `Invoice #${invoiceNumber} — ${salonName}`,
               html: invoiceEmail({
-                customerName,
+                customerName: escapeHtml(customerName),
                 invoiceNumber,
-                items,
+                items: items.map((i: any) => ({ ...i, name: escapeHtml(i.name) })),
                 subtotal,
                 discount,
                 tax,
@@ -326,6 +355,15 @@ export async function DELETE(req: NextRequest) {
 
     // Delete the bill
     await adminDb.collection(Collections.BILLING).doc(id).delete();
+
+    // Take the bill back out of the customer's visits & spending
+    if (billCounts(billData)) {
+      try {
+        await applyBillToCustomer(billData.customerId, Number(billData.total) || 0, -1);
+      } catch (statsError) {
+        console.error('Customer stats update failed after bill delete:', statsError);
+      }
+    }
 
     await logActivity('billing_delete', {
       message: `Bill deleted: ${billData.invoiceNumber} for ${billData.customerName}`,

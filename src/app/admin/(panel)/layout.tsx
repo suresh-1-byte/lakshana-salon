@@ -3,6 +3,7 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AdminPageLoader } from '@/components/admin/AdminPageLoader';
 import { Toaster } from '@/components/ui/toaster';
+import { AdminThemeBody } from '@/components/admin/AdminThemeBody';
 
 export const metadata: Metadata = {
   title: 'Admin Panel — Lakshana Beauty Salon',
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="flex h-screen overflow-hidden"
+      className="admin-theme flex h-screen overflow-hidden"
       style={{ background: '#0F0B16', color: '#F5F0FF' }}
     >
       <AdminSidebar />
@@ -26,6 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="p-6 min-h-full">{children}</div>
         </main>
       </div>
+      <AdminThemeBody />
       <Toaster />
     </div>
   );

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue } from '@/lib/firebase-admin';
+import { validatePastDate } from '@/lib/server/validation';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,9 +27,10 @@ export async function PUT(req: NextRequest) {
 
     // Validate date format (YYYY-MM-DD)
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateOfBirth)) {
+    const dobCheck = validatePastDate(dateOfBirth);
+    if (!dateRegex.test(dateOfBirth) || !dobCheck.ok) {
       return NextResponse.json(
-        { error: 'Invalid date format. Use YYYY-MM-DD format' },
+        { error: dobCheck.ok ? 'Invalid date format. Use YYYY-MM-DD format' : dobCheck.error },
         { status: 400 }
       );
     }
@@ -99,11 +101,12 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        if (!dateRegex.test(dateOfBirth)) {
+        const dobCheck = validatePastDate(dateOfBirth);
+        if (!dateRegex.test(dateOfBirth) || !dobCheck.ok) {
           results.failed++;
           results.errors.push({
             customerId,
-            error: 'Invalid date format',
+            error: dobCheck.ok ? 'Invalid date format' : dobCheck.error,
           });
           continue;
         }

@@ -202,7 +202,7 @@ export function Testimonials() {
             <button
               key={idx}
               onClick={() => emblaApi?.scrollTo(idx)}
-              className={`transition-all duration-[400ms] rounded-full ${
+              className={`transition-all duration-300 rounded-full ${
                 idx === selectedIndex
                   ? 'w-10 h-[2px] bg-[#D4447A] shadow-[0_0_8px_rgba(212,68,122,0.5)]'
                   : 'w-4 h-[2px] bg-[#D4447A]/22 hover:bg-[#D4447A]/45'

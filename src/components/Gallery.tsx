@@ -158,7 +158,7 @@ export function Gallery() {
                   src={item.src}
                   alt={item.description}
                   fill
-                  className="object-cover brightness-[0.8] transition-all duration-[1000ms] group-hover:scale-110 group-hover:brightness-[0.95]"
+                  className="object-cover brightness-[0.8] transition-all duration-1000 group-hover:scale-110 group-hover:brightness-[0.95]"
                 />
 
                 {/* Gradient overlay */}

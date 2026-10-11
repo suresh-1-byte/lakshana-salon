@@ -1,165 +1,126 @@
-import { createClient } from '@/lib/supabase/client'
-import type { Customer } from '@/types/database.types'
+// ═══════════════════════════════════════════════════════
+//  Customers API (admin) — Firebase via /api/admin/customers
+//  Returns the snake_case `Customer` shape the admin forms use.
+// ═══════════════════════════════════════════════════════
 
-const supabase = createClient()
+import type { Customer } from '@/types/database.types'
+import { adminFetch, jsonBody } from './admin-fetch'
+
+type ApiCustomer = {
+  id: string
+  name: string
+  phone: string
+  whatsappNumber?: string
+  email?: string
+  dateOfBirth?: string
+  anniversary?: string
+  gender?: string
+  address?: string
+  city?: string
+  notes?: string
+  preferredStylist?: string
+  totalVisits?: number
+  totalSpent?: number
+  lastVisit?: string | null
+  status?: string
+  createdAt?: string | null
+  updatedAt?: string | null
+}
+
+/** API customer → admin form shape. Keeps the camelCase fields too. */
+function toCustomer(c: ApiCustomer): Customer & { name: string; phone: string } {
+  return {
+    ...(c as Omit<ApiCustomer, 'email' | 'anniversary' | 'gender' | 'address' | 'city' | 'notes' | 'status'>),
+    customer_id: c.id.slice(-6).toUpperCase(),
+    full_name: c.name,
+    mobile_number: c.phone,
+    whatsapp_number: c.whatsappNumber || null,
+    email: c.email || null,
+    date_of_birth: c.dateOfBirth || null,
+    anniversary: c.anniversary || null,
+    gender: (c.gender as Customer['gender']) || null,
+    address: c.address || null,
+    city: c.city || null,
+    notes: c.notes || null,
+    member_since: c.createdAt || '',
+    preferred_stylist: c.preferredStylist || null,
+    preferred_services: null,
+    customer_photo: null,
+    total_visits: c.totalVisits || 0,
+    total_spent: c.totalSpent || 0,
+    last_visit: c.lastVisit || null,
+    status: (c.status as Customer['status']) || 'active',
+    created_at: c.createdAt || '',
+    updated_at: c.updatedAt || '',
+  }
+}
 
 export async function getAllCustomers() {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data as Customer[]
+  const data = await adminFetch<ApiCustomer[]>('/api/admin/customers')
+  return data.map(toCustomer)
 }
 
-// Alias for backward compatibility
-export const getCustomers = getAllCustomers;
+export const getCustomers = getAllCustomers
 
 export async function getCustomerById(id: string) {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as Customer
+  const data = await adminFetch<{ profile: ApiCustomer }>(`/api/admin/customers/${id}`)
+  return toCustomer((data as any).profile ?? data)
 }
 
+/** Find a customer by mobile number (any formatting). Returns null if none. */
 export async function getCustomerByMobile(mobile: string) {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('mobile_number', mobile)
-    .eq('status', 'active')
-    .single()
-
-  if (error && error.code !== 'PGRST116') throw error
-  return data as Customer | null
+  const data = await adminFetch<ApiCustomer[]>(
+    `/api/admin/customers?phone=${encodeURIComponent(mobile)}`
+  )
+  return data.length ? toCustomer(data[0]) : null
 }
 
-export async function createCustomer(customer: Partial<Customer>) {
-  // Generate customer ID
-  const customerCount = await supabase
-    .from('customers')
-    .select('id', { count: 'exact', head: true })
-
-  const customerId = `CUST${String((customerCount.count || 0) + 1).padStart(6, '0')}`
-
-  const { data, error } = await supabase
-    .from('customers')
-    .insert({
-      ...customer,
-      customer_id: customerId,
-      member_since: new Date().toISOString(),
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Customer
+export async function createCustomer(customer: Partial<Customer> & Record<string, unknown>) {
+  const data = await adminFetch<ApiCustomer>('/api/admin/customers', {
+    method: 'POST',
+    body: jsonBody(customer),
+  })
+  return toCustomer(data)
 }
 
-export async function updateCustomer(id: string, updates: Partial<Customer>) {
-  const { data, error } = await supabase
-    .from('customers')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Customer
+export async function updateCustomer(id: string, updates: Partial<Customer> & Record<string, unknown>) {
+  const data = await adminFetch<ApiCustomer>(`/api/admin/customers/${id}`, {
+    method: 'PATCH',
+    body: jsonBody(updates),
+  })
+  return toCustomer(data)
 }
 
 export async function deleteCustomer(id: string) {
-  const { error } = await supabase
-    .from('customers')
-    .update({ status: 'deleted' })
-    .eq('id', id)
+  await adminFetch(`/api/admin/customers/${id}`, { method: 'DELETE' })
+}
 
-  if (error) throw error
+export async function restoreCustomer(id: string) {
+  await adminFetch(`/api/admin/customers/${id}`, {
+    method: 'PATCH',
+    body: jsonBody({ action: 'restore' }),
+  })
 }
 
 export async function searchCustomers(query: string) {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .or(`full_name.ilike.%${query}%,mobile_number.ilike.%${query}%,email.ilike.%${query}%`)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
-  return data as Customer[]
+  const data = await adminFetch<ApiCustomer[]>(
+    `/api/admin/customers?search=${encodeURIComponent(query)}`
+  )
+  return data.map(toCustomer)
 }
 
 export async function getCustomerStats(customerId: string) {
-  // Get total visits
-  const { count: totalVisits } = await supabase
-    .from('appointments')
-    .select('*', { count: 'exact', head: true })
-    .eq('customer_id', customerId)
-    .eq('booking_status', 'completed')
-
-  // Get total spent
-  const { data: payments } = await supabase
-    .from('payments')
-    .select('amount')
-    .eq('customer_id', customerId)
-    .eq('payment_status', 'paid')
-
-  const totalSpent = payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0
-
-  // Get last visit
-  const { data: lastAppointment } = await supabase
-    .from('appointments')
-    .select('appointment_date')
-    .eq('customer_id', customerId)
-    .eq('booking_status', 'completed')
-    .order('appointment_date', { ascending: false })
-    .limit(1)
-    .single()
-
-  // Get upcoming appointment
-  const { data: upcomingAppointment } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('customer_id', customerId)
-    .eq('booking_status', 'confirmed')
-    .gte('appointment_date', new Date().toISOString().split('T')[0])
-    .order('appointment_date', { ascending: true })
-    .limit(1)
-    .single()
-
+  const customer = await getCustomerById(customerId)
   return {
-    totalVisits: totalVisits || 0,
-    totalSpent,
-    lastVisit: lastAppointment?.appointment_date || null,
-    upcomingAppointment: upcomingAppointment || null,
+    totalVisits: customer.total_visits,
+    totalSpent: customer.total_spent,
+    lastVisit: customer.last_visit,
   }
 }
 
 export async function getTodaysBirthdays() {
   const today = new Date()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .not('date_of_birth', 'is', null)
-    .eq('status', 'active')
-
-  if (error) throw error
-
-  // Filter birthdays in JavaScript since Supabase doesn't support day/month extraction easily
-  return (data as Customer[]).filter(customer => {
-    if (!customer.date_of_birth) return false
-    const dob = new Date(customer.date_of_birth)
-    const dobMonth = String(dob.getMonth() + 1).padStart(2, '0')
-    const dobDay = String(dob.getDate()).padStart(2, '0')
-    return dobMonth === month && dobDay === day
-  })
+  const mmdd = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const customers = await getAllCustomers()
+  return customers.filter(c => c.date_of_birth?.slice(5, 10) === mmdd)
 }

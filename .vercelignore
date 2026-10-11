@@ -1,0 +1,15 @@
+# Never upload secrets or local build output with `vercel` deployments
+private-key.txt
+.env
+.env.*
+!.env.example
+.next
+.next-test
+node_modules
+.vercel
+*.backup
+*service-account*.json
+*-firebase-adminsdk-*.json
+backups
+tests
+scripts

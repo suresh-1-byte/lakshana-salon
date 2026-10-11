@@ -16,10 +16,15 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     // Get customers with birthdays OR anniversaries in next 7 days
-    const customersSnapshot = await adminDb
-      .collection(Collections.CUSTOMERS)
-      .where('isDeleted', '==', false)
-      .get();
+    // Customers created from website bookings have no `isDeleted` field,
+    // so filter deleted customers in memory instead of in the query.
+    const allCustomers = await adminDb.collection(Collections.CUSTOMERS).get();
+    const customersSnapshot = {
+      docs: allCustomers.docs.filter((d: any) => {
+        const c = d.data();
+        return !(c.isDeleted === true || c.status === 'deleted');
+      }),
+    };
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);

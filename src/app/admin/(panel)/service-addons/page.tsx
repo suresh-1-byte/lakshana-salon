@@ -39,11 +39,11 @@ export default function ServiceAddonsPage() {
       setLoading(true)
       const data = await getAllAddons(false) // Get all including inactive
       setAddons(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading addons:', error)
       toast({
         title: 'Error',
-        description: 'Failed to load add-ons',
+        description: error?.message || 'Failed to load add-ons',
         variant: 'destructive',
       })
     } finally {
@@ -66,11 +66,11 @@ export default function ServiceAddonsPage() {
         description: 'Add-on deleted successfully',
       })
       loadAddons()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting addon:', error)
       toast({
         title: 'Error',
-        description: 'Failed to delete add-on',
+        description: error?.message || 'Failed to delete add-on',
         variant: 'destructive',
       })
     }

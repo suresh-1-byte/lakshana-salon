@@ -11,20 +11,21 @@ export async function GET(req: NextRequest) {
     const customerId = searchParams.get('customerId');
     const status = searchParams.get('status');
 
-    let query = adminDb.collection(Collections.CUSTOMER_PACKAGES).orderBy('createdAt', 'desc');
-
+    // Single-field filter only (no composite index needed); sort in memory
+    let query = adminDb.collection(Collections.CUSTOMER_PACKAGES) as any;
     if (customerId) {
-      query = query.where('customerId', '==', customerId) as any;
-    }
-
-    if (status) {
-      query = query.where('status', '==', status) as any;
+      query = query.where('customerId', '==', customerId);
     }
 
     const snap = await query.get();
-    
+    const docs = snap.docs
+      .filter((doc: any) => !status || doc.data().status === status)
+      .sort((a: any, b: any) =>
+        (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0)
+      );
+
     const packages = await Promise.all(
-      snap.docs.map(async (doc: any) => {
+      docs.map(async (doc: any) => {
         const data = doc.data();
         
         // Fetch customer details

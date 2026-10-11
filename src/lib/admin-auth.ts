@@ -6,8 +6,11 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
+// ADMIN_JWT_SECRET is the name used in .env.example / Vercel; JWT_SECRET kept for compatibility
 const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'lakshana-admin-secret-key-2025-change-in-production'
+  process.env.JWT_SECRET ||
+    process.env.ADMIN_JWT_SECRET ||
+    'lakshana-admin-secret-key-2025-change-in-production'
 );
 
 export const COOKIE_NAME = 'lakshana_admin_token';

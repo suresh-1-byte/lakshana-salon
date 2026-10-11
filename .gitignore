@@ -47,3 +47,13 @@ firestore-debug.log
 
 .vercel
 .env*.local
+
+.vercel
+
+# Secrets — never commit
+private-key.txt
+*service-account*.json
+*-firebase-adminsdk-*.json
+
+# Local Firestore backups (contain customer data)
+/backups/

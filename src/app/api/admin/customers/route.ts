@@ -1,102 +1,128 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, Collections, FieldValue, logActivity } from '@/lib/firebase-admin';
+import {
+  customerFieldsError,
+  customerFieldsFromBody,
+  isDeletedCustomer,
+  phoneDigits,
+  serializeCustomer,
+} from '@/lib/server/customers';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const NO_STORE = { 'Cache-Control': 'no-store' };
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get('search') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50'); // Increased from 20 to 50
+    const search = (searchParams.get('search') || '').trim();
+    const phone = searchParams.get('phone');
+    const includeDeleted = searchParams.get('includeDeleted') === 'true';
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.max(1, parseInt(searchParams.get('limit') || '1000'));
 
-    // Use index on createdAt for faster queries
-    let query = adminDb
-      .collection(Collections.CUSTOMERS)
-      .orderBy('createdAt', 'desc')
-      .limit(limit);
+    const snap = await adminDb.collection(Collections.CUSTOMERS).get();
 
-    const snap = await query.get();
-    
-    let customers = snap.docs.map((d: any) => {
-      const data = d.data();
-      return {
-        id: d.id,
-        name: data.name,
-        phone: data.phone,
-        email: data.email || '',
-        dateOfBirth: data.dateOfBirth || '',
-        totalVisits: data.totalVisits || 0,
-        totalSpent: data.totalSpent || 0,
-        loyaltyStatus: data.loyaltyStatus || 'Bronze',
-        createdAt: data.createdAt?.toDate?.()?.toISOString() ?? data.createdAt,
-      };
-    });
+    let customers = snap.docs
+      .filter((d: any) => includeDeleted || !isDeletedCustomer(d.data()))
+      .map((d: any) => serializeCustomer(d.id, d.data()));
 
-    // Client-side search filter (faster for small datasets)
+    // Exact phone lookup (used by the New Booking form)
+    if (phone) {
+      const wanted = phoneDigits(phone);
+      customers = customers.filter(c => phoneDigits(c.phone) === wanted);
+    }
+
     if (search) {
       const q = search.toLowerCase();
-      customers = customers.filter((c: any) =>
-        c.name?.toLowerCase().includes(q) ||
-        c.phone?.includes(q) ||
-        c.email?.toLowerCase().includes(q)
+      const qDigits = q.replace(/\D/g, '');
+      customers = customers.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        (qDigits.length > 0 && c.phone.replace(/\D/g, '').includes(qDigits))
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: customers,
-      pagination: { 
-        total: customers.length, 
-        page, 
-        limit, 
-        hasMore: customers.length === limit 
+    // Newest first
+    customers.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    const total = customers.length;
+    const paginated = customers.slice((page - 1) * limit, page * limit);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: paginated,
+        pagination: { total, page, limit, hasMore: page * limit < total },
       },
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
-      },
-    });
+      { headers: NO_STORE }
+    );
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Fetch customers error:', err);
+    return NextResponse.json({ error: 'Failed to load customers' }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, address, dateOfBirth, anniversary, notes } = body;
+    const fields = customerFieldsFromBody(body);
 
-    if (!name || !phone) {
+    if (!fields.name || !fields.phone) {
       return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 });
     }
+    const invalid = customerFieldsError(fields);
+    if (invalid) {
+      return NextResponse.json({ error: invalid }, { status: 400 });
+    }
 
-    // Check if customer with same phone exists
-    const existing = await adminDb
-      .collection(Collections.CUSTOMERS)
-      .where('phone', '==', phone)
-      .limit(1)
-      .get();
+    // Is there already a customer with this phone number?
+    const wanted = phoneDigits(fields.phone);
+    const snap = await adminDb.collection(Collections.CUSTOMERS).get();
+    const existing = snap.docs.find((d: any) => phoneDigits(d.data().phone) === wanted);
 
-    if (!existing.empty) {
+    if (existing) {
+      if (isDeletedCustomer(existing.data())) {
+        // A previously deleted customer is coming back: restore and update them
+        await existing.ref.update({
+          ...fields,
+          phoneKey: wanted,
+          status: 'active',
+          isDeleted: false,
+          deletedAt: null,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        await logActivity('customer_restore', { entityType: 'customer', entityId: existing.id });
+        const restored = await existing.ref.get();
+        return NextResponse.json({
+          success: true,
+          id: existing.id,
+          data: serializeCustomer(existing.id, restored.data()),
+        });
+      }
       return NextResponse.json(
-        { error: 'Customer with this phone already exists', existingId: existing.docs[0].id },
+        { error: 'A customer with this phone number already exists', existingId: existing.id },
         { status: 409 }
       );
     }
 
     const ref = await adminDb.collection(Collections.CUSTOMERS).add({
-      name,
-      phone,
-      email: email || '',
-      address: address || '',
-      dateOfBirth: dateOfBirth || '',
-      anniversary: anniversary || '',
-      notes: notes || '',
+      name: fields.name,
+      phone: fields.phone,
+      phoneKey: wanted,
+      whatsappNumber: fields.whatsappNumber || fields.phone,
+      email: fields.email || '',
+      address: fields.address || '',
+      city: fields.city || '',
+      gender: fields.gender || '',
+      dateOfBirth: fields.dateOfBirth || '',
+      anniversary: fields.anniversary || '',
+      notes: fields.notes || '',
+      preferredStylist: fields.preferredStylist || '',
+      status: 'active',
+      isDeleted: false,
       totalVisits: 0,
       totalSpent: 0,
       lastVisit: null,
@@ -105,11 +131,11 @@ export async function POST(req: NextRequest) {
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    await logActivity('customer_create', `New customer created: ${name} (${phone})`);
-
-    return NextResponse.json({ success: true, id: ref.id });
+    await logActivity('customer_create', { entityType: 'customer', entityId: ref.id, name: fields.name });
+    const created = await ref.get();
+    return NextResponse.json({ success: true, id: ref.id, data: serializeCustomer(ref.id, created.data()) });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Create customer error:', err);
+    return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 });
   }
 }

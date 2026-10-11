@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Gallery images are uploaded by the server (/api/admin/gallery/upload,
+// Admin SDK — not affected by these rules) and are publicly viewable.
+// Nobody may upload, change or delete files directly from a browser.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /gallery/{file=**} {
+      allow read: if true;
+    }
+    match /{allPaths=**} {
+      allow write: if false;
+    }
+  }
+}

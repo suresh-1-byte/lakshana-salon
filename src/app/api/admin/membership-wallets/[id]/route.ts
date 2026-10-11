@@ -11,10 +11,10 @@ export const runtime = 'nodejs';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const doc = await adminDb
       .collection(Collections.MEMBERSHIP_WALLETS)
@@ -85,10 +85,10 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     const { action, amount, invoiceNumber, bookingId, serviceName, staffName, notes } = body;
 
@@ -245,10 +245,10 @@ export async function PATCH(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const docRef = adminDb.collection(Collections.MEMBERSHIP_WALLETS).doc(id);
     const doc = await docRef.get();

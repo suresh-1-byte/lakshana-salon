@@ -13,8 +13,26 @@ export interface MessageTemplate {
   variables?: string[];
 }
 
+/** True when WhatsApp Cloud API credentials are configured. */
+export function isWhatsAppConfigured(): boolean {
+  return !!(process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_ACCESS_TOKEN);
+}
+
+/** WhatsApp wants the full international number; 10-digit Indian numbers get 91. */
+function toWhatsAppNumber(phone: string): string {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.length === 11 && digits.startsWith('0')) return `91${digits.slice(1)}`;
+  return digits;
+}
+
 /**
- * Send WhatsApp message to customer
+ * Send WhatsApp message to customer (logged in `whatsapp_messages`).
+ *
+ * WhatsApp only allows free-form text inside a 24-hour window after the
+ * customer last messaged the salon. Messages the salon starts (birthday
+ * wishes, reminders) must use a template approved in WhatsApp Manager:
+ * pass `whatsappTemplate` for those.
  */
 export async function sendWhatsAppMessage(params: {
   customerId: string;
@@ -24,6 +42,8 @@ export async function sendWhatsAppMessage(params: {
   content: string;
   mediaUrl?: string;
   templateName?: string;
+  whatsappTemplate?: { name: string; language?: string; bodyParams?: string[] };
+  meta?: Record<string, unknown>;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     const messageData = {
@@ -35,18 +55,18 @@ export async function sendWhatsAppMessage(params: {
       mediaUrl: params.mediaUrl || null,
       templateName: params.templateName || null,
       deliveryStatus: 'pending' as MessageDeliveryStatus,
+      ...(params.meta || {}),
       createdAt: FieldValue.serverTimestamp(),
     };
 
     const docRef = await adminDb.collection(Collections.WHATSAPP_MESSAGES).add(messageData);
 
-    // Here you would integrate with actual WhatsApp API
-    // For now, we'll call the WhatsApp Cloud API
     const whatsappSent = await sendToWhatsAppCloudAPI({
       phone: params.customerPhone,
       message: params.content,
-      messageType: params.messageType,
+      messageType: params.whatsappTemplate ? 'template' : params.messageType,
       mediaUrl: params.mediaUrl,
+      template: params.whatsappTemplate,
     });
 
     if (whatsappSent.success) {
@@ -57,13 +77,13 @@ export async function sendWhatsAppMessage(params: {
     } else {
       await docRef.update({
         deliveryStatus: 'failed',
-        errorMessage: whatsappSent.error,
+        errorMessage: whatsappSent.error || 'Unknown error',
       });
     }
 
-    return { success: whatsappSent.success, messageId: docRef.id };
+    return { success: whatsappSent.success, messageId: docRef.id, error: whatsappSent.error };
   } catch (error) {
-    console.error('Error sending WhatsApp message:', error);
+    console.error('Error sending WhatsApp message:', (error as Error)?.message);
     return { success: false, error: 'Failed to send message' };
   }
 }
@@ -76,41 +96,54 @@ async function sendToWhatsAppCloudAPI(params: {
   message: string;
   messageType: WhatsAppMessageType;
   mediaUrl?: string;
+  template?: { name: string; language?: string; bodyParams?: string[] };
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
 
     if (!phoneNumberId || !accessToken) {
-      console.warn('WhatsApp credentials not configured');
-      return { success: false, error: 'WhatsApp not configured' };
+      return { success: false, error: 'WhatsApp not configured (set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN)' };
     }
 
-    // Format phone number (remove + and spaces)
-    const formattedPhone = params.phone.replace(/[^0-9]/g, '');
+    const to = toWhatsAppNumber(params.phone);
+    if (to.length < 11) {
+      return { success: false, error: 'Invalid phone number' };
+    }
 
     const url = `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`;
 
-    let body: any = {
+    const body: any = {
       messaging_product: 'whatsapp',
-      to: formattedPhone,
+      to,
     };
 
-    if (params.messageType === 'text') {
-      body.type = 'text';
-      body.text = { body: params.message };
+    if (params.messageType === 'template') {
+      const template = params.template || { name: 'birthday_wish' };
+      body.type = 'template';
+      body.template = {
+        name: template.name,
+        language: { code: template.language || 'en' },
+        ...(template.bodyParams?.length
+          ? {
+              components: [
+                {
+                  type: 'body',
+                  parameters: template.bodyParams.map(text => ({ type: 'text', text })),
+                },
+              ],
+            }
+          : {}),
+      };
     } else if (params.messageType === 'image' && params.mediaUrl) {
       body.type = 'image';
       body.image = { link: params.mediaUrl };
     } else if (params.messageType === 'document' && params.mediaUrl) {
       body.type = 'document';
       body.document = { link: params.mediaUrl };
-    } else if (params.messageType === 'template') {
-      body.type = 'template';
-      body.template = {
-        name: 'birthday_wish', // Template name from WhatsApp Manager
-        language: { code: 'en' },
-      };
+    } else {
+      body.type = 'text';
+      body.text = { body: params.message };
     }
 
     const response = await fetch(url, {
@@ -123,14 +156,15 @@ async function sendToWhatsAppCloudAPI(params: {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('WhatsApp API Error:', error);
-      return { success: false, error: error.error?.message || 'API request failed' };
+      const error = await response.json().catch(() => ({}));
+      const message = error?.error?.message || `WhatsApp API request failed (${response.status})`;
+      console.error('WhatsApp API Error:', message);
+      return { success: false, error: message };
     }
 
     return { success: true };
   } catch (error) {
-    console.error('WhatsApp Cloud API error:', error);
+    console.error('WhatsApp Cloud API error:', (error as Error)?.message);
     return { success: false, error: 'Failed to send via WhatsApp' };
   }
 }
@@ -143,11 +177,14 @@ export async function getCustomerMessageHistory(customerId: string): Promise<Wha
     const snapshot = await adminDb
       .collection(Collections.WHATSAPP_MESSAGES)
       .where('customerId', '==', customerId)
-      .orderBy('createdAt', 'desc')
-      .limit(50)
       .get();
 
-    return snapshot.docs.map(doc => {
+    // Sort in memory (where + orderBy would need a composite index)
+    const docs = snapshot.docs
+      .sort((a, b) => (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0))
+      .slice(0, 50);
+
+    return docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -266,64 +303,4 @@ function getDefaultTemplates(): MessageTemplate[] {
       variables: ['customerName', 'service'],
     },
   ];
-}
-
-/**
- * Send birthday wishes to customers
- */
-export async function sendBirthdayWishes(customerIds: string[]): Promise<{
-  success: number;
-  failed: number;
-  errors: Array<{ customerId: string; error: string }>;
-}> {
-  const results = {
-    success: 0,
-    failed: 0,
-    errors: [] as Array<{ customerId: string; error: string }>,
-  };
-
-  const templates = await getMessageTemplates();
-  const birthdayTemplate = templates.find(t => t.category === 'birthday');
-
-  if (!birthdayTemplate) {
-    console.error('Birthday template not found');
-    return results;
-  }
-
-  for (const customerId of customerIds) {
-    try {
-      // Get customer details
-      const customerDoc = await adminDb.collection(Collections.CUSTOMERS).doc(customerId).get();
-      
-      if (!customerDoc.exists) {
-        results.failed++;
-        results.errors.push({ customerId, error: 'Customer not found' });
-        continue;
-      }
-
-      const customer = customerDoc.data()!;
-      const message = birthdayTemplate.content.replace('{{customerName}}', customer.name);
-
-      const result = await sendWhatsAppMessage({
-        customerId,
-        customerName: customer.name,
-        customerPhone: customer.whatsappNumber || customer.phone,
-        messageType: 'text',
-        content: message,
-        templateName: 'birthday',
-      });
-
-      if (result.success) {
-        results.success++;
-      } else {
-        results.failed++;
-        results.errors.push({ customerId, error: result.error || 'Unknown error' });
-      }
-    } catch (error) {
-      results.failed++;
-      results.errors.push({ customerId, error: String(error) });
-    }
-  }
-
-  return results;
 }

@@ -4,9 +4,9 @@ const path = require('path');
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: 'deh49nghj',
-  api_key: '397217659319937',
-  api_secret: '0J_M0B6Asi0vLQOAJswEc-PJl18'
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 async function uploadVideo() {

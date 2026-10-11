@@ -68,8 +68,8 @@ export default function SettingsPage() {
       toast({ title: 'New passwords do not match', variant: 'destructive' });
       return;
     }
-    if (pwdForm.newPwd.length < 8) {
-      toast({ title: 'Password must be at least 8 characters', variant: 'destructive' });
+    if (pwdForm.newPwd.length < 10) {
+      toast({ title: 'Password must be at least 10 characters, with letters and numbers', variant: 'destructive' });
       return;
     }
     setSavingPwd(true);
@@ -401,7 +401,7 @@ export default function SettingsPage() {
               <AdminInput label="New Password" type="password"
                 value={pwdForm.newPwd}
                 onChange={e => setPwdForm(p => ({ ...p, newPwd: e.target.value }))}
-                required placeholder="Minimum 8 characters"
+                required placeholder="Minimum 10 characters, letters + numbers"
                 hint="Use letters, numbers and symbols" />
               <AdminInput label="Confirm New Password" type="password"
                 value={pwdForm.confirm}

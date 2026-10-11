@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb, adminMsg, Collections, FieldValue, upsertCustomer } from '@/lib/firebase-admin';
+import { COOKIE_NAME, verifyAdminToken } from '@/lib/admin-auth';
+import { clientIp } from '@/lib/server/request-auth';
+import { hitRateLimit } from '@/lib/server/rate-limit';
+import { getAdminPushTokens } from '@/lib/server/push';
+import {
+  cleanString,
+  escapeHtml,
+  escapeMarkdown,
+  isValidEmail,
+  isValidPhone,
+  optionalPastDate,
+  phoneKey,
+} from '@/lib/server/validation';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -115,31 +128,83 @@ async function sendTelegram(botToken: string, chatId: string, text: string) {
 // ── POST /api/bookings ────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, phone, email, dateOfBirth, anniversary, services } = body;
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
 
-    if (!name || !phone || !email || !services?.length) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // ── Validate & clean input ─────────────────────────────────
+    const name = cleanString(body.name, 80);
+    const phone = cleanString(body.phone, 20);
+    const email = cleanString(body.email, 254).toLowerCase();
+    const rawServices = Array.isArray(body.services) ? body.services : [];
+
+    if (name.length < 2) {
+      return NextResponse.json({ error: 'Please enter your name' }, { status: 400 });
+    }
+    if (!isValidPhone(phone)) {
+      return NextResponse.json({ error: 'Please enter a valid 10-digit mobile number' }, { status: 400 });
+    }
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 });
+    }
+    if (rawServices.length === 0 || rawServices.length > 20) {
+      return NextResponse.json({ error: 'Please select between 1 and 20 services' }, { status: 400 });
+    }
+    const services = rawServices
+      .map((s: any) => ({
+        name: cleanString(s?.name, 120),
+        category: cleanString(s?.category, 80),
+        member: cleanString(s?.member, 40),
+        duration: cleanString(s?.duration, 40),
+      }))
+      .filter((s: { name: string }) => s.name);
+    if (services.length === 0) {
+      return NextResponse.json({ error: 'Please select at least one service' }, { status: 400 });
+    }
+    // Invalid or future dates are dropped rather than failing the booking
+    const dateOfBirth = optionalPastDate(body.dateOfBirth);
+    const anniversary = optionalPastDate(body.anniversary);
+
+    // ── Abuse protection: 5 booking requests per hour per IP / phone ──
+    const ipLimit = await hitRateLimit('booking-ip', clientIp(req), 5, 3600);
+    const phoneLimit = await hitRateLimit('booking-phone', phoneKey(phone), 5, 3600);
+    if (ipLimit.limited || phoneLimit.limited) {
+      return NextResponse.json(
+        { error: 'Too many booking requests. Please call the salon or try again later.' },
+        { status: 429 }
+      );
     }
 
     // Save booking
     const docRef = await adminDb.collection('bookings').add({
       name, phone, email, services,
-      dateOfBirth: dateOfBirth || null,
-      anniversary: anniversary || null,
+      phoneKey: phoneKey(phone),
+      dateOfBirth,
+      anniversary,
       status: 'pending',
+      source: 'website',
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    // Upsert customer profile with DOB and anniversary
-    await upsertCustomer({ 
-      name, 
-      phone, 
-      email, 
-      dateOfBirth: dateOfBirth || null,
-      anniversary: anniversary || null,
-      services: services.map((s: any) => s.name) 
+    // Upsert customer profile with DOB and anniversary (a booking request is not a visit)
+    const customerId = await upsertCustomer({
+      name,
+      phone,
+      email,
+      dateOfBirth,
+      anniversary,
+      services: services.map((s: { name: string }) => s.name),
     });
+    await docRef.update({ customerId });
+
+    // HTML-escaped copies for emails
+    const h = { name: escapeHtml(name), phone: escapeHtml(phone), email: escapeHtml(email) };
+    const htmlServices = services.map((s: any) => ({
+      name: escapeHtml(s.name),
+      duration: escapeHtml(s.duration),
+      member: escapeHtml(s.member),
+    }));
 
     // Load salon settings (non-fatal if Firebase not configured)
     let settings: any = {};
@@ -156,8 +221,8 @@ export async function POST(req: NextRequest) {
     // ── 1. Browser Push to admin ───────────────────────────────
     if (notif.pushOnBooking !== false) {
       try {
-        const tokensSnap = await adminDb.collection('fcm_tokens').get();
-        const tokens = tokensSnap.docs.map((d: any) => d.data().token as string).filter(Boolean);
+        // Admin devices only — never website subscribers
+        const tokens = await getAdminPushTokens();
         if (tokens.length > 0) {
           await adminMsg.sendEachForMulticast({
             tokens,
@@ -177,12 +242,12 @@ export async function POST(req: NextRequest) {
       const botToken = settings.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN;
       const chatId   = settings.telegramChatId   || process.env.TELEGRAM_CHAT_ID;
       if (botToken && chatId) {
-        const serviceList = services.map((s: any) => `  • ${s.name}`).join('\n');
+        const serviceList = services.map((s: any) => `  • ${escapeMarkdown(s.name)}`).join('\n');
         await sendTelegram(botToken, chatId,
           `🌸 *New Appointment — ${salonName}*\n\n` +
-          `👤 *Name:* ${name}\n` +
-          `📱 *Phone:* ${phone}\n` +
-          `📧 *Email:* ${email}\n\n` +
+          `👤 *Name:* ${escapeMarkdown(name)}\n` +
+          `📱 *Phone:* ${escapeMarkdown(phone)}\n` +
+          `📧 *Email:* ${escapeMarkdown(email)}\n\n` +
           `💄 *Services:*\n${serviceList}\n\n` +
           `🆔 Ref: \`${docRef.id.slice(-6).toUpperCase()}\`\n` +
           `🔗 [View in Admin](/admin/bookings)`
@@ -202,9 +267,9 @@ export async function POST(req: NextRequest) {
             to: [email],
             subject: `✅ Booking Confirmed — ${salonName}`,
             html: buildConfirmationEmail({
-              customerName: name,
-              phone,
-              services,
+              customerName: h.name,
+              phone: h.phone,
+              services: htmlServices,
               bookingId: docRef.id,
               salonName,
               salonPhone,
@@ -226,7 +291,7 @@ export async function POST(req: NextRequest) {
         if (resendKey && !resendKey.includes('your_') && adminEmail) {
           const { Resend } = await import('resend');
           const resend = new Resend(resendKey);
-          const serviceList = services.map((s: any) => `<li style="margin: 8px 0;">${s.name}</li>`).join('');
+          const serviceList = htmlServices.map((s: any) => `<li style="margin: 8px 0;">${s.name}</li>`).join('');
           await resend.emails.send({
             from: `${salonName} <bookings@lakshanabeautysalon.in>`,
             to: [adminEmail],
@@ -239,9 +304,9 @@ export async function POST(req: NextRequest) {
                 </div>
                 <h2 style="color: #2D1B25; font-size: 22px;">📅 New Booking Received</h2>
                 <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Customer:</strong> ${name}</p>
-                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Phone:</strong> ${phone}</p>
-                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Email:</strong> ${email}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Customer:</strong> ${h.name}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Phone:</strong> ${h.phone}</p>
+                  <p style="margin: 8px 0; color: #2D1B25;"><strong>Email:</strong> ${h.email}</p>
                   <p style="margin: 8px 0; color: #2D1B25;"><strong>Booking ID:</strong> ${docRef.id.slice(-6).toUpperCase()}</p>
                 </div>
                 <div style="background: rgba(212,68,122,0.06); padding: 20px; border-radius: 8px; border-left: 3px solid #D4447A;">
@@ -268,7 +333,12 @@ export async function POST(req: NextRequest) {
 }
 
 // ── GET /api/bookings ─────────────────────────────────────────────
-export async function GET() {
+// Contains customer contact details, so only the logged-in admin may read it.
+export async function GET(req: NextRequest) {
+  const token = req.cookies.get(COOKIE_NAME)?.value;
+  if (!token || !(await verifyAdminToken(token))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const snap = await adminDb
       .collection('bookings')
@@ -287,6 +357,9 @@ export async function GET() {
         anniversary: data.anniversary || null,
         services: data.services || [],
         status: data.status || 'pending',
+        scheduledDate: data.scheduledDate || null,
+        scheduledTime: data.scheduledTime || null,
+        notes: data.notes || '',
         createdAt: data.createdAt?.toDate?.()?.toISOString() ?? null,
       };
     });
@@ -297,7 +370,7 @@ export async function GET() {
       bookings  // backward compatibility
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=20',
+        'Cache-Control': 'no-store',
       },
     });
   } catch (err) {

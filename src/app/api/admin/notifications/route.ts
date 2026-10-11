@@ -3,7 +3,6 @@
 // ═══════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server';
-import { notifyNewBooking } from '@/lib/api/notifications';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 
 // Force dynamic rendering
@@ -77,11 +76,6 @@ export async function POST(request: NextRequest) {
       status: 'sent',
       createdAt: new Date(),
     });
-
-    // Send notification (if booking notification)
-    if (body.bookingId && body.customerName) {
-      await notifyNewBooking(body.bookingId, body.customerName);
-    }
 
     return NextResponse.json({
       success: true,

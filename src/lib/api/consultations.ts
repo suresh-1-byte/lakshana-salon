@@ -4,23 +4,42 @@
 
 import { adminDb, Collections, FieldValue } from '@/lib/firebase-admin';
 import type { Consultation, ConsultationStatus } from '@/types/admin';
-import { createAppointment } from './appointments';
 
 /**
  * Create consultation
  */
+const toList = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.map(String).filter(Boolean)
+    : typeof value === 'string'
+      ? value.split(',').map(v => v.trim()).filter(Boolean)
+      : [];
+
 export async function createConsultation(data: Omit<Consultation, 'id' | 'createdAt' | 'updatedAt'>) {
   try {
+    if (!data.customerId) {
+      return { success: false, error: 'Customer is required' };
+    }
+
+    // Store the customer's name so lists don't need an extra lookup
+    let customerName = (data as any).customerName || '';
+    if (!customerName) {
+      const customerDoc = await adminDb.collection(Collections.CUSTOMERS).doc(data.customerId).get();
+      if (!customerDoc.exists) return { success: false, error: 'Customer not found' };
+      customerName = customerDoc.data()?.name || '';
+    }
+
     const consultationData = {
       customerId: data.customerId,
-      consultantId: data.consultantId,
+      customerName,
+      consultantId: data.consultantId || null,
       consultationDate: data.consultationDate,
       hairType: data.hairType,
       skinType: data.skinType,
       problems: data.problems,
       suggestions: data.suggestions,
-      recommendedServices: data.recommendedServices || [],
-      recommendedProducts: data.recommendedProducts || [],
+      recommendedServices: toList(data.recommendedServices),
+      recommendedProducts: toList(data.recommendedProducts),
       beforeImages: data.beforeImages || [],
       notes: data.notes,
       nextVisit: data.nextVisit,
@@ -119,27 +138,33 @@ export async function getConsultations(filters?: {
   status?: ConsultationStatus;
 }): Promise<Consultation[]> {
   try {
+    // Filter + sort in memory so no composite Firestore index is needed
     let query = adminDb.collection(Collections.CONSULTATIONS) as any;
 
     if (filters?.customerId) {
       query = query.where('customerId', '==', filters.customerId);
     }
 
-    if (filters?.status) {
-      query = query.where('status', '==', filters.status);
-    }
-
-    const snapshot = await query.orderBy('consultationDate', 'desc').get();
+    const snapshot = await query.get();
 
     if (snapshot.empty) return [];
 
-    return snapshot.docs.map((doc: any) => {
+    const toIso = (v: any) => v?.toDate?.()?.toISOString?.() || v || '';
+
+    return snapshot.docs
+      .filter((doc: any) => !filters?.status || doc.data().status === filters.status)
+      .sort((a: any, b: any) =>
+        String(toIso(b.data().consultationDate)).localeCompare(String(toIso(a.data().consultationDate)))
+      )
+      .map((doc: any) => {
       const data = doc.data();
       return {
         id: doc.id,
         customerId: data.customerId,
+        customerName: data.customerName,
         consultantId: data.consultantId,
-        consultationDate: data.consultationDate,
+        consultantName: data.consultantName,
+        consultationDate: toIso(data.consultationDate),
         hairType: data.hairType,
         skinType: data.skinType,
         problems: data.problems,
@@ -210,24 +235,22 @@ export async function convertToAppointment(consultationId: string, appointmentDa
     // Create appointment from consultation
     const appointmentType = consultation.recommendedServices?.[0] || 'Consultation';
     
-    const result = await createAppointment({
-      booking_id: `CNS${Date.now()}`,
-      customer_id: consultation.customerId,
-      customer_name: customer.name || '',
-      customer_phone: customer.phone || '',
-      staff_id: appointmentData.staffId || null,
-      staff_name: appointmentData.staffName || null,
-      service_id: null,
-      package_id: null,
-      appointment_date: appointmentData.appointmentDate,
-      appointment_time: appointmentData.appointmentTime,
-      duration: appointmentData.duration,
-      booking_status: 'confirmed',
-      payment_status: 'pending',
-      advance_amount: 0,
-      total_amount: 0,
+    // Create a booking from the consultation (shows in Bookings & Calendar)
+    const bookingRef = await adminDb.collection(Collections.BOOKINGS).add({
+      name: customer.name || '',
+      phone: customer.phone || '',
+      email: customer.email || '',
+      customerId: consultation.customerId,
+      services: [{ name: appointmentType, duration: `${appointmentData.duration || 60} min` }],
+      scheduledDate: appointmentData.appointmentDate,
+      scheduledTime: appointmentData.appointmentTime,
       notes: appointmentData.notes || `Converted from consultation: ${consultation.problems || ''}`,
+      source: 'consultation',
+      status: 'confirmed',
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     });
+    const result = { id: bookingRef.id };
 
     // Update consultation status
     await updateConsultation(consultationId, {

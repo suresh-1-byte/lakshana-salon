@@ -1,206 +1,77 @@
 // ═══════════════════════════════════════════════════════
-//  Service Add-ons API
+//  Service Add-ons API (admin) — Firebase via /api/admin/service-addons
+//  The add-ons offered with a service are stored on the service
+//  document itself (`addonIds`).
 // ═══════════════════════════════════════════════════════
 
-import { createClient } from '@/lib/supabase/client'
-import type { ServiceAddon, ServiceAddonMapping } from '@/types/database.types'
+import type { Service, ServiceAddon } from '@/types/database.types'
+import { adminFetch, jsonBody } from './admin-fetch'
 
-const supabase = createClient()
+type ServiceWithAddons = Service & { addon_ids?: string[] }
 
-/**
- * Get all service add-ons
- */
 export async function getAllAddons(activeOnly = true) {
-  let query = supabase
-    .from('service_addons')
-    .select('*')
-    .order('display_order', { ascending: true })
-
-  if (activeOnly) {
-    query = query.eq('status', 'active')
-  }
-
-  const { data, error } = await query
-
-  if (error) throw error
-  return data as ServiceAddon[]
+  return adminFetch<ServiceAddon[]>(`/api/admin/service-addons${activeOnly ? '?active=true' : ''}`)
 }
 
-/**
- * Get addon by ID
- */
 export async function getAddonById(id: string) {
-  const { data, error } = await supabase
-    .from('service_addons')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as ServiceAddon
+  const addons = await getAllAddons(false)
+  const addon = addons.find(a => a.id === id)
+  if (!addon) throw new Error('Add-on not found')
+  return addon
 }
 
-/**
- * Create new addon
- */
 export async function createAddon(addon: Omit<ServiceAddon, 'id' | 'created_at' | 'updated_at'>) {
-  const { data, error } = await supabase
-    .from('service_addons')
-    .insert(addon)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ServiceAddon
+  return adminFetch<ServiceAddon>('/api/admin/service-addons', {
+    method: 'POST',
+    body: jsonBody(addon),
+  })
 }
 
-/**
- * Update addon
- */
 export async function updateAddon(id: string, updates: Partial<ServiceAddon>) {
-  const { data, error } = await supabase
-    .from('service_addons')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ServiceAddon
+  return adminFetch<ServiceAddon>(`/api/admin/service-addons/${id}`, {
+    method: 'PATCH',
+    body: jsonBody(updates),
+  })
 }
 
-/**
- * Delete addon (soft delete)
- */
 export async function deleteAddon(id: string) {
-  const { error } = await supabase
-    .from('service_addons')
-    .update({ status: 'inactive' })
-    .eq('id', id)
-
-  if (error) throw error
+  await adminFetch(`/api/admin/service-addons/${id}`, { method: 'DELETE' })
 }
 
-/**
- * Get addons for a specific service
- */
 export async function getAddonsForService(serviceId: string) {
-  const { data, error } = await supabase
-    .from('service_addon_mappings')
-    .select(`
-      id,
-      is_default,
-      addon:service_addons(*)
-    `)
-    .eq('service_id', serviceId)
-
-  if (error) throw error
-
-  // Flatten the structure and filter active addons
-  return data
-    .map((mapping: any) => ({
-      ...mapping.addon,
-      is_default: mapping.is_default,
-      mapping_id: mapping.id,
-    }))
-    .filter((addon: any) => addon.status === 'active')
+  const [service, addons] = await Promise.all([
+    adminFetch<ServiceWithAddons>(`/api/admin/services/${serviceId}`),
+    getAllAddons(false),
+  ])
+  const ids = service.addon_ids || []
+  return addons.filter(a => ids.includes(a.id))
 }
 
-/**
- * Assign addon to service
- */
-export async function assignAddonToService(serviceId: string, addonId: string, isDefault = false) {
-  const { data, error } = await supabase
-    .from('service_addon_mappings')
-    .insert({
-      service_id: serviceId,
-      addon_id: addonId,
-      is_default: isDefault,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    // If conflict, update instead
-    if (error.code === '23505') {
-      const { data: updateData, error: updateError } = await supabase
-        .from('service_addon_mappings')
-        .update({ is_default: isDefault })
-        .eq('service_id', serviceId)
-        .eq('addon_id', addonId)
-        .select()
-        .single()
-
-      if (updateError) throw updateError
-      return updateData
-    }
-    throw error
-  }
-
-  return data
-}
-
-/**
- * Remove addon from service
- */
-export async function removeAddonFromService(serviceId: string, addonId: string) {
-  const { error } = await supabase
-    .from('service_addon_mappings')
-    .delete()
-    .eq('service_id', serviceId)
-    .eq('addon_id', addonId)
-
-  if (error) throw error
-}
-
-/**
- * Get all services that have a specific addon
- */
-export async function getServicesWithAddon(addonId: string) {
-  const { data, error } = await supabase
-    .from('service_addon_mappings')
-    .select(`
-      service:services(*)
-    `)
-    .eq('addon_id', addonId)
-
-  if (error) throw error
-
-  return data.map((mapping: any) => mapping.service)
-}
-
-/**
- * Bulk assign addons to service
- */
 export async function bulkAssignAddonsToService(
   serviceId: string,
   addonIds: string[],
-  defaultAddonIds: string[] = []
+  _defaultAddonIds: string[] = []
 ) {
-  // First, remove all existing mappings
-  await supabase
-    .from('service_addon_mappings')
-    .delete()
-    .eq('service_id', serviceId)
-
-  // Then, insert new mappings
-  const mappings = addonIds.map(addonId => ({
-    service_id: serviceId,
-    addon_id: addonId,
-    is_default: defaultAddonIds.includes(addonId),
-  }))
-
-  if (mappings.length === 0) return []
-
-  const { data, error } = await supabase
-    .from('service_addon_mappings')
-    .insert(mappings)
-    .select()
-
-  if (error) throw error
-  return data
+  await adminFetch(`/api/admin/services/${serviceId}`, {
+    method: 'PATCH',
+    body: jsonBody({ addon_ids: addonIds }),
+  })
 }
 
+export async function assignAddonToService(serviceId: string, addonId: string) {
+  const current = await getAddonsForService(serviceId)
+  const ids = Array.from(new Set([...current.map(a => a.id), addonId]))
+  await bulkAssignAddonsToService(serviceId, ids)
+}
 
-// Alias for backward compatibility
-export const getServiceAddons = getAllAddons;
+export async function removeAddonFromService(serviceId: string, addonId: string) {
+  const current = await getAddonsForService(serviceId)
+  await bulkAssignAddonsToService(serviceId, current.map(a => a.id).filter(id => id !== addonId))
+}
+
+export async function getServicesWithAddon(addonId: string) {
+  const services = await adminFetch<ServiceWithAddons[]>('/api/admin/services')
+  return services.filter(s => (s.addon_ids || []).includes(addonId))
+}
+
+export const getServiceAddons = getAllAddons

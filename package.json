@@ -9,7 +9,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --tsconfig tsconfig.json tests/unit.test.ts && tsx --tsconfig tsconfig.json tests/integration.test.ts",
+    "backup:firestore": "node scripts/firestore-backup.mjs",
+    "audit:customers": "node scripts/customer-data-audit.mjs"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",

@@ -42,29 +42,46 @@ const customerSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerSchema>
 
+// Accepts both the snake_case form shape and the camelCase shape
+// returned by /api/admin/customers (name, phone, dateOfBirth…).
+type CustomerLike = Partial<Omit<Customer, 'status' | 'gender'>> & {
+  id: string
+  name?: string
+  phone?: string
+  whatsappNumber?: string
+  dateOfBirth?: string
+  preferredStylist?: string
+  gender?: string | null
+  status?: string
+}
+
 interface CustomerFormProps {
-  customer?: Customer | null
+  customer?: CustomerLike | null
   onSuccess: () => void
   onCancel: () => void
 }
 
+const GENDERS = ['Male', 'Female', 'Other'] as const
+
 export default function CustomerForm({ customer, onSuccess, onCancel }: CustomerFormProps) {
   const [loading, setLoading] = useState(false)
+
+  const gender = customer?.gender as string | null | undefined
 
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
-      full_name: customer?.full_name || '',
-      mobile_number: customer?.mobile_number || '',
-      whatsapp_number: customer?.whatsapp_number || '',
+      full_name: customer?.full_name || customer?.name || '',
+      mobile_number: customer?.mobile_number || customer?.phone || '',
+      whatsapp_number: customer?.whatsapp_number || customer?.whatsappNumber || '',
       email: customer?.email || '',
-      date_of_birth: customer?.date_of_birth || '',
-      anniversary: customer?.anniversary || '',
-      gender: customer?.gender || undefined,
+      date_of_birth: (customer?.date_of_birth || customer?.dateOfBirth || '').slice(0, 10),
+      anniversary: (customer?.anniversary || '').slice(0, 10),
+      gender: GENDERS.includes(gender as any) ? (gender as typeof GENDERS[number]) : undefined,
       address: customer?.address || '',
       city: customer?.city || '',
       notes: customer?.notes || '',
-      preferred_stylist: customer?.preferred_stylist || '',
+      preferred_stylist: customer?.preferred_stylist || customer?.preferredStylist || '',
     },
   })
 

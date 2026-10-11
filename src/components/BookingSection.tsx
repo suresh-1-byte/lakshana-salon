@@ -67,11 +67,14 @@ export function BookingSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, email, dateOfBirth, anniversary, services: cart }),
       });
-      if (!res.ok) throw new Error('Booking failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
       setConfirmed(true);
       clearCart();
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

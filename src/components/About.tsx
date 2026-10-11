@@ -111,7 +111,7 @@ export function About() {
                 src={img1?.imageUrl || ''}
                 alt="Lakshana Salon"
                 fill
-                className="object-cover brightness-[0.78] transition-all duration-[2s] group-hover:scale-105 group-hover:brightness-[0.88]"
+                className="object-cover brightness-[0.78] transition-all duration-1000 group-hover:scale-105 group-hover:brightness-[0.88]"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#2D1B25]/50 z-10 pointer-events-none" />
               <div className="absolute bottom-10 left-10 z-20">
@@ -187,7 +187,7 @@ export function About() {
                 </div>
 
                 <div className="space-y-3 relative z-10">
-                  <h5 className="text-[10px] font-bold uppercase tracking-[0.42em] group-hover:text-[#2D1B25] transition-colors duration-[400ms]"
+                  <h5 className="text-[10px] font-bold uppercase tracking-[0.42em] group-hover:text-[#2D1B25] transition-colors duration-300"
                     style={{ color: v.hoverBg }}>
                     {v.title}
                   </h5>

@@ -27,6 +27,29 @@ export interface WeeklyReport extends DailyReport {
   customerRetentionRate: number;
 }
 
+/** Firestore Timestamp | ISO string | Date → Date */
+function toDate(value: any): Date | null {
+  if (!value) return null;
+  if (typeof value?.toDate === 'function') return value.toDate();
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Documents created within [start, end]. `createdAt` is stored as a Firestore
+ * Timestamp (older records may use ISO strings), so the range is applied in
+ * memory rather than comparing a Timestamp field against a string.
+ */
+async function docsCreatedBetween(collection: string, start: Date, end: Date) {
+  const snap = await adminDb.collection(collection).get();
+  return snap.docs
+    .map(doc => doc.data())
+    .filter(data => {
+      const created = toDate(data.createdAt);
+      return !!created && created >= start && created <= end;
+    });
+}
+
 /**
  * Generate daily report
  */
@@ -40,40 +63,16 @@ export async function generateDailyReport(date?: string): Promise<DailyReport> {
     endOfDay.setHours(23, 59, 59, 999);
 
     // Fetch bookings for the day
-    const bookingsSnapshot = await adminDb
-      .collection(Collections.BOOKINGS)
-      .where('createdAt', '>=', startOfDay.toISOString())
-      .where('createdAt', '<=', endOfDay.toISOString())
-      .get();
-
-    const bookings = bookingsSnapshot.docs.map(doc => doc.data());
+    const bookings = await docsCreatedBetween(Collections.BOOKINGS, startOfDay, endOfDay);
 
     // Fetch payments for the day
-    const paymentsSnapshot = await adminDb
-      .collection(Collections.BILLING)
-      .where('createdAt', '>=', startOfDay.toISOString())
-      .where('createdAt', '<=', endOfDay.toISOString())
-      .get();
-
-    const payments = paymentsSnapshot.docs.map(doc => doc.data());
+    const payments = await docsCreatedBetween(Collections.BILLING, startOfDay, endOfDay);
 
     // Fetch new customers
-    const customersSnapshot = await adminDb
-      .collection(Collections.CUSTOMERS)
-      .where('createdAt', '>=', startOfDay.toISOString())
-      .where('createdAt', '<=', endOfDay.toISOString())
-      .get();
-
-    const customers = customersSnapshot.docs;
+    const customers = await docsCreatedBetween(Collections.CUSTOMERS, startOfDay, endOfDay);
 
     // Fetch new enquiries
-    const enquiriesSnapshot = await adminDb
-      .collection(Collections.ENQUIRIES)
-      .where('createdAt', '>=', startOfDay.toISOString())
-      .where('createdAt', '<=', endOfDay.toISOString())
-      .get();
-
-    const enquiries = enquiriesSnapshot.docs;
+    const enquiries = await docsCreatedBetween(Collections.ENQUIRIES, startOfDay, endOfDay);
 
     // Calculate stats
     const totalBookings = bookings.length;
@@ -143,40 +142,16 @@ export async function generateWeeklyReport(startDate?: string, endDate?: string)
     end.setHours(23, 59, 59, 999);
 
     // Fetch bookings for the week
-    const bookingsSnapshot = await adminDb
-      .collection(Collections.BOOKINGS)
-      .where('createdAt', '>=', start.toISOString())
-      .where('createdAt', '<=', end.toISOString())
-      .get();
-
-    const bookings = bookingsSnapshot.docs.map(doc => doc.data());
+    const bookings = await docsCreatedBetween(Collections.BOOKINGS, start, end);
 
     // Fetch payments for the week
-    const paymentsSnapshot = await adminDb
-      .collection(Collections.BILLING)
-      .where('createdAt', '>=', start.toISOString())
-      .where('createdAt', '<=', end.toISOString())
-      .get();
-
-    const payments = paymentsSnapshot.docs.map(doc => doc.data());
+    const payments = await docsCreatedBetween(Collections.BILLING, start, end);
 
     // Fetch customers for the week
-    const customersSnapshot = await adminDb
-      .collection(Collections.CUSTOMERS)
-      .where('createdAt', '>=', start.toISOString())
-      .where('createdAt', '<=', end.toISOString())
-      .get();
-
-    const newCustomers = customersSnapshot.docs;
+    const newCustomers = await docsCreatedBetween(Collections.CUSTOMERS, start, end);
 
     // Fetch enquiries for the week
-    const enquiriesSnapshot = await adminDb
-      .collection(Collections.ENQUIRIES)
-      .where('createdAt', '>=', start.toISOString())
-      .where('createdAt', '<=', end.toISOString())
-      .get();
-
-    const enquiries = enquiriesSnapshot.docs;
+    const enquiries = await docsCreatedBetween(Collections.ENQUIRIES, start, end);
 
     // Calculate stats
     const totalBookings = bookings.length;
@@ -191,22 +166,23 @@ export async function generateWeeklyReport(startDate?: string, endDate?: string)
     const paymentsCount = payments.length;
     const paymentsTotal = payments.reduce((sum, p) => sum + (p.total || 0), 0);
 
-    // Calculate repeat customers
-    const customerIds = new Set(bookings.map(b => b.customerId).filter(Boolean));
+    // Calculate repeat customers (customers who had a booking before this period)
+    const customerKey = (b: any) => b.customerId || b.phone;
+    const customerIds = new Set(bookings.map(customerKey).filter(Boolean));
     let repeatCustomers = 0;
 
-    for (const customerId of customerIds) {
-      // Check if customer had bookings before this week
-      const previousSnapshot = await adminDb
-        .collection(Collections.BOOKINGS)
-        .where('customerId', '==', customerId)
-        .where('createdAt', '<', start.toISOString())
-        .limit(1)
-        .get();
-
-      if (!previousSnapshot.empty) {
-        repeatCustomers++;
-      }
+    if (customerIds.size > 0) {
+      const allBookings = (await adminDb.collection(Collections.BOOKINGS).get()).docs.map(d => d.data());
+      const earlier = new Set(
+        allBookings
+          .filter(b => {
+            const created = toDate(b.createdAt);
+            return !!created && created < start;
+          })
+          .map(customerKey)
+          .filter(Boolean)
+      );
+      customerIds.forEach(id => { if (earlier.has(id)) repeatCustomers++; });
     }
 
     // Popular services with revenue

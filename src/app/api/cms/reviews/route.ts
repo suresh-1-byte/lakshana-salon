@@ -12,14 +12,20 @@ export const runtime = 'nodejs';
  */
 export async function GET() {
   try {
+    // Filter + sort in memory: where() + orderBy() on different fields
+    // would need a composite Firestore index.
     const snap = await adminDb
       .collection(Collections.REVIEWS)
       .where('status', '==', 'approved')
-      .orderBy('createdAt', 'desc')
-      .limit(20)
       .get();
 
-    const reviews = snap.docs.map((d: any) => ({
+    const docs = snap.docs
+      .sort((a: any, b: any) =>
+        (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0)
+      )
+      .slice(0, 20);
+
+    const reviews = docs.map((d: any) => ({
       id:           d.id,
       customerName: d.data().customerName,
       rating:       d.data().rating,

@@ -111,7 +111,7 @@ export function SpecialOffers() {
 
               <div className="p-9 pt-12 flex flex-col flex-1 space-y-7">
                 {/* Title */}
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#D4447A] leading-relaxed group-hover:text-[#2D1B25] transition-colors duration-[400ms]">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.26em] text-[#D4447A] leading-relaxed group-hover:text-[#2D1B25] transition-colors duration-300">
                   {offer.title}
                 </h3>
 

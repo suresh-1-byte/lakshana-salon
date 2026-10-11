@@ -1,142 +1,57 @@
 // ═══════════════════════════════════════════════════════
-//  Service Categories API
+//  Service Categories API (admin) — Firebase via /api/admin/service-categories
 // ═══════════════════════════════════════════════════════
 
-import { createClient } from '@/lib/supabase/client'
-import type { ServiceCategory } from '@/types/database.types'
+import type { Service, ServiceCategory } from '@/types/database.types'
+import { adminFetch, jsonBody } from './admin-fetch'
 
-const supabase = createClient()
+export type CategoryWithCount = ServiceCategory & { service_count?: number }
 
-/**
- * Get all service categories
- */
 export async function getAllCategories(activeOnly = true) {
-  let query = supabase
-    .from('service_categories')
-    .select('*')
-    .order('display_order', { ascending: true })
-
-  if (activeOnly) {
-    query = query.eq('status', 'active')
-  }
-
-  const { data, error } = await query
-
-  if (error) throw error
-  return data as ServiceCategory[]
+  return adminFetch<CategoryWithCount[]>(
+    `/api/admin/service-categories${activeOnly ? '?active=true' : ''}`
+  )
 }
 
-/**
- * Get category by ID
- */
 export async function getCategoryById(id: string) {
-  const { data, error } = await supabase
-    .from('service_categories')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as ServiceCategory
+  const categories = await getAllCategories(false)
+  const category = categories.find(c => c.id === id)
+  if (!category) throw new Error('Category not found')
+  return category
 }
 
-/**
- * Create new category
- */
 export async function createCategory(category: Omit<ServiceCategory, 'id' | 'created_at' | 'updated_at'>) {
-  const { data, error } = await supabase
-    .from('service_categories')
-    .insert(category)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ServiceCategory
+  return adminFetch<ServiceCategory>('/api/admin/service-categories', {
+    method: 'POST',
+    body: jsonBody(category),
+  })
 }
 
-/**
- * Update category
- */
 export async function updateCategory(id: string, updates: Partial<ServiceCategory>) {
-  const { data, error } = await supabase
-    .from('service_categories')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ServiceCategory
+  return adminFetch<ServiceCategory>(`/api/admin/service-categories/${id}`, {
+    method: 'PATCH',
+    body: jsonBody(updates),
+  })
 }
 
-/**
- * Delete category (soft delete by setting status to inactive)
- */
 export async function deleteCategory(id: string) {
-  const { error } = await supabase
-    .from('service_categories')
-    .update({ status: 'inactive' })
-    .eq('id', id)
-
-  if (error) throw error
+  await adminFetch(`/api/admin/service-categories/${id}`, { method: 'DELETE' })
 }
 
-/**
- * Get services by category
- */
 export async function getServicesByCategory(categoryId: string) {
-  const { data, error } = await supabase
-    .from('services')
-    .select('*')
-    .eq('category_id', categoryId)
-    .eq('status', 'active')
-    .order('display_order', { ascending: true })
-
-  if (error) throw error
-  return data
+  return adminFetch<Service[]>(
+    `/api/admin/services?active=true&categoryId=${encodeURIComponent(categoryId)}`
+  )
 }
 
-/**
- * Get all categories with their services
- */
 export async function getCategoriesWithServices() {
-  const { data: categories, error: catError } = await supabase
-    .from('service_categories')
-    .select(`
-      *,
-      services:services(*)
-    `)
-    .eq('status', 'active')
-    .order('display_order', { ascending: true })
-
-  if (catError) throw catError
-
-  // Filter active services and sort by display_order
-  const categoriesWithServices = categories.map((category: any) => ({
-    ...category,
-    services: (category.services || [])
-      .filter((service: any) => service.status === 'active')
-      .sort((a: any, b: any) => a.display_order - b.display_order)
-  }))
-
-  return categoriesWithServices
+  return adminFetch<Array<ServiceCategory & { services: Service[] }>>(
+    '/api/admin/service-categories?active=true&withServices=true'
+  )
 }
 
-/**
- * Reorder categories
- */
 export async function reorderCategories(categoryIds: string[]) {
-  const updates = categoryIds.map((id, index) => ({
-    id,
-    display_order: index + 1
-  }))
-
-  for (const update of updates) {
-    await supabase
-      .from('service_categories')
-      .update({ display_order: update.display_order })
-      .eq('id', update.id)
-  }
-
-  return { success: true }
+  await Promise.all(
+    categoryIds.map((id, index) => updateCategory(id, { display_order: index + 1 }))
+  )
 }

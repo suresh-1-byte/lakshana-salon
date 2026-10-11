@@ -762,3 +762,73 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(212, 68, 122, 0.5);
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   ADMIN THEME
+   shadcn/ui components (Select, Dialog, Popover, Dropdown,
+   AlertDialog…) read these HSL tokens. Without them the
+   popups render with a transparent background.
+   `.admin-theme` is set on the admin wrapper AND on <body>
+   while the admin panel is mounted, so portalled popups
+   (which render directly under <body>) get them too.
+═══════════════════════════════════════════════════════ */
+
+.admin-theme {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 96%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 96%;
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 96%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 0 0% 96%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 64%;
+  --accent: 38 60% 22%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 24%;
+  --ring: 38 92% 50%;
+  --radius: 0.5rem;
+  color-scheme: dark;
+}
+
+body.admin-theme {
+  background-color: #0F0B16;
+  color: #F5F0FF;
+}
+
+/* Solid black backgrounds for every popup / dropdown in the admin panel */
+.admin-theme [role="dialog"],
+.admin-theme [role="alertdialog"],
+.admin-theme [role="listbox"],
+.admin-theme [role="menu"],
+.admin-theme [data-radix-popper-content-wrapper] > * {
+  background-color: #000000;
+  color: #F5F5F5;
+  border-color: #2a2a2a;
+}
+
+/* Native <select> option lists */
+.admin-theme select,
+.admin-theme select option,
+.admin-theme select optgroup {
+  background-color: #000000;
+  color: #F5F5F5;
+}
+
+/* Form fields inside popups */
+.admin-theme input,
+.admin-theme textarea {
+  color: #F5F5F5;
+}
+
+.admin-theme input[type="date"]::-webkit-calendar-picker-indicator,
+.admin-theme input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}

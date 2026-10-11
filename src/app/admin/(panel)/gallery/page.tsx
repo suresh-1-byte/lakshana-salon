@@ -8,8 +8,6 @@ import { AdminInput, AdminSelect } from '@/components/admin/AdminInput';
 import type { GalleryImage, GalleryCategory } from '@/types/admin';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const CATEGORIES: GalleryCategory[] = ['Hair','Skin','Nails','Hair Spa','Bridal','Interiors','Other','Before/After'];
 const CAT_OPTS = CATEGORIES.map(c => ({ value: c, label: c }));
@@ -73,23 +71,18 @@ export default function GalleryPage() {
     reader.readAsDataURL(file);
   };
 
-  // Upload file to Firebase Storage
+  // Upload the file through the admin API (the server writes to Firebase Storage)
   const uploadFileToStorage = async (file: File): Promise<string> => {
+    setUploading(true);
     try {
-      const timestamp = Date.now();
-      const fileName = `gallery/${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-      const storageRef = ref(storage, fileName);
-      
-      setUploading(true);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
+      const body = new FormData();
+      body.append('file', file);
+      const res = await fetch('/api/admin/gallery/upload', { method: 'POST', body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.url) throw new Error(data.error || 'Failed to upload image');
+      return data.url as string;
+    } finally {
       setUploading(false);
-      
-      return downloadURL;
-    } catch (error) {
-      setUploading(false);
-      console.error('Upload error:', error);
-      throw new Error('Failed to upload image');
     }
   };
 
@@ -108,7 +101,7 @@ export default function GalleryPage() {
       try {
         imageUrl = await uploadFileToStorage(selectedFile);
       } catch (error) {
-        toast({ title: 'Upload failed', variant: 'destructive' });
+        toast({ title: error instanceof Error ? error.message : 'Upload failed', variant: 'destructive' });
         return;
       }
     } else {

@@ -71,7 +71,7 @@ export function Experts() {
                       src={imageUrl}
                       alt={expert.name}
                       fill
-                      className="object-cover grayscale group-hover:grayscale-0 transition-all duration-[800ms] scale-105 group-hover:scale-110"
+                      className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-110"
                     />
                     {/* Inner vignette */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#FFF0F5]/20 group-hover:to-transparent transition-all duration-700" />
@@ -82,10 +82,10 @@ export function Experts() {
 
                 {/* Info */}
                 <div className="space-y-4 px-2">
-                  <h3 className="font-headline text-xl font-medium text-[#2D1B25] group-hover:text-[#D4447A] transition-colors duration-[400ms]">
+                  <h3 className="font-headline text-xl font-medium text-[#2D1B25] group-hover:text-[#D4447A] transition-colors duration-300">
                     {expert.name}
                   </h3>
-                  <p className="text-[10px] uppercase tracking-[0.32em] font-bold text-[#7B4F62] group-hover:text-[#D4447A] transition-colors duration-[400ms]">
+                  <p className="text-[10px] uppercase tracking-[0.32em] font-bold text-[#7B4F62] group-hover:text-[#D4447A] transition-colors duration-300">
                     {expert.title}
                   </p>
                   <div className="h-[1px] w-10 bg-[#D4447A]/30 mx-auto group-hover:w-16 group-hover:bg-[#D4447A]/70 transition-all duration-500" />

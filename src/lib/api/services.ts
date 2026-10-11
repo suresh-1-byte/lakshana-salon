@@ -1,72 +1,40 @@
-import { createClient } from '@/lib/supabase/client'
+// ═══════════════════════════════════════════════════════
+//  Services API (admin) — backed by Firebase via /api/admin/services
+// ═══════════════════════════════════════════════════════
+
 import type { Service } from '@/types/database.types'
+import { adminFetch, jsonBody } from './admin-fetch'
 
-const supabase = createClient()
-
-export async function getAllServices() {
-  const { data, error } = await supabase
-    .from('services')
-    .select('*')
-    .eq('status', 'active')
-    .order('display_order', { ascending: true })
-
-  if (error) throw error
-  return data as Service[]
+export async function getAllServices(activeOnly = false) {
+  return adminFetch<Service[]>(`/api/admin/services${activeOnly ? '?active=true' : ''}`)
 }
 
 export async function getServiceById(id: string) {
-  const { data, error } = await supabase
-    .from('services')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as Service
+  return adminFetch<Service>(`/api/admin/services/${id}`)
 }
 
 export async function getServicesByCategory(categoryId: string) {
-  const { data, error } = await supabase
-    .from('services')
-    .select('*')
-    .eq('category_id', categoryId)
-    .eq('status', 'active')
-    .order('display_order', { ascending: true })
-
-  if (error) throw error
-  return data as Service[]
+  return adminFetch<Service[]>(
+    `/api/admin/services?active=true&categoryId=${encodeURIComponent(categoryId)}`
+  )
 }
 
-export async function createService(service: Partial<Service>) {
-  const { data, error } = await supabase
-    .from('services')
-    .insert(service)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Service
+export async function createService(service: Partial<Service> & Record<string, unknown>) {
+  return adminFetch<Service>('/api/admin/services', {
+    method: 'POST',
+    body: jsonBody(service),
+  })
 }
 
-export async function updateService(id: string, updates: Partial<Service>) {
-  const { data, error } = await supabase
-    .from('services')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Service
+export async function updateService(id: string, updates: Partial<Service> & Record<string, unknown>) {
+  return adminFetch<Service>(`/api/admin/services/${id}`, {
+    method: 'PATCH',
+    body: jsonBody(updates),
+  })
 }
 
 export async function deleteService(id: string) {
-  const { error } = await supabase
-    .from('services')
-    .update({ status: 'inactive' })
-    .eq('id', id)
-
-  if (error) throw error
+  await adminFetch(`/api/admin/services/${id}`, { method: 'DELETE' })
 }
 
 export const SERVICE_CATEGORIES = [

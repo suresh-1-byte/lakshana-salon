@@ -11,17 +11,16 @@ export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get all active customers
-    const customersSnapshot = await adminDb
-      .collection(Collections.CUSTOMERS)
-      .where('status', '==', 'active')
-      .get();
+    // Get all customers that aren't deleted (many records have no `status` field)
+    const customersSnapshot = await adminDb.collection(Collections.CUSTOMERS).get();
 
     const customers: any[] = [];
     customersSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.isDeleted === true || data.status === 'deleted') return;
       customers.push({
         id: doc.id,
-        ...doc.data(),
+        ...data,
       });
     });
 

@@ -39,11 +39,11 @@ export default function ServiceCategoriesPage() {
       setLoading(true)
       const data = await getAllCategories(false) // Get all including inactive
       setCategories(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading categories:', error)
       toast({
         title: 'Error',
-        description: 'Failed to load categories',
+        description: error?.message || 'Failed to load categories',
         variant: 'destructive',
       })
     } finally {
@@ -66,11 +66,11 @@ export default function ServiceCategoriesPage() {
         description: 'Category deleted successfully',
       })
       loadCategories()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting category:', error)
       toast({
         title: 'Error',
-        description: 'Failed to delete category',
+        description: error?.message || 'Failed to delete category',
         variant: 'destructive',
       })
     }

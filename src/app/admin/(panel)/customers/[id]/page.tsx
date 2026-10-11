@@ -18,6 +18,13 @@ import {
   Heart,
 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import CustomerForm from '@/components/admin/CustomerForm'
 
 type CustomerProfile = {
   id: string
@@ -26,6 +33,8 @@ type CustomerProfile = {
   whatsappNumber?: string
   email?: string
   dateOfBirth?: string
+  anniversary?: string
+  preferredStylist?: string
   address?: string
   city?: string
   gender?: string
@@ -70,8 +79,10 @@ type CustomerProfile = {
   packages: Array<{
     id: string
     packageName: string
-    totalSessions: number
-    remainingSessions: number
+    totalSessions?: number
+    remainingSessions?: number
+    totalAmount?: number
+    availableBalance?: number
     status: string
   }>
 }
@@ -83,6 +94,7 @@ export default function CustomerProfilePage() {
 
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showEdit, setShowEdit] = useState(false)
 
   useEffect(() => {
     if (customerId) {
@@ -93,7 +105,7 @@ export default function CustomerProfilePage() {
   const loadProfile = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/admin/customers/${customerId}`)
+      const response = await fetch(`/api/admin/customers/${customerId}`, { cache: 'no-store' })
       const data = await response.json()
       
       if (data.success) {
@@ -207,7 +219,7 @@ export default function CustomerProfilePage() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">{profile.name}</h1>
-            <p className="text-neutral-600 dark:text-neutral-400">
+            <p className="text-gray-400">
               Customer Profile
             </p>
           </div>
@@ -219,7 +231,7 @@ export default function CustomerProfilePage() {
             </Button>
           ) : (
             <>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => setShowEdit(true)}>
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
               </Button>
@@ -232,9 +244,27 @@ export default function CustomerProfilePage() {
         </div>
       </div>
 
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Customer</DialogTitle>
+          </DialogHeader>
+          {showEdit && (
+            <CustomerForm
+              customer={profile}
+              onSuccess={() => {
+                setShowEdit(false)
+                loadProfile()
+              }}
+              onCancel={() => setShowEdit(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Status Badge */}
       {profile.status === 'deleted' && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
+        <div className="bg-red-900/20 border border-red-800 p-4 rounded-lg">
           <Badge variant="destructive">Deleted Customer</Badge>
         </div>
       )}
@@ -363,7 +393,7 @@ export default function CustomerProfilePage() {
           </Card>
 
           {profile.membership && (
-            <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20">
+            <Card className="border-amber-700 bg-amber-900/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="w-5 h-5 text-amber-600" />
@@ -373,13 +403,13 @@ export default function CustomerProfilePage() {
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-600">Type</span>
+                    <span className="text-sm text-gray-400">Type</span>
                     <Badge className="bg-amber-600">{profile.membership.tier}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-600">Expires</span>
+                    <span className="text-sm text-gray-400">Expires</span>
                     <span className="font-medium">
-                      {new Date(profile.membership.expiryDate).toLocaleDateString()}
+                      {profile.membership.expiryDate ? new Date(profile.membership.expiryDate).toLocaleDateString() : 'No expiry'}
                     </span>
                   </div>
                 </div>
@@ -393,7 +423,7 @@ export default function CustomerProfilePage() {
                 <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-neutral-700 dark:text-neutral-300">
+                <p className="text-sm text-gray-300">
                   {profile.notes}
                 </p>
               </CardContent>
@@ -434,7 +464,7 @@ export default function CustomerProfilePage() {
                               <div>
                                 <p className="font-medium">{event.title}</p>
                                 {event.description && (
-                                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                                  <p className="text-sm text-gray-400">
                                     {event.description}
                                   </p>
                                 )}
@@ -544,7 +574,7 @@ export default function CustomerProfilePage() {
                             <Badge>{consultation.status}</Badge>
                           </div>
                           {consultation.problems && (
-                            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                            <p className="text-sm text-gray-400">
                               {consultation.problems}
                             </p>
                           )}
@@ -572,12 +602,22 @@ export default function CustomerProfilePage() {
                             <p className="font-medium">{pkg.packageName}</p>
                             <Badge>{pkg.status}</Badge>
                           </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-neutral-500">Sessions</span>
-                            <span className="font-medium">
-                              {pkg.remainingSessions} / {pkg.totalSessions} remaining
-                            </span>
-                          </div>
+                          {pkg.availableBalance !== undefined ? (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-neutral-500">Balance</span>
+                              <span className="font-medium">
+                                ₹{Number(pkg.availableBalance).toLocaleString('en-IN')}
+                                {pkg.totalAmount ? ` of ₹${Number(pkg.totalAmount).toLocaleString('en-IN')}` : ''}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-neutral-500">Sessions</span>
+                              <span className="font-medium">
+                                {pkg.remainingSessions} / {pkg.totalSessions} remaining
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

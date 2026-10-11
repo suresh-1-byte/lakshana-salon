@@ -20,9 +20,12 @@ export default function BookingCalendarPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/bookings').then(r => r.json()).then(d => {
-      if (d.bookings) setBookings(d.bookings);
-    });
+    fetch('/api/admin/bookings', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) setBookings(d.data || []);
+      })
+      .catch(err => console.error('Error loading bookings:', err));
   }, []);
 
   const year = viewDate.getFullYear();

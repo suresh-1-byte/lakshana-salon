@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, Edit, Trash2, Eye, Download, Filter } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -54,7 +54,7 @@ export default function CustomersPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/admin/customers')
+      const res = await fetch('/api/admin/customers', { cache: 'no-store' })
       const data = await res.json()
       
       if (data.success) {
@@ -82,7 +82,7 @@ export default function CustomersPage() {
     }
 
     try {
-      const res = await fetch(`/api/admin/customers?search=${encodeURIComponent(searchQuery)}`)
+      const res = await fetch(`/api/admin/customers?search=${encodeURIComponent(searchQuery)}`, { cache: 'no-store' })
       const data = await res.json()
       
       if (data.success) {
@@ -100,23 +100,25 @@ export default function CustomersPage() {
       const res = await fetch(`/api/admin/customers/${id}`, {
         method: 'DELETE',
       })
-      
-      const data = await res.json()
-      
+
+      const data = await res.json().catch(() => ({}))
+
       if (res.ok && data.success) {
+        // Remove from the table straight away
+        setCustomers(prev => prev.filter(c => c.id !== id))
+        setFilteredCustomers(prev => prev.filter(c => c.id !== id))
         toast({
           title: 'Success',
           description: 'Customer deleted successfully',
         })
-        loadCustomers()
       } else {
         throw new Error(data.error || 'Failed to delete')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete error:', error)
       toast({
         title: 'Error',
-        description: 'Failed to delete customer',
+        description: error?.message || 'Failed to delete customer',
         variant: 'destructive',
       })
     }
@@ -158,9 +160,15 @@ export default function CustomersPage() {
             <Download className="w-4 h-4 mr-2" />
             Export Excel
           </Button>
-          <Dialog open={showForm} onOpenChange={setShowForm}>
+          <Dialog
+            open={showForm}
+            onOpenChange={(open) => {
+              setShowForm(open)
+              if (!open) setSelectedCustomer(null)
+            }}
+          >
             <DialogTrigger asChild>
-              <Button className="bg-amber-500 hover:bg-amber-600">
+              <Button className="bg-amber-500 hover:bg-amber-600" onClick={() => setSelectedCustomer(null)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Customer
               </Button>
@@ -172,6 +180,7 @@ export default function CustomersPage() {
                 </DialogTitle>
               </DialogHeader>
               <CustomerForm
+                key={selectedCustomer?.id || 'new'}
                 customer={selectedCustomer}
                 onSuccess={() => {
                   setShowForm(false)
@@ -198,10 +207,6 @@ export default function CustomersPage() {
             className="pl-10 bg-gray-800 border-gray-700"
           />
         </div>
-        <Button variant="outline">
-          <Filter className="w-4 h-4 mr-2" />
-          Filter
-        </Button>
       </div>
 
       <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
@@ -293,6 +298,8 @@ export default function CustomersPage() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="text-red-500 hover:text-red-400"
+                        title="Delete customer"
                         onClick={() => handleDelete(customer.id)}
                       >
                         <Trash2 className="w-4 h-4" />

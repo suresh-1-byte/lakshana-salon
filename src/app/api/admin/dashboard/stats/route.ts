@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAdminDb, Timestamp } from '@/lib/firebase-admin';
-import { Collections } from '@/lib/firebase-collections';
+import { Collections } from '@/lib/firebase-admin';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';

@@ -6,6 +6,7 @@ import * as admin from 'firebase-admin';
 import { getApps, cert } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getMessaging } from 'firebase-admin/messaging';
+import { optionalPastDate, phoneKey } from '@/lib/server/validation';
 
 // Initialize Firebase Admin SDK only if environment variables are available
 // This prevents build-time errors when env vars aren't available
@@ -52,6 +53,13 @@ export const getAdminDb = () => {
   if (!_adminDb) {
     initializeFirebaseAdmin();
     _adminDb = getFirestore();
+    try {
+      // Optional form fields often arrive as `undefined`; without this
+      // Firestore rejects the whole write ("Cannot use undefined as a value").
+      _adminDb.settings({ ignoreUndefinedProperties: true });
+    } catch {
+      // settings() can only be called once per instance (e.g. after hot reload)
+    }
   }
   return _adminDb;
 };
@@ -108,7 +116,35 @@ export const Collections = {
   FCM_TOKENS: 'fcm_tokens',
 } as const;
 
-// Helper function: Upsert customer
+/**
+ * Find a customer by phone number regardless of how it was typed
+ * ("+91 98765 43210" and "9876543210" are the same customer). Prefers an
+ * active record if duplicates exist. Returns null when not found.
+ *
+ * Records saved before `phoneKey` existed are still found (exact-match and
+ * full-scan fallbacks); they gain `phoneKey` the next time they are updated.
+ */
+export async function findCustomerByPhone(phone: string) {
+  const key = phoneKey(phone);
+  if (!key) return null;
+  const customersRef = adminDb.collection(Collections.CUSTOMERS);
+
+  const pick = (docs: any[]) =>
+    docs.find(d => !(d.data().isDeleted === true || d.data().status === 'deleted')) || docs[0] || null;
+
+  const byKey = await customersRef.where('phoneKey', '==', key).get();
+  if (!byKey.empty) return pick(byKey.docs);
+
+  const exact = await customersRef.where('phone', '==', phone).get();
+  if (!exact.empty) return pick(exact.docs);
+
+  const all = await customersRef.get();
+  return pick(all.docs.filter((d: any) => phoneKey(d.data().phone) === key));
+}
+
+// Helper function: Upsert customer (create, or update the existing record for this phone)
+// Visits and spending are NOT changed here — they follow paid bills
+// (see lib/server/customer-stats.ts).
 export async function upsertCustomer(data: {
   name: string;
   phone: string;
@@ -118,64 +154,54 @@ export async function upsertCustomer(data: {
   anniversary?: string | null;
   services?: string[];
 }): Promise<string> {
-  try {
-    // Check if customer exists
-    const customersRef = adminDb.collection(Collections.CUSTOMERS);
-    const snapshot = await customersRef.where('phone', '==', data.phone).limit(1).get();
+  const key = phoneKey(data.phone);
+  const dateOfBirth = optionalPastDate(data.dateOfBirth);
+  const anniversary = optionalPastDate(data.anniversary);
 
-    if (!snapshot.empty) {
-      // Customer exists, update with new data (including DOB and anniversary if provided)
-      const doc = snapshot.docs[0];
-      const updateData: any = {
-        updatedAt: FieldValue.serverTimestamp(),
-      };
-      
-      // Update name if provided
-      if (data.name) updateData.name = data.name;
-      
-      // Update email if provided
-      if (data.email) updateData.email = data.email;
-      
-      // Update WhatsApp number if provided
-      if (data.whatsappNumber) updateData.whatsappNumber = data.whatsappNumber;
-      
-      // Update DOB if provided (only if not already set or if new value provided)
-      if (data.dateOfBirth) {
-        updateData.dateOfBirth = data.dateOfBirth;
-      }
-      
-      // Update anniversary if provided
-      if (data.anniversary) {
-        updateData.anniversary = data.anniversary;
-      }
-      
-      // Increment total visits
-      updateData.totalVisits = FieldValue.increment(1);
-      
-      await doc.ref.update(updateData);
-      return doc.id;
-    }
+  const doc = await findCustomerByPhone(data.phone);
 
-    // Create new customer
-    const newCustomer = {
-      name: data.name,
-      phone: data.phone,
-      whatsappNumber: data.whatsappNumber || data.phone,
-      email: data.email || null,
-      dateOfBirth: data.dateOfBirth || null,
-      anniversary: data.anniversary || null,
-      status: 'active',
-      totalVisits: 1,
-      totalSpent: 0,
-      createdAt: FieldValue.serverTimestamp(),
+  if (doc) {
+    const updateData: any = {
       updatedAt: FieldValue.serverTimestamp(),
     };
+    if (key) updateData.phoneKey = key;
 
-    const docRef = await customersRef.add(newCustomer);
-    return docRef.id;
-  } catch (error) {
-    throw error;
+    // A deleted customer who books again becomes active again
+    const existing = doc.data();
+    if (existing?.isDeleted || existing?.status === 'deleted') {
+      updateData.status = 'active';
+      updateData.isDeleted = false;
+      updateData.deletedAt = null;
+    }
+
+    if (data.name) updateData.name = data.name;
+    if (data.email) updateData.email = data.email;
+    if (data.whatsappNumber) updateData.whatsappNumber = data.whatsappNumber;
+    if (dateOfBirth) updateData.dateOfBirth = dateOfBirth;
+    if (anniversary) updateData.anniversary = anniversary;
+
+    await doc.ref.update(updateData);
+    return doc.id;
   }
+
+  // Create new customer
+  const docRef = await adminDb.collection(Collections.CUSTOMERS).add({
+    name: data.name,
+    phone: data.phone,
+    phoneKey: key || null,
+    whatsappNumber: data.whatsappNumber || data.phone,
+    email: data.email || null,
+    dateOfBirth,
+    anniversary,
+    status: 'active',
+    isDeleted: false,
+    totalVisits: 0,
+    totalSpent: 0,
+    loyaltyStatus: 'Bronze',
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+  return docRef.id;
 }
 
 // Helper function: Log activity

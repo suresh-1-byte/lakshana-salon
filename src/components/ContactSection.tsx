@@ -130,7 +130,7 @@ export function ContactSection() {
                 src={contactImage?.imageUrl || ''}
                 alt="Lakshana Reception"
                 fill
-                className="object-cover brightness-[0.68] opacity-85 transition-all duration-[1.5s] group-hover:opacity-100 group-hover:brightness-[0.82] group-hover:scale-105"
+                className="object-cover brightness-[0.68] opacity-85 transition-all duration-1000 group-hover:opacity-100 group-hover:brightness-[0.82] group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-[#2D1B25]/50 z-10 pointer-events-none" />
               <div className="absolute bottom-6 left-6 z-20">

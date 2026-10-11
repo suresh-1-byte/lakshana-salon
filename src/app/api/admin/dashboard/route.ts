@@ -2,7 +2,17 @@ import { NextResponse } from 'next/server';
 import { adminDb, Collections } from '@/lib/firebase-admin';
 import type { DashboardStats } from '@/types/admin';
 import { getTodaysBirthdays } from '@/lib/api/birthdays';
-import { getTodaysAppointments } from '@/lib/api/appointments';
+
+/** Firestore Timestamp | ISO string | Date → Date (Invalid Date if missing) */
+function toDate(value: any): Date {
+  if (!value) return new Date(NaN);
+  if (typeof value?.toDate === 'function') return value.toDate();
+  return new Date(value);
+}
+
+function localDateKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -24,7 +34,6 @@ export async function GET() {
       reviewsSnap,
       servicesSnap,
       birthdays,
-      todayAppointments,
     ] = await Promise.all([
       adminDb.collection(Collections.BOOKINGS).get(),
       adminDb.collection(Collections.CUSTOMERS).get(),
@@ -32,26 +41,20 @@ export async function GET() {
       adminDb.collection(Collections.NOTIFICATIONS).where('status', '==', 'sent').get(),
       adminDb.collection(Collections.REVIEWS).where('status', '==', 'pending').get(),
       adminDb.collection(Collections.SERVICES).where('isActive', '==', true).get(),
-      getTodaysBirthdays(),
-      getTodaysAppointments(),
+      getTodaysBirthdays().catch(() => []),
     ]);
 
     const bookings = bookingsSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-    const customers = customersSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+    const customers = (customersSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[])
+      .filter((c: any) => !(c.isDeleted === true || c.status === 'deleted'));
     const bills = billingSnap.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
 
     // Compute stats
     const pendingBookings = bookings.filter((b: any) => b.status === 'pending').length;
     const completedBookings = bookings.filter((b: any) => b.status === 'completed').length;
 
-    const todayBills = bills.filter((b: any) => {
-      const d = new Date(b.createdAt);
-      return d >= todayStart;
-    });
-    const monthBills = bills.filter((b: any) => {
-      const d = new Date(b.createdAt);
-      return d >= monthStart;
-    });
+    const todayBills = bills.filter((b: any) => toDate(b.createdAt) >= todayStart);
+    const monthBills = bills.filter((b: any) => toDate(b.createdAt) >= monthStart);
 
     const todayRevenue = todayBills.reduce((sum: any, b) => sum + (b.total || 0), 0);
     const monthlyRevenue = monthBills.reduce((sum: any, b) => sum + (b.total || 0), 0);
@@ -96,7 +99,7 @@ export async function GET() {
       const dayEnd = new Date(dayStart.getTime() + 86400000);
       const dayRevenue = bills
         .filter((b: any) => {
-          const bd = new Date(b.createdAt);
+          const bd = toDate(b.createdAt);
           return bd >= dayStart && bd < dayEnd;
         })
         .reduce((sum: any, b) => sum + (b.total || 0), 0);
@@ -126,6 +129,20 @@ export async function GET() {
         bookings: count,
       };
     });
+
+    // Today's appointments: bookings scheduled for today
+    const todayKey = localDateKey(now);
+    const todayAppointments = bookings
+      .filter((b: any) => b.scheduledDate === todayKey && b.status !== 'cancelled')
+      .sort((a: any, b: any) => String(a.scheduledTime || '').localeCompare(String(b.scheduledTime || '')))
+      .map((b: any) => ({
+        id: b.id,
+        customerName: b.name,
+        customerPhone: b.phone,
+        appointmentType: (b.services || []).map((s: any) => s.name).join(', ') || 'Appointment',
+        appointmentTime: b.scheduledTime || '',
+        status: b.status,
+      }));
 
     // Service popularity (from bills)
     const serviceCount: Record<string, number> = {};

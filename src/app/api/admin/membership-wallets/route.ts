@@ -16,21 +16,21 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status') || '';
     const customerId = searchParams.get('customerId') || '';
 
+    // Single-field filters only (where + orderBy on another field would need
+    // a composite Firestore index); sorting happens in memory below.
     let query = adminDb.collection(Collections.MEMBERSHIP_WALLETS) as any;
-
-    // Filter by customer ID if provided
     if (customerId) {
       query = query.where('customerId', '==', customerId);
     }
 
-    // Filter by status if provided
-    if (status) {
-      query = query.where('status', '==', status);
-    }
+    const snapshot = await query.get();
+    const docs = snapshot.docs
+      .filter((doc: any) => !status || doc.data().status === status)
+      .sort((a: any, b: any) =>
+        (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0)
+      );
 
-    const snapshot = await query.orderBy('createdAt', 'desc').get();
-
-    if (snapshot.empty) {
+    if (docs.length === 0) {
       return NextResponse.json({
         success: true,
         memberships: [],
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
 
     let memberships = await Promise.all(
-      snapshot.docs.map(async (doc: any) => {
+      docs.map(async (doc: any) => {
         const data = doc.data();
         
         // Get customer details

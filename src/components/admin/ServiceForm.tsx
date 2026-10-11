@@ -139,8 +139,8 @@ export default function ServiceForm({ service, categories, onSuccess, onCancel }
         })
       }
 
-      // Assign add-ons to service
-      if (selectedAddonIds.length > 0) {
+      // Save the add-ons offered with this service (also clears them when none are selected)
+      if (service || selectedAddonIds.length > 0) {
         await bulkAssignAddonsToService(serviceId, selectedAddonIds)
       }
 
@@ -244,7 +244,7 @@ export default function ServiceForm({ service, categories, onSuccess, onCancel }
             name="offer_price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Offer Price (₹)</FormLabel>
+                <FormLabel>Member Price (₹)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -253,7 +253,7 @@ export default function ServiceForm({ service, categories, onSuccess, onCancel }
                   />
                 </FormControl>
                 <FormDescription>
-                  Optional discounted price
+                  Optional price for members
                 </FormDescription>
                 <FormMessage />
               </FormItem>

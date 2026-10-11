@@ -63,11 +63,11 @@ export default function ServicesPage() {
       setServices(servicesData)
       setCategories(categoriesData)
       setFilteredServices(servicesData)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading data:', error)
       toast({
         title: 'Error',
-        description: 'Failed to load services',
+        description: error?.message || 'Failed to load services',
         variant: 'destructive',
       })
     } finally {
@@ -90,11 +90,11 @@ export default function ServicesPage() {
         description: 'Service deleted successfully',
       })
       loadData()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting service:', error)
       toast({
         title: 'Error',
-        description: 'Failed to delete service',
+        description: error?.message || 'Failed to delete service',
         variant: 'destructive',
       })
     }
@@ -167,7 +167,7 @@ export default function ServicesPage() {
               <TableHead>Service Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Price</TableHead>
-              <TableHead>Offer Price</TableHead>
+              <TableHead>Member Price</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -199,7 +199,7 @@ export default function ServicesPage() {
                       '-'
                     )}
                   </TableCell>
-                  <TableCell>{service.duration} min</TableCell>
+                  <TableCell>{(service as any).duration_label || `${service.duration} min`}</TableCell>
                   <TableCell>
                     <Badge
                       className={

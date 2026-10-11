@@ -105,8 +105,9 @@ FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@lakshana-salon.iam.gserviceaccount
 # IMPORTANT: For FIREBASE_PRIVATE_KEY, paste the ENTIRE key including:
 # - The quotes at the beginning and end
 # - All \n characters (don't replace them)
-# It should look like: "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBg..."
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCwMQ2cXjOnHEQO\nULTN/3EMq1MbrQa+NQyGIgYiv90AQFKYlysuMEjtF4EFWaBUBQ7kOG0NjLCEguHp\n++pdGiEZMB9xkCASOwxFO3Gc6xxnGJOlA3agmwLFICnw0qSILB/7/LHCfqaWE99h\n0KQnnv9KiRRzBOnRWYgQM04m4veboBsPc4GfVm4SghJm6BdIV+PC2XDDYmX+i9Zy\neXVlyY37gXP18hs9jPD/ahbmwNmipjtYhk5muB3aDHYddQy9PLUPfY69z3gej+NQ\nFO3F9w2LWRdtxJKSksFoJcJs6i/BphAeCnZC4TYAabL2yoRI8xUdPmCoV0RnGc0b\nQVlz2irrAgMBAAECggEAFr3rfFSlGnupsHwBV8TncikGXABRlP6Nmcii0xxsab+5\nCYzFnDt2RkgY4A2+sJRLOkZVk9X7jiHDXZYlx5OmVF/ORzRrt1QGKZovzX8uwNiU\nF3diz1MtddqeH0FeebHRr7m2YMeZOAOOUKFYzEEXwaaqTDhaTSqJx1GKqQv1xZFG\nK/o6V0a6rITdHJNwkqBhYKcfNvKEVHuNEtpsCiZACytzh6xn6bk4dboSpuqJuBPD\nC+LA5DEFB93Yycg9AZAYv7w1a2oRUqEChEsxWyJhOnDqh/a6ddVlX721pASvbFa9\np+TUUbR+1ILYNf2tS3rtbt2+dv6B3hjLFVQqQqZliQKBgQDfn2eDYW7Fz5mI3VL0\nGaS/WYyqACVH2kO+EcGbifbWzRvYyXplhLIF6VciyF/KhePPBwdsAG/iM2zItwrT\nGaRI8b0EHN8c8x4OWnTCHWLI1XpDNQ/TrXh3jsCQI6sbqYhJE7xaFVRyQULkGBQh\nplXitDYcmDiYT3pblYtG7cKTSQKBgQDJs5yyPbs2ZO2KtZ0cvpY17XVktqCPByMK\nnwExEIHfQxJd30YLrN3wZiORDY/xRP6nI+FToBJ1fz7CpqCS6TE0tGSFqCG8++Qx\nAqrwjMpjTTtMa3gue6FbLkPzdpiEgWgRf5RwoDjasinZDGH7r4t12ka2tQ3dhMwA\nE+EhAArYkwKBgERksHgSOJrvX3nolxJpNWYAsXDdEonjS4y6SYiUrZYMrVOka3bZ\nGsmMEEZnGkUKph4PfEmf6Jg6Oi85LGpcEU7uAG1dly93e93P9J3Z9viNshMUC38m\nMw397w8mmZKgSzpuetDibS10oEy6wI16HhJ0I4ijVcvfowCXwD01QqlhAoGAI484\n1uuvL73Haybtlf27ubIteh4AXHbjpKG3shC49MV8XXRZgwFs907qgk4jzGNfidP3\ni6iy2Ggghmyd7oiSFjqfZjjoCctWxZU00cfgfnVFOQnRXFCLd+nGLQwBg4rU8BDP\n+LMmktfKLOvT8m1WZuaehOOSmDUrSfA3RnwdbWUCgYA2///ZbRvWN6e6jClHafKe\nKfKNkoHm+b+RaDNT+nMQrHGXSIRded0n1x0yUaQo3RKAQger7eJDSFPNMUd6qac8\nxQsbIbXkV0VC97HrbyBbuId9Af91ht7Dv6zGfO6iWGR4zTcKSTtrTm7d5nGZ0PV7\ne309uBNQDMYSszFAXMQkBQ==\n-----END PRIVATE KEY-----\n"
+# It should look like: "-----BEGIN PRIVATE KEY-----
+REDACTED_ROTATE_THIS_KEY
+-----END PRIVATE KEY-----\n"
 
 # Admin Panel
 ADMIN_EMAIL=admin@lakshanasalon.com
@@ -117,7 +118,7 @@ ADMIN_NOTIFICATION_EMAIL=admin@lakshanabeautysalon.in
 JWT_SECRET=lakshana-beauty-salon-jwt-secret-2025-change-me
 
 # Optional
-RESEND_API_KEY=re_abrKjUjz_9vq2RxEbFx6UFurevXnmB1Ai
+RESEND_API_KEY=re_REDACTED_ROTATE_THIS_KEY
 CRON_SECRET=lakshana-birthday-cron-2025-secure-key-change-in-production
 ```
 
